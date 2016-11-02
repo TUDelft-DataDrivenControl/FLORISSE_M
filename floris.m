@@ -3,10 +3,10 @@ addpath functions
 tic;
 
 %% Script settings
-plotLayout    = true;
+plotLayout    = true; % plot farm layout w.r.t. inertial and wind frame
 plotFlowfield = true; % visualisation in wind-aligned frame
-   vis.resx  = 30;    % resolution in x-axis (windframe)
-   vis.resy  = 30;    % resolution in y-axis (windframe)
+   vis.resx  = 10;    % resolution in x-axis in meters (windframe)
+   vis.resy  = 10;    % resolution in y-axis in meters (windframe)
 
 %% Simulation setup
 model.name = 'default';  % load default model parameters
@@ -23,14 +23,14 @@ wt_locations_if = [300,    100.0,  90.0; ...
                    1600,   300.0,  90.0; ...
                    1600,   500.0,  90.0];
 
-% Turbine operation settings in wind frame               
-turb.axialInduction = +0.33*ones(1,size(wt_locations_if,1)); % Axial induction control setting used only if specified by FLORIS
-yawAngles_wf        = 10.0*ones(1,size(wt_locations_if,1));  % Yaw misalignment with flow (counterclockwise, wind frame)
+% Turbine operation settings in wind frame
+turb.axialInduction = +0.33*ones(1,size(wt_locations_if,1)); % Axial induction control setting (used only if model.axialIndProvided == true)
+yawAngles_wf        = +30.0*ones(1,size(wt_locations_if,1)); % Yaw misalignment with flow (counterclockwise, wind frame)
 
 % Atmospheric settings
-site.u_inf_if   = [6];          % x-direction flow speed (inertial frame)
-site.v_inf_if   = [-2];           % y-direction flow speed (inertial frame)
-site.rho        = 1.1716;        % Air density
+site.u_inf_if   = 6;          % x-direction flow speed inertial frame (m/s)
+site.v_inf_if   = -2;         % y-direction flow speed inertial frame (m/s)
+site.rho        = 1.1716;     % Atmospheric air density (kg/m3)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -39,15 +39,15 @@ site.rho        = 1.1716;        % Air density
 model = floris_param_model(model);  % Import model settings
 turb  = floris_param_turbine(turb); % Import turbine settings
 
-% Determine wind farm layout in wind-aligned frame
-[ wt_order,sortvector, site,yawAngles_if,wt_locations_wf ] = floris_frame(site,turb,yawAngles_wf,wt_locations_if ); 
+% Determine wind farm layout in wind-aligned frame. Note that we renumber
+% the turbines in the order of appearance w.r.t wind direction (sortvector)
+[wt_order,sortvector,site,yawAngles_if,wt_locations_wf ] = floris_frame(site,turb,yawAngles_wf,wt_locations_if ); 
 
 % Setup visualisation grid
 if plotFlowfield
     vis.x  = -200:vis.resx:(max(wt_locations_wf(:,1))+1000);
     vis.y  = -200:vis.resy:(max(wt_locations_wf(:,2))+200);
-    vis.z  = turb.hub_height*ones(size(vis.x));
-    vis.U  = site.u_inf_wf  *ones(length(vis.x),length(vis.y));
+    vis.U  = site.u_inf_wf  *ones(length(vis.x),length(vis.y)); % initialize as freestream
 end;
 
 % Calculate properties throughout wind farm
@@ -55,8 +55,8 @@ wsw(wt_order{1}) = site.u_inf_wf; % Set wind speed in wind frame at first row of
 for turbirow = 1:length(wt_order) % for first to last row of turbines
     for turbi = wt_order{turbirow} % for each turbine in this row
         
-        [ Ct(turbi), Cp(turbi), axialInd(turbi), power(turbi) ] = ... Determine Cp, Ct, axial induction factor and power
-        floris_cpctpower(model,site,turb,wsw(turbi),yawAngles_wf(turbi),turb.axialInduction(turbi) );
+        [ Ct(turbi), Cp(turbi), axialInd(turbi), power(turbi) ] = ... Determine Cp, Ct and power
+        floris_cpctpower(model,site.rho,turb,wsw(turbi),yawAngles_wf(turbi),turb.axialInduction(turbi) );
 
         % Calculate ke
         ke(turbi) = model.ke + model.keCorrCT*(Ct(turbi)-model.baselineCT);
@@ -81,7 +81,7 @@ for turbirow = 1:length(wt_order) % for first to last row of turbines
             wakeDiameter0(turbi) = turb.rotorDiameter;
         end;
         
-        % Calculate effects of upstream turbine on downstream coordinates
+        % Calculate effects of this (upstream) turbine on downstream coordinates
         if plotFlowfield
             for sample_x = 1:length(vis.x) % first turbine always starts at 0
                 deltax = vis.x(sample_x)-wt_locations_wf(turbi,1);
@@ -153,9 +153,10 @@ for turbirow = 1:length(wt_order) % for first to last row of turbines
     end;
 end;
 
+
 % Plot wake effects on upstream turbine on downstream turbines
 if plotLayout
-    figure('Position',[372 360 1678 652]);
+    figure('Position',[218.6000 263.4000 944.8000 408.8000]);
     Nt = size(wt_locations_wf,1);
     
     subplot(1,2,1);
@@ -204,13 +205,13 @@ if plotLayout
 end;
 
 if plotFlowfield
-    figure('Position',[372 360 1678 652]);
+    figure('Position',[218.6000 263.4000 944.8000 408.8000]);
     contourf(vis.x,vis.y,vis.U','Linecolor','none');
-    colormap(jet);
+    colormap(parula(30));
     xlabel('x-direction (m)');
     ylabel('y-direction (m)');
     colorbar;
-    caxis([0 site.u_inf_wf])
+    caxis([0 ceil(site.u_inf_wf)])
     for j = 1:size(wt_locations_wf,1)
         hold on;
         plot(wt_locations_wf(j,1)+ 0*[-1, 1]*turb.rotorDiameter*sind(yawAngles_wf(j)),...
