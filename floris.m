@@ -54,34 +54,11 @@ end;
 wsw(wt_order{1}) = site.u_inf_wf; % Set wind speed in wind frame at first row of turbines as freestream
 for turbirow = 1:length(wt_order) % for first to last row of turbines
     for turbi = wt_order{turbirow} % for each turbine in this row
-        
         [ Ct(turbi), Cp(turbi), axialInd(turbi), power(turbi) ] = ... Determine Cp, Ct and power
         floris_cpctpower(model,site.rho,turb,wsw(turbi),yawAngles_wf(turbi),turb.axialInduction(turbi) );
+        floris_initwake; % calculate ke, mU, and initial wake properties
 
-        % Calculate ke
-        ke(turbi) = model.ke + model.keCorrCT*(Ct(turbi)-model.baselineCT);
-        
-        % Calculate mU: decay rate of wake zones
-        if model.useaUbU
-            mU{turbi} = model.MU/cosd(model.aU+model.bU*yawAngles_wf(turbi));
-        else
-            mU{turbi} = model.MU;
-        end;
-        
-        % Calculate initial wake deflection
-        wakeAngleInit(turbi) = 0.5*sind(yawAngles_wf(turbi))*Ct(turbi); % Eq. 8
-        if model.useWakeAngle
-            wakeAngleInit(turbi) = wakeAngleInit(turbi) + model.initialWakeAngle*pi/180; 
-        end;
-               
-        % Calculate initial wake diameter
-        if model.adjustInitialWakeDiamToYaw
-            wakeDiameter0(turbi) = turb.rotorDiameter*cosd(yawAngles_wf(turbi));
-        else
-            wakeDiameter0(turbi) = turb.rotorDiameter;
-        end;
-        
-        % Calculate effects of this (upstream) turbine on downstream coordinates
+        % Calculate effects of this (upstream) turbine on downstream visualization coordinates
         if plotFlowfield
             for sample_x = 1:length(vis.x) % first turbine always starts at 0
                 deltax = vis.x(sample_x)-wt_locations_wf(turbi,1);
@@ -97,17 +74,17 @@ for turbirow = 1:length(wt_order) % for first to last row of turbines
         for dw_turbirow = turbirow+1:length(wt_order)
             deltax = wt_locations_wf(wt_order{dw_turbirow}(1),1)-wt_locations_wf(turbi,1);
             floris_wakeproperties; % Calculate wake locations, diameters & overlap areas
-            %end;
         end;
     end;
     clear turbi dw_turbirow deltax factor displacement dY zone sample_x
 
-    % Finished calculations on row 'turbrow'. Now calculate velocity deficits
+    % Finished calculations on entire row 'turbirow'. Now calculate
+    % velocity deficits between upstream row and next row
     if plotFlowfield
         if turbirow < length(wt_order)
-            sample_x_max = max(find(vis.x<=wt_locations_wf(wt_order{turbirow+1}(1))));
+            sample_x_max = max(find(vis.x<=wt_locations_wf(wt_order{turbirow+1}(1)))); % calculate samples until next row
         else
-            sample_x_max = length(vis.x);
+            sample_x_max = length(vis.x); % calculate samples until end of domain
         end;
         for sample_x = min(find(vis.x>wt_locations_wf(wt_order{turbirow}(1)))):1:sample_x_max;
             for sample_y = 1:length(vis.y) % for all turbines in dw row
