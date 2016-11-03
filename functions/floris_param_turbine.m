@@ -1,5 +1,5 @@
-function [ turb ] = floris_turbine( turb )
-switch lower(turb.name)
+function [ turb ] = floris_turbine( name )
+switch lower(name)
     case 'nrel5mw'
         turb.rotorDiameter           = 126.4;
         turb.rotorArea               = pi*turb.rotorDiameter(1)*turb.rotorDiameter(1)/4.0;

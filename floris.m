@@ -25,19 +25,19 @@ wt_locations_if = [300,    100.0,  90.0; ...
 % wt_locations_if = [1118.1, 1279.5, 90; 1881.9, 1720.5, 90];
 
 % Turbine operation settings in wind frame
-turb.axialInduction = (1/3)*ones(1,size(wt_locations_if,1)); % Axial induction control setting (used only if model.axialIndProvided == true)
+turb.axialInduction = (1/3)*ones(1,size(wt_locations_if,1));  % Axial induction control setting (used only if model.axialIndProvided == true)
 yawAngles_wf        = [-30. 30. 30. 10. 10. 10. 0.0 0.0 0.0]; % Yaw misalignment with flow (counterclockwise, wind frame)
 
 % Atmospheric settings
-site.u_inf_if   = 5;        % x-direction flow speed inertial frame (m/s)
+site.u_inf_if   = 7;        % x-direction flow speed inertial frame (m/s)
 site.v_inf_if   = 0.5;      % y-direction flow speed inertial frame (m/s)
 site.rho        = 1.1716;   % Atmospheric air density (kg/m3)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Internal code of FLORIS
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-model = floris_param_model(model);  % Import model settings
-turb  = floris_param_turbine(turb); % Import turbine settings
+model = floris_param_model(model.name);  % Import model settings
+turb  = floris_param_turbine(turb.name); % Import turbine settings
 
 % Determine wind farm layout in wind-aligned frame. Note that we renumber
 % the turbines in the order of appearance w.r.t wind direction (sortvector)
@@ -47,7 +47,7 @@ turb  = floris_param_turbine(turb); % Import turbine settings
 if plotFlowfield
     vis.x  = -200:vis.resx:(max(wt_locations_wf(:,1))+1000);
     vis.y  = -200:vis.resy:(max(wt_locations_wf(:,2))+200);
-    vis.U  = site.u_inf_wf  *ones(length(vis.x),length(vis.y)); % initialize as freestream
+    vis.U  = site.u_inf_wf*ones(length(vis.x),length(vis.y)); % initialize as freestream
 end;
 
 % Setup interpolation from NREl5MWCPCT file

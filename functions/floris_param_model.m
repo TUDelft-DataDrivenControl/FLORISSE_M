@@ -1,5 +1,5 @@
-function [ model ] = floris_parameters( model )
-    switch lower(model.name)
+function [ model ] = floris_parameters( name )
+    switch lower(name)
         case 'default' %% original tuning parameters
         model.pP              = 1.88; % yaw power correction parameter
         model.ke              = 0.05; % wake expansion parameters
