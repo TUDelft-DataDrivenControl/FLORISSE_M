@@ -5,10 +5,10 @@ displacement = (wakeAngleInit(turbi)*(15.0*(factor^4.0)+(wakeAngleInit(turbi)^2.
                (wakeAngleInit(turbi)*turb.rotorDiameter*(15.0+(wakeAngleInit(turbi)^2.0))/(30.0*model.kd));
 
 % Turbine #row's wake centerline location Y at the wind-farm row #column
-wake_locY_wf_Turb(turbi,dw_turbirow) = wt_locations_wf(turbi,2) + ...                    % wake location starting point
-                                   model.initialWakeDisplacement + ...              % initial wake displacement
-                                   (1-model.useWakeAngle) * deltax * model.bd + ... % rotation-induced lateral offset
-                                   displacement;                                    % yaw-induced wake displacement
+wake_locY_wf_Turb(turbi,dw_turbirow) = wt_locations_wf(turbi,2) + ...                   % wake location starting point
+                                       model.initialWakeDisplacement + ...              % initial wake displacement
+                                       (1-model.useWakeAngle) * deltax * model.bd + ... % rotation-induced lateral offset
+                                       displacement;                                    % yaw-induced wake displacement
 
 for dw_turbi = wt_order{dw_turbirow}
    wake_dY_Turb(turbi,dw_turbi) = abs(wake_locY_wf_Turb(turbi,dw_turbirow)-wt_locations_wf(dw_turbi,2));
