@@ -1,38 +1,37 @@
 clear all; close all; clc;
 addpath functions
-tic;
+timer.script = tic;
 
 %% Script settings
-plotLayout    = false; % plot farm layout w.r.t. inertial and wind frame
-plotFlowfield = false; % visualisation in wind-aligned frame
-   vis.resx  = 10;     % resolution in x-axis in meters (windframe)
-   vis.resy  = 10;     % resolution in y-axis in meters (windframe)
+plotLayout    = 1; % plot farm layout w.r.t. inertial and wind frame
+plotFlowfield = 1; % visualisation in wind-aligned frame
+   vis.resx  = 10; % resolution in x-axis in meters (windframe)
+   vis.resy  = 10; % resolution in y-axis in meters (windframe)
 
 %% Simulation setup
 model.name = 'default';  % load default model parameters
 turb.name  = 'nrel5mw';  % load turbine settings (NREL 5MW baseline)
 
 % Wind turbine locations in internal frame 
-% wt_locations_if = [300,    100.0,  90.0; ...
-%                    300,    300.0,  90.0; ...
-%                    300,    500.0,  90.0; ...
-%                    1000,   100.0,  90.0; ...
-%                    1000,   300.0,  90.0; ...
-%                    1000,   500.0,  90.0; ...
-%                    1600,   100.0,  90.0; ...
-%                    1600,   300.0,  90.0; ...
-%                    1600,   500.0,  90.0];
-wt_locations_if = [1118.1, 1279.5, 90; 1881.9, 1720.5, 90];
+wt_locations_if = [300,    100.0,  90.0; ...
+                   300,    300.0,  90.0; ...
+                   300,    500.0,  90.0; ...
+                   1000,   100.0,  90.0; ...
+                   1000,   300.0,  90.0; ...
+                   1000,   500.0,  90.0; ...
+                   1600,   100.0,  90.0; ...
+                   1600,   300.0,  90.0; ...
+                   1600,   500.0,  90.0];
+% wt_locations_if = [1118.1, 1279.5, 90; 1881.9, 1720.5, 90];
 
 % Turbine operation settings in wind frame
 turb.axialInduction = (1/3)*ones(1,size(wt_locations_if,1)); % Axial induction control setting (used only if model.axialIndProvided == true)
-%yawAngles_wf        = 30.0*ones(1,size(wt_locations_if,1)); % Yaw misalignment with flow (counterclockwise, wind frame)
-yawAngles_wf        = [-10 0.0]; % Yaw misalignment with flow (counterclockwise, wind frame)
+yawAngles_wf        = [-30. 30. 30. 10. 10. 10. 0.0 0.0 0.0]; % Yaw misalignment with flow (counterclockwise, wind frame)
 
 % Atmospheric settings
-site.u_inf_if   = 7.014805770653953;   % x-direction flow speed inertial frame (m/s)
-site.v_inf_if   = 4.049999999999999;   % y-direction flow speed inertial frame (m/s)
-site.rho        = 1.1716;              % Atmospheric air density (kg/m3)
+site.u_inf_if   = 5;        % x-direction flow speed inertial frame (m/s)
+site.v_inf_if   = 0.5;      % y-direction flow speed inertial frame (m/s)
+site.rho        = 1.1716;   % Atmospheric air density (kg/m3)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Internal code of FLORIS
@@ -57,6 +56,8 @@ if ~model.axialIndProvided
     Ct_interp = fit(NREL5MWCPCT.wind_speed',NREL5MWCPCT.CT','linearinterp');
     Cp_interp = fit(NREL5MWCPCT.wind_speed',NREL5MWCPCT.CP','linearinterp');
 end;
+
+timer.core = tic;
 % Calculate properties throughout wind farm
 wsw(wt_order{1}) = site.u_inf_wf; % Set wind speed in wind frame at first row of turbines as freestream
 for turbirow = 1:length(wt_order) % for first to last row of turbines
@@ -145,7 +146,7 @@ for turbirow = 1:length(wt_order) % for first to last row of turbines
         end;
     end;
 end;
-
+disp(['TIMER: core operations: ' num2str(toc(timer.core)) ' s.']);
 
 % Plot wake effects on upstream turbine on downstream turbines
 if plotLayout
@@ -204,7 +205,7 @@ if plotFlowfield
     xlabel('x-direction (m)');
     ylabel('y-direction (m)');
     colorbar;
-    caxis([0 ceil(site.u_inf_wf)])
+    caxis([floor(min(vis.U(:))) ceil(site.u_inf_wf)])
     for j = 1:size(wt_locations_wf,1)
         hold on;
         plot(wt_locations_wf(j,1)+ 0*[-1, 1]*turb.rotorDiameter*sind(yawAngles_wf(j)),...
@@ -215,4 +216,4 @@ if plotFlowfield
 end;
 
 clear x y turb_row turbi turbirow dw_row dw_turbi uw_turbi uw_turbrow sout sinn j ciq Nt
-toc;
+disp(['TIMER: script: ' num2str(toc(timer.script)) ' s.']);
