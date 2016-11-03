@@ -7,6 +7,7 @@ plotLayout    = 0; % plot farm layout w.r.t. inertial and wind frame
 plotFlowfield = 1; % visualisation in wind-aligned frame
    vis.resx  =  5; % resolution in x-axis in meters (windframe)
    vis.resy  =  5; % resolution in y-axis in meters (windframe)
+   fixYaw    =  1; % Account for yaw in near-turbine region in plots
 
 %% Simulation setup
 model.name = 'default';  % load default model parameters
@@ -204,29 +205,31 @@ if plotLayout
 end;
 
 if plotFlowfield
-    % Correction for turbine yaw in flow field in turning radius of turbine
-    for turbi = 1:9 % for each turbines
-        ytop    = wt_locations_wf(turbi,2)+cosd(yawAngles_wf(turbi))*turb.rotorDiameter/2;
-        ybottom = wt_locations_wf(turbi,2)-cosd(yawAngles_wf(turbi))*turb.rotorDiameter/2;
-        
-        [~,celltopy]    = min(abs(ytop   - vis.y));
-        [~,cellbottomy] = min(abs(ybottom- vis.y));
-        
-        for celly = cellbottomy-2:1:celltopy+2
-            xlocblade = wt_locations_wf(turbi,1)-sind(yawAngles_wf(turbi))*(vis.y(celly)-wt_locations_wf(turbi,2)); % cell location of turbine blade x
-            [~,cellxtower] = min(abs(vis.x-wt_locations_wf(turbi,1)));
-            [~,cellxblade] = min(abs(vis.x-xlocblade));
-            if vis.y(celly) > wt_locations_wf(turbi,2) % top part
-                if yawAngles_wf(turbi) < 0
-                    vis.U(cellxtower:cellxblade,celly) = vis.U(cellxtower-1,celly);
-                else
-                    vis.U(cellxblade:cellxtower,celly) = vis.U(cellxtower+1,celly);
-                end;
-            else % lower part
-                if yawAngles_wf(turbi) < 0
-                    vis.U(cellxblade:cellxtower,celly) = vis.U(cellxtower+1,celly);
-                else
-                    vis.U(cellxtower:cellxblade,celly) = vis.U(cellxtower-1,celly);
+    if fixYaw
+        % Correction for turbine yaw in flow field in turning radius of turbine
+        for turbi = 1:size(wt_locations_wf,1) % for each turbine
+            ytop    = wt_locations_wf(turbi,2)+cosd(yawAngles_wf(turbi))*turb.rotorDiameter/2;
+            ybottom = wt_locations_wf(turbi,2)-cosd(yawAngles_wf(turbi))*turb.rotorDiameter/2;
+            
+            [~,celltopy]    = min(abs(ytop   - vis.y));
+            [~,cellbottomy] = min(abs(ybottom- vis.y));
+            
+            for celly = cellbottomy-2:1:celltopy+2
+                xlocblade = wt_locations_wf(turbi,1)-sind(yawAngles_wf(turbi))*(vis.y(celly)-wt_locations_wf(turbi,2)); % cell location of turbine blade x
+                [~,cellxtower] = min(abs(vis.x-wt_locations_wf(turbi,1)));
+                [~,cellxblade] = min(abs(vis.x-xlocblade));
+                if vis.y(celly) > wt_locations_wf(turbi,2) % top part
+                    if yawAngles_wf(turbi) < 0
+                        vis.U(cellxtower:cellxblade,celly) = vis.U(cellxtower-1,celly);
+                    else
+                        vis.U(cellxblade:cellxtower,celly) = vis.U(cellxtower+1,celly);
+                    end;
+                else % lower part
+                    if yawAngles_wf(turbi) < 0
+                        vis.U(cellxblade:cellxtower,celly) = vis.U(cellxtower+1,celly);
+                    else
+                        vis.U(cellxtower:cellxblade,celly) = vis.U(cellxtower-1,celly);
+                    end;
                 end;
             end;
         end;
