@@ -5,8 +5,8 @@ timer.script = tic;
 %% Script settings
 plotLayout    = 0; % plot farm layout w.r.t. inertial and wind frame
 plotFlowfield = 1; % visualisation in wind-aligned frame
-   vis.resx  = 10; % resolution in x-axis in meters (windframe)
-   vis.resy  = 10; % resolution in y-axis in meters (windframe)
+   vis.resx  =  5; % resolution in x-axis in meters (windframe)
+   vis.resy  =  5; % resolution in y-axis in meters (windframe)
 
 %% Simulation setup
 model.name = 'default';  % load default model parameters
@@ -26,7 +26,7 @@ wt_locations_if = [300,    100.0,  90.0; ...
 
 % Turbine operation settings in wind frame
 turb.axialInduction = (1/3)*ones(1,size(wt_locations_if,1));  % Axial induction control setting (used only if model.axialIndProvided == true)
-yawAngles_wf        = [-30. 30. 30. 10. 10. 10. 0.0 0.0 0.0]; % Yaw misalignment with flow (counterclockwise, wind frame)
+yawAngles_wf        = [-27. 10. -30. 10. 10. -15. 0.0 0.0 0.0]; % Yaw misalignment with flow (counterclockwise, wind frame)
 
 % Atmospheric settings
 site.u_inf_if   = 7;        % x-direction flow speed inertial frame (m/s)
@@ -205,7 +205,32 @@ end;
 
 if plotFlowfield
     % Correction for turbine yaw in flow field in turning radius of turbine
-    
+    for turbi = 1:9 % for each turbines
+        ytop    = wt_locations_wf(turbi,2)+cosd(yawAngles_wf(turbi))*turb.rotorDiameter/2;
+        ybottom = wt_locations_wf(turbi,2)-cosd(yawAngles_wf(turbi))*turb.rotorDiameter/2;
+        
+        [~,celltopy]    = min(abs(ytop   - vis.y));
+        [~,cellbottomy] = min(abs(ybottom- vis.y));
+        
+        for celly = cellbottomy-2:1:celltopy+2
+            xlocblade = wt_locations_wf(turbi,1)-sind(yawAngles_wf(turbi))*(vis.y(celly)-wt_locations_wf(turbi,2)); % cell location of turbine blade x
+            [~,cellxtower] = min(abs(vis.x-wt_locations_wf(turbi,1)));
+            [~,cellxblade] = min(abs(vis.x-xlocblade));
+            if vis.y(celly) > wt_locations_wf(turbi,2) % top part
+                if yawAngles_wf(turbi) < 0
+                    vis.U(cellxtower:cellxblade,celly) = vis.U(cellxtower-1,celly);
+                else
+                    vis.U(cellxblade:cellxtower,celly) = vis.U(cellxtower+1,celly);
+                end;
+            else % lower part
+                if yawAngles_wf(turbi) < 0
+                    vis.U(cellxblade:cellxtower,celly) = vis.U(cellxtower+1,celly);
+                else
+                    vis.U(cellxtower:cellxblade,celly) = vis.U(cellxtower-1,celly);
+                end;
+            end;
+        end;
+    end;
     if length(hfigures) >= plotLayout+plotFlowfield
         set(0,'CurrentFigure',hfigures(1+plotLayout)); clf;
     else
