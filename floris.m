@@ -1,9 +1,9 @@
-clear all; close all; clc;
+clear all; clc;
 addpath functions
 timer.script = tic;
 
 %% Script settings
-plotLayout    = 1; % plot farm layout w.r.t. inertial and wind frame
+plotLayout    = 0; % plot farm layout w.r.t. inertial and wind frame
 plotFlowfield = 1; % visualisation in wind-aligned frame
    vis.resx  = 10; % resolution in x-axis in meters (windframe)
    vis.resy  = 10; % resolution in y-axis in meters (windframe)
@@ -149,8 +149,13 @@ end;
 disp(['TIMER: core operations: ' num2str(toc(timer.core)) ' s.']);
 
 % Plot wake effects on upstream turbine on downstream turbines
+hfigures=get(0,'Children');
 if plotLayout
-    figure('Position',[218.6000 263.4000 944.8000 408.8000]);
+    if length(hfigures) > 0
+        set(0,'CurrentFigure',hfigures(1)); clf;
+    else
+        figure('Position',[218.6000 263.4000 944.8000 408.8000]);
+    end;
     Nt = size(wt_locations_wf,1);
     
     subplot(1,2,1);
@@ -199,7 +204,11 @@ if plotLayout
 end;
 
 if plotFlowfield
-    figure('Position',[218.6000 263.4000 944.8000 408.8000]);
+    if length(hfigures) >= plotLayout+plotFlowfield
+        set(0,'CurrentFigure',hfigures(1+plotLayout)); clf;
+    else
+        figure('Position',[218.6000 263.4000 944.8000 408.8000]);
+    end;
     contourf(vis.x,vis.y,vis.U','Linecolor','none');
     colormap(parula(30));
     xlabel('x-direction (m)');
@@ -210,7 +219,7 @@ if plotFlowfield
         hold on;
         plot(wt_locations_wf(j,1)+ 0*[-1, 1]*turb.rotorDiameter*sind(yawAngles_wf(j)),...
              wt_locations_wf(j,2)+ 0*[1, -1]*turb.rotorDiameter*cosd(yawAngles_wf(j)),'LineWidth',3); 
-        %text(wt_locations_wf(j,1),wt_locations_wf(j,2),['T' num2str(j)]);
+        text(wt_locations_wf(j,1),wt_locations_wf(j,2),['T' num2str(j)]);
     end;
     axis equal;
 end;
