@@ -204,6 +204,8 @@ if plotLayout
 end;
 
 if plotFlowfield
+    % Correction for turbine yaw in flow field in turning radius of turbine
+    
     if length(hfigures) >= plotLayout+plotFlowfield
         set(0,'CurrentFigure',hfigures(1+plotLayout)); clf;
     else
@@ -217,9 +219,9 @@ if plotFlowfield
     caxis([floor(min(vis.U(:))) ceil(site.u_inf_wf)])
     for j = 1:size(wt_locations_wf,1)
         hold on;
-        plot(wt_locations_wf(j,1)+ 0*[-1, 1]*turb.rotorDiameter*sind(yawAngles_wf(j)),...
-             wt_locations_wf(j,2)+ 0*[1, -1]*turb.rotorDiameter*cosd(yawAngles_wf(j)),'LineWidth',3); 
-        text(wt_locations_wf(j,1),wt_locations_wf(j,2),['T' num2str(j)]);
+        plot(wt_locations_wf(j,1)+ [-0.5, +0.5]*turb.rotorDiameter*sind(yawAngles_wf(j)),...
+             wt_locations_wf(j,2)+ [+0.5, -0.5]*turb.rotorDiameter*cosd(yawAngles_wf(j)),'k','LineWidth',3); 
+          text(wt_locations_wf(j,1)+30,wt_locations_wf(j,2),['T' num2str(j)]);
     end;
     axis equal;
 end;
