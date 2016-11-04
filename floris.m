@@ -3,7 +3,7 @@ addpath functions
 timer.script = tic;
 
 %% Script settings
-plotLayout    = 0; % plot farm layout w.r.t. inertial and wind frame
+plotLayout    = 1; % plot farm layout w.r.t. inertial and wind frame
 plotFlowfield = 1; % visualisation in wind-aligned frame
    vis.resx  =  5; % resolution in x-axis in meters (windframe)
    vis.resy  =  5; % resolution in y-axis in meters (windframe)
@@ -31,7 +31,7 @@ yawAngles_wf        = [-27. 10. -30. 10. 10. -15. 0.0 0.0 0.0]; % Yaw misalignme
 
 % Atmospheric settings
 site.u_inf_if   = 7;        % x-direction flow speed inertial frame (m/s)
-site.v_inf_if   = 0.5;      % y-direction flow speed inertial frame (m/s)
+site.v_inf_if   = 0.0;      % y-direction flow speed inertial frame (m/s)
 site.rho        = 1.1716;   % Atmospheric air density (kg/m3)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
