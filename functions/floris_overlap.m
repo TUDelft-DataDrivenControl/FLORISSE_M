@@ -1,15 +1,25 @@
-function [ Aol ] = floris_overlap( R, r, d )
-%floris_overlap 
-%   Calculates the overlap area between two circles on the same line,
-%   displaced with distance d and with radii R and r
-    d = abs(d);
-    if d >= R+r  % if not contained at all
-        Aol = 0;   
-    elseif d <= abs(R-r) % if one is contained completely in the other circle
-        Aol = pi*min(abs([r, R]))^2;
-    else
-        Aol = r^2*acos((d^2+r^2-R^2)/(2*d*r)) + R^2*acos((d^2+R^2-r^2)/(2*d*R)) - ...
-              0.5*sqrt((-d+r+R)*(d+r-R)*(d-r+R)*(d+r+R));
-    end;
-end
+function [ wake ] = floris_overlap( downstreamRows,WtRows,wake,turbines,turbType )
 
+    % List all turbines that are affected by this turbine
+    for dw_turbirow = downstreamRows
+        for dwTurbine = WtRows{dw_turbirow}
+           wakeOverlapTurb = zeros(1,3);
+           for zone = 1:3
+               
+               % Locate the downwind turbine in the wake
+               [~,turbLocIndex] = min(abs(wake.xSamples-turbines(dwTurbine).LocWF(1)));
+               % Calculate overlap areas (intersection) of wake on dw turbines
+               wakeOverlapTurb(zone) = floris_intersect(wake.diameters(turbLocIndex,zone)/2,turbType.rotorDiameter/2,...
+                   abs(wake.centerline(turbLocIndex)-turbines(dwTurbine).LocWF(2)));
+               
+               for zonej = 1:(zone-1) % minus overlap areas of lower zones
+                   wakeOverlapTurb(zone) = wakeOverlapTurb(zone)-wakeOverlapTurb(zonej);
+               end;
+               
+               % Save the overlap as a ratio with respect to rotorArea
+               wake.OverlapAreaRel(dwTurbine,zone) = wakeOverlapTurb(zone)/turbType.rotorArea;
+           end;
+        end;
+    end
+    
+end

@@ -1,22 +1,27 @@
-% Calculate ke
-ke(turbi) = model.ke + model.keCorrCT*(Ct(turbi)-model.baselineCT);
+function [ wake ] = floris_initwake( model,turbine,wake,turb_type )
+% This function computes the coefficients that determine wake behaviour.
+% The initial deflection and diameter of the wake are also computed
 
-% Calculate mU: decay rate of wake zones
-if model.useaUbU
-    mU{turbi} = model.MU/cosd(model.aU+model.bU*yawAngles_wf(turbi));
-else
-    mU{turbi} = model.MU;
-end;
+    % Calculate ke, the basic expansion coefficient
+    wake.Ke = model.Ke + model.KeCorrCT*(turbine.Ct-model.baselineCT);
 
-% Calculate initial wake deflection
-wakeAngleInit(turbi) = 0.5*sind(yawAngles_wf(turbi))*Ct(turbi); % Eq. 8
-if model.useWakeAngle
-    wakeAngleInit(turbi) = wakeAngleInit(turbi) + model.initialWakeAngle*pi/180;
-end;
+    % Calculate mU, the zone multiplier for different wake zones
+    if model.useaUbU
+        wake.mU = model.MU/cosd(model.aU+model.bU*turbine.YawWF);
+    else
+        wake.mU = model.MU;
+    end
 
-% Calculate initial wake diameter
-if model.adjustInitialWakeDiamToYaw
-    wakeDiameter0(turbi) = turb.rotorDiameter*cosd(yawAngles_wf(turbi));
-else
-    wakeDiameter0(turbi) = turb.rotorDiameter;
-end;
+    % Calculate initial wake deflection due to blade rotation etc.
+    wake.zetaInit = 0.5*(cosd(turbine.YawWF).^2)*sind(turbine.YawWF)*turbine.Ct; % Eq. 8
+%     if model.useWakeAngle
+%         wake.wakeAngleInit = wake.wakeAngleInit + deg2rad(model.kd);
+%     end;
+
+    % Calculate initial wake diameter
+    if model.adjustInitialWakeDiamToYaw
+        wake.wakeDiameterInit = turb_type.rotorDiameter*cosd(turbine.YawWF);
+    else
+        wake.wakeDiameterInit = turb_type.rotorDiameter;
+    end
+end
