@@ -1,9 +1,12 @@
 function [ wakes,flowField ] = floris_compute_flowfield( site,model,turbType,flowField,turbines,wakes )
 
-    % Compute the centerlines and zone diameters at every voxel
+    % Compute the centerLines and zone diameters at every voxel
     for  turb_num = 1:length(turbines)
-        wakes(turb_num).xSamples = flowField.X(1,flowField.X(1,:,1)>=turbines(turb_num).LocWF(1),1);
-        [wakes(turb_num)] = floris_centerline_and_diameter_at_x(...
+        % Clear the current x and y coordinates which correspond to
+        % turbine locations. Use an array of x-coordinates instead
+        wakes(turb_num).centerLine = [];
+        wakes(turb_num).centerLine(1,:) = flowField.X(1,flowField.X(1,:,1)>=turbines(turb_num).LocWF(1),1);
+        [wakes(turb_num)] = floris_wakeCenterLine_and_diameter(...
              turbType.rotorDiameter, model, turbines(turb_num), wakes(turb_num));
     end
     
@@ -19,8 +22,8 @@ function [ wakes,flowField ] = floris_compute_flowfield( site,model,turbType,flo
         % half in extreme cases.
         tusF = zeros(size(flowField.U(:,1,:)));
         for turb_num = 1:length(UwTurbines)
-            [~,wakeLocIndex] = min(abs(wakes(turb_num).xSamples-xSample));
-            tusF(hypot(flowField.Y(:,1,:)-wakes(turb_num).centerline(wakeLocIndex), ...
+            [~,wakeLocIndex] = min(abs(wakes(turb_num).centerLine(1,:)-xSample));
+            tusF(hypot(flowField.Y(:,1,:)-wakes(turb_num).centerLine(2,wakeLocIndex), ...
             flowField.Z(:,1,:)-turbines(turb_num).LocWF(3))<= ...
             wakes(turb_num).diameters(wakeLocIndex,3)./2) = 1;
         end
@@ -32,9 +35,9 @@ function [ wakes,flowField ] = floris_compute_flowfield( site,model,turbType,flo
                 if tusF(i,1,j)
                     sout = 0; % outer sum of Eq. 22
                     for turb_num = 1:length(UwTurbines)
-                        [~,wakeLocIndex] = min(abs(wakes(turb_num).xSamples-xSample));
+                        [~,wakeLocIndex] = min(abs(wakes(turb_num).centerLine(1,:)-xSample));
                         for zone = 1:3
-                            if hypot(flowField.Y(i,1,j)-wakes(turb_num).centerline(wakeLocIndex), ...
+                            if hypot(flowField.Y(i,1,j)-wakes(turb_num).centerLine(2,wakeLocIndex), ...
                                 flowField.Z(i,1,j)-turbines(turb_num).LocWF(3))<= ...
                                 wakes(turb_num).diameters(wakeLocIndex,zone)./2
                                 sout = sout + (turbines(turb_num).axialInd*(turbType.rotorDiameter/(turbType.rotorDiameter + 2*wakes(turb_num).Ke*wakes(turb_num).mU(zone)*deltaXs(turb_num)))^2)^2; % Eq. 16

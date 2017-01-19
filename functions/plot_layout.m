@@ -1,4 +1,4 @@
-function [ ] = plot_layout( wt_rows,site,turbType,turbines,wakes )
+function [ ] = plot_layout( wtRows,site,turbType,turbines,wakes )
 
     turbIF = [turbines.LocIF];
     turbWF = [turbines.LocWF];
@@ -35,11 +35,11 @@ function [ ] = plot_layout( wt_rows,site,turbType,turbines,wakes )
              turbWF(2,j) + 0.5*[1, -1]*turbType.rotorDiameter*cosd(YawWfs(j)),'LineWidth',3); hold on;
         text(turbWF(1,j) +30,turbWF(2,j) +20,['T' num2str(j)]);
     end;
-    % Plot the wake centerlines
-    for TRow = 1:length(wt_rows)
-        for Tnum = wt_rows{TRow}
+    % Plot the wake centerLines
+    for TRow = 1:length(wtRows)
+        for Tnum = wtRows{TRow}
             hold on;
-            plot([turbWF(1,Tnum) wakes(Tnum).xSamples],[turbWF(2,Tnum) wakes(Tnum).centerline],'--','DisplayName','Wake Centerline');
+            plot([turbWF(1,Tnum) wakes(Tnum).centerLine(1,:)],[turbWF(2,Tnum) wakes(Tnum).centerLine(2,:)],'--','DisplayName','Wake Centerline');
         end;
     end;
     ylabel('Aligned y-axis [m]');

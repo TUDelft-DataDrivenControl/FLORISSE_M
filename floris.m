@@ -5,7 +5,7 @@ addpath('functions');
 %% Script settings
 plotLayout    = true;     % plot farm layout w.r.t. inertial and wind frame
 plot2DFlowfield = true ; % 2DflowFieldvisualisation in wind-aligned frame
-plot3DFlowfield = false ;  % 3DflowFieldvisualisation in wind-aligned frame
+plot3DFlowfield = true ;  % 3DflowFieldvisualisation in wind-aligned frame
 
 if (plot2DFlowfield || plot3DFlowfield)
    % resz is not used when only 2Dflowfield is plotted
@@ -20,7 +20,7 @@ end
 model = floris_param_model('default');          % Import model settings
 turbType  = floris_param_turbine('nrel5mw');    % Import turbine settings
 
-% Wind turbine locations in internal frame 
+% Wind turbine locations in inertial frame 
 LocIF =   [300,    100.0,  turbType.hub_height
            300,    300.0,  turbType.hub_height
            300,    500.0,  turbType.hub_height
@@ -41,8 +41,8 @@ turbines = struct(  'Tilt',num2cell([0 0 0 15 15 15 0 0 0].'), ...
 % TODO: implement effects of turbine tilt
                 
 wakes = struct( 'Ke',num2cell(zeros(1,length(turbines))),'mU',{[]}, ...
-                'zetaInit',[],'wakeDiameterInit',[],'centerline',[], ...
-                'diameters',[],'OverlapAreaRel',[],'xSamples',[]);
+                'zetaInit',[],'wakeDiameterInit',[],'centerLine',[], ...
+                'diameters',[],'OverlapAreaRel',[]);
 
 % Atmospheric settings
 site.uInfIf   = 8;        % x-direction flow speed inertial frame (m/s)
@@ -95,13 +95,13 @@ for turbirow = 1:length(wtRows) % for first to last row of turbines
         wakes(turbNum) = floris_initwake( model,turbines(turbNum),wakes(turbNum),turbType );
         
         % Compute  the X locations of  the downstream turbines rows
-        wakes(turbNum).xSamples = arrayfun(@(x) x.LocWF(1), turbines(cellfun(@(x) x(1),wtRows(turbirow+1:end)))).';
-        wakes(turbNum).xSamples = [wakes(turbNum).xSamples turbines(end).LocWF(1)+300];
-        
-        % Compute the wake centerlines and diameters at those X locations
-        wakes(turbNum) = floris_centerline_and_diameter_at_x(...
+        wakes(turbNum).centerLine(1,:) = arrayfun(@(x) x.LocWF(1), turbines(cellfun(@(x) x(1),wtRows(turbirow+1:end)))).';
+        wakes(turbNum).centerLine(1,end+1) = turbines(end).LocWF(1)+300;
+
+        % Compute the wake centerLines and diameters at those X locations
+        wakes(turbNum) = floris_wakeCenterLine_and_diameter(...
              turbType.rotorDiameter, model, turbines(turbNum), wakes(turbNum));
-        
+
         % Calculate overlap of this turbine on downstream turbines
         wakes(turbNum) = floris_overlap( (turbirow+1):length(wtRows),wtRows,wakes(turbNum),turbines,turbType );
     end
@@ -118,7 +118,7 @@ end;
 disp(['TIMER: core operations: ' num2str(toc(timer.core)) ' s.']);
 
 %% Plot the layout and flowfield visualization
-% Plot a map with the turbine layout and wake centerlines
+% Plot a map with the turbine layout and wake centerLines
 if plotLayout
     figure;
     plot_layout( wtRows,site,turbType,turbines,wakes );
