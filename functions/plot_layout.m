@@ -25,7 +25,7 @@ function [ ] = plot_layout( wt_rows,site,turbType,turbines,wakes )
     ylim([min(turbIF(2,:))-500 max(turbIF(2,:)+500)]);
     
     % Plot wind direction
-    quiver(min(turbIF(1,:))-400,mean(turbIF(2,:)),site.u_inf_if*30,site.v_inf_if*30,'LineWidth',1,'MaxHeadSize',5);
+    quiver(min(turbIF(1,:))-400,mean(turbIF(2,:)),site.uInfIf*30,site.vInfIf*30,'LineWidth',1,'MaxHeadSize',5);
     text(min(turbIF(1,:))-400,mean(turbIF(2,:))-50,'U_{inf}');
     
     % Plot the turbines in the wind aligned frame
@@ -36,10 +36,10 @@ function [ ] = plot_layout( wt_rows,site,turbType,turbines,wakes )
         text(turbWF(1,j) +30,turbWF(2,j) +20,['T' num2str(j)]);
     end;
     % Plot the wake centerlines
-    for turb_row = 1:length(wt_rows)-1
-        for turb_num = wt_rows{turb_row}
+    for TRow = 1:length(wt_rows)
+        for Tnum = wt_rows{TRow}
             hold on;
-            plot(wakes(turb_num).xSamples,wakes(turb_num).centerline,'--','DisplayName','Wake Centerline');
+            plot([turbWF(1,Tnum) wakes(Tnum).xSamples],[turbWF(2,Tnum) wakes(Tnum).centerline],'--','DisplayName','Wake Centerline');
         end;
     end;
     ylabel('Aligned y-axis [m]');
@@ -48,6 +48,6 @@ function [ ] = plot_layout( wt_rows,site,turbType,turbines,wakes )
     grid on; axis equal; hold on;
     xlim([min(turbWF(1,:))-500, max(turbWF(1,:))+500]);
     ylim([min(turbWF(2,:))-500, max(turbWF(2,:))+500]);
-    quiver(min(turbWF(1,:))-400,mean(turbWF(2,:)),site.u_inf_wf*30,site.v_inf_wf*30,'LineWidth',1,'MaxHeadSize',5);
+    quiver(min(turbWF(1,:))-400,mean(turbWF(2,:)),site.uInfWf*30,site.vInfWf*30,'LineWidth',1,'MaxHeadSize',5);
     text(min(turbWF(1,:))-400,mean(turbWF(2,:))-50,'U_{inf}');
 end

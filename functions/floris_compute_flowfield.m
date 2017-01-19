@@ -42,7 +42,7 @@ function [ wakes,flowField ] = floris_compute_flowfield( site,model,turbType,flo
                             end
                         end
                     end
-                    flowField.U(i,flowField.X(1,:,1)==xSample,j) = site.u_inf_wf*(1-2*sqrt(sout));
+                    flowField.U(i,flowField.X(1,:,1)==xSample,j) = site.uInfWf*(1-2*sqrt(sout));
                 end
             end
         end

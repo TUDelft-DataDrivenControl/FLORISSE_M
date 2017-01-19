@@ -4,8 +4,8 @@ addpath('functions');
 
 %% Script settings
 plotLayout    = true;     % plot farm layout w.r.t. inertial and wind frame
-plot2DFlowfield = false ; % 2DflowFieldvisualisation in wind-aligned frame
-plot3DFlowfield = true ;  % 3DflowFieldvisualisation in wind-aligned frame
+plot2DFlowfield = true ; % 2DflowFieldvisualisation in wind-aligned frame
+plot3DFlowfield = false ;  % 3DflowFieldvisualisation in wind-aligned frame
 
 if (plot2DFlowfield || plot3DFlowfield)
    % resz is not used when only 2Dflowfield is plotted
@@ -45,16 +45,16 @@ wakes = struct( 'Ke',num2cell(zeros(1,length(turbines))),'mU',{[]}, ...
                 'diameters',[],'OverlapAreaRel',[],'xSamples',[]);
 
 % Atmospheric settings
-site.u_inf_if   = 1.5;        % x-direction flow speed inertial frame (m/s)
-site.v_inf_if   = 12;        % y-direction flow speed inertial frame (m/s)
+site.uInfIf   = 8;        % x-direction flow speed inertial frame (m/s)
+site.vInfIf   = 12;        % y-direction flow speed inertial frame (m/s)
 site.rho        = 1.1716;   % Atmospheric air density (kg/m3)
 
 %% Internal code of FLORIS
 % Determine wind farm layout in wind-aligned frame. Note that the
 % turbines are renumbered in the order of appearance w.r.t wind direction
-[site,turbines,wt_rows] = floris_frame(site,turbines,LocIF);
+[site,turbines,wtRows] = floris_frame(site,turbines,LocIF);
 % The first row of turbines has the freestream as inflow windspeed
-[turbines(wt_rows{1}).windSpeed] = deal(site.u_inf_wf); 
+[turbines(wtRows{1}).windSpeed] = deal(site.uInfWf); 
 
 % Setup flowField visualisation grid if neccesary
 if (plot2DFlowfield || plot3DFlowfield)
@@ -65,18 +65,18 @@ if (plot2DFlowfield || plot3DFlowfield)
     % The X, Y and Z variables form a 3D or 2D mesh
     if plot3DFlowfield
         [flowField.X,flowField.Y,flowField.Z] = meshgrid(...
-        -200 : flowField.resx : flowField.dims(1)+800,...
+        -200 : flowField.resx : flowField.dims(1)+500,...
         -200 : flowField.resy : flowField.dims(2)+200,...
         0 : flowField.resz : 200);
     else
         [flowField.X,flowField.Y,flowField.Z] = meshgrid(...
-        -200 : flowField.resx : flowField.dims(1)+800,...
+        -200 : flowField.resx : flowField.dims(1)+500,...
         -200 : flowField.resy : flowField.dims(2)+200,...
         turbType.hub_height);
     end
     
     % initialize the flowfield as freestream in the U direction
-    flowField.U  = site.u_inf_wf*ones(size(flowField.X));
+    flowField.U  = site.uInfWf*ones(size(flowField.X));
     flowField.V  = zeros(size(flowField.X));
     flowField.W  = zeros(size(flowField.X));
 end;
@@ -85,32 +85,34 @@ end;
 % computes the power produced at all turbines given the flow and
 % turbine settings
 timer.core = tic;
-for turbirow = 1:length(wt_rows) % for first to last row of turbines
-    for turb_num = wt_rows{turbirow} % for each turbine in this row
+for turbirow = 1:length(wtRows) % for first to last row of turbines
+    for turbNum = wtRows{turbirow} % for each turbine in this row
         
         % Determine Cp, Ct, axialInduction and power for a turbine
-        turbines(turb_num) = floris_cpctpower(model,site.rho,turbType,turbines(turb_num));
+        turbines(turbNum) = floris_cpctpower(model,site.rho,turbType,turbines(turbNum));
         
         % calculate ke, mU, and initial wake deflection & diameter
-        wakes(turb_num) = floris_initwake( model,turbines(turb_num),wakes(turb_num),turbType );
+        wakes(turbNum) = floris_initwake( model,turbines(turbNum),wakes(turbNum),turbType );
         
         % Compute  the X locations of  the downstream turbines rows
-        wakes(turb_num).xSamples = arrayfun(@(x) x.LocWF(1), turbines(cellfun(@(x) x(1),wt_rows(turbirow+1:end)))).';
+        wakes(turbNum).xSamples = arrayfun(@(x) x.LocWF(1), turbines(cellfun(@(x) x(1),wtRows(turbirow+1:end)))).';
+        wakes(turbNum).xSamples = [wakes(turbNum).xSamples turbines(end).LocWF(1)+300];
+        
         % Compute the wake centerlines and diameters at those X locations
-        wakes(turb_num) = floris_centerline_and_diameter_at_x(...
-             turbType.rotorDiameter, model, turbines(turb_num), wakes(turb_num));
+        wakes(turbNum) = floris_centerline_and_diameter_at_x(...
+             turbType.rotorDiameter, model, turbines(turbNum), wakes(turbNum));
         
         % Calculate overlap of this turbine on downstream turbines
-        wakes(turb_num) = floris_overlap( (turbirow+1):length(wt_rows),wt_rows,wakes(turb_num),turbines,turbType );
+        wakes(turbNum) = floris_overlap( (turbirow+1):length(wtRows),wtRows,wakes(turbNum),turbines,turbType );
     end
     
     % If this is not the last turbine row compute the windspeeds at the next row
-    if turbirow < length(wt_rows)
+    if turbirow < length(wtRows)
         % Pass all the upstream turbines and wakes including the next
         % downstream row to the function: wt_rows{1:turbirow+1}
         % Return only the downstream turbine row: wt_rows{turbirow+1}.
-        turbines(wt_rows{turbirow+1}) = floris_compute_windspeed(...
-            turbines([wt_rows{1:turbirow+1}]),wakes([wt_rows{1:turbirow}]),site,turbType,wt_rows,turbirow);
+        turbines(wtRows{turbirow+1}) = floris_compute_windspeed(...
+            turbines([wtRows{1:turbirow+1}]),wakes([wtRows{1:turbirow}]),site,turbType,wtRows,turbirow);
     end;
 end;
 disp(['TIMER: core operations: ' num2str(toc(timer.core)) ' s.']);
@@ -119,12 +121,12 @@ disp(['TIMER: core operations: ' num2str(toc(timer.core)) ' s.']);
 % Plot a map with the turbine layout and wake centerlines
 if plotLayout
     figure;
-    plot_layout( wt_rows,site,turbType,turbines,wakes);
+    plot_layout( wtRows,site,turbType,turbines,wakes );
 end
 
 if (plot2DFlowfield || plot3DFlowfield)
     % Compute the flowfield velocity at every voxel(3D) or pixel(2D)
-    [wakes,flowField]=floris_compute_flowfield(site,model,turbType,flowField,turbines,wakes);
+    [wakes,flowField] = floris_compute_flowfield(site,model,turbType,flowField,turbines,wakes);
 end
 
 % Plot the flowfield as a cutthourgh at hubHeigth
@@ -145,7 +147,7 @@ if plot3DFlowfield
     xlabel('x-direction (m)');
     ylabel('y-direction (m)');
     colorbar;
-    caxis([floor(min(flowField.U(:))) ceil(site.u_inf_wf)])
+    caxis([floor(min(flowField.U(:))) ceil(site.uInfWf)])
 
 %     [X, Y, Z] = meshgrid(...
 %     -200 : flowField.resx : flowField.dims(1)+1000,...
