@@ -30,7 +30,7 @@ turb.axialInduction = (1/3)*ones(1,size(wt_locations_if,1));  % Axial induction 
 yawAngles_wf        = [-27. 10. -30. 10. 10. -15. 0.0 0.0 0.0]; % Yaw misalignment with flow (counterclockwise, wind frame)
 
 % Atmospheric settings
-site.u_inf_if   = 7;        % x-direction flow speed inertial frame (m/s)
+site.u_inf_if   = 8;        % x-direction flow speed inertial frame (m/s)
 site.v_inf_if   = 0.0;      % y-direction flow speed inertial frame (m/s)
 site.rho        = 1.1716;   % Atmospheric air density (kg/m3)
 
@@ -80,10 +80,10 @@ for turbirow = 1:length(wt_order) % for first to last row of turbines
         if plotFlowfield
             for sample_x = 1:length(vis.x) % first turbine always starts at 0
                 deltax = vis.x(sample_x)-wt_locations_wf(turbi,1);
-                if deltax <= 0
-                    wakeOverlapRelVis(turbi,sample_x,1:length(vis.y),1:3) = 0;
-                else
+                if deltax >= 0
                     floris_wakeproperties_vis; % Calculate wake locations and diameters at sample locations
+                else
+                    wakeOverlapRelVis(turbi,sample_x,1:length(vis.y),1:3) = 0;
                 end;
             end;
         end;
@@ -100,11 +100,11 @@ for turbirow = 1:length(wt_order) % for first to last row of turbines
     % velocity deficits between upstream row and next row
     if plotFlowfield
         if turbirow < length(wt_order)
-            sample_x_max = max(find(vis.x<=wt_locations_wf(wt_order{turbirow+1}(1)))); % calculate samples until next row
+            sample_x_max = max(find(vis.x<wt_locations_wf(wt_order{turbirow+1}(1)))); % calculate samples until next row
         else
             sample_x_max = length(vis.x); % calculate samples until end of domain
         end;
-        for sample_x = min(find(vis.x>wt_locations_wf(wt_order{turbirow}(1)))):1:sample_x_max;
+        for sample_x = min(find(vis.x>=wt_locations_wf(wt_order{turbirow}(1)))):1:sample_x_max;
             for sample_y = 1:length(vis.y) % for all turbines in dw row
                 sout   = 0; % outer sum of Eq. 22
                 for uw_turbrow = 1:turbirow % for all rows upstream of this current row
