@@ -11,8 +11,11 @@ function [ wake ] = floris_centerLine_and_diameter_at_x( rotorDiameter,model,tur
                            (15+(wake.zetaInit^2))/(30*model.KdY));
 
             % Wake centerLine position of this turbine at location x
-            wake.centerLine(2,sample_x) = turbine.LocWF(2) + displacement + ...                   % initial position + yaw induced offset
-                                        (1-model.useWakeAngle) *(model.ad + deltax * model.bd); % bladerotation-induced lateral offset
+%             wake.centerLine(2,sample_x) = turbine.LocWF(2) + displacement + ...                   % initial position + yaw induced offset
+%                                         (1-model.useWakeAngle) *(model.ad + deltax * model.bd); % bladerotation-induced lateral offset
+            % The originial matlab-FLORIS takes the wake angle outside the parenthesis?
+            wake.centerLine(2,sample_x) = turbine.LocWF(2) +model.ad + displacement + ...                   % initial position + yaw induced offset
+                            (1-model.useWakeAngle) *(deltax * model.bd); % bladerotation-induced lateral offset
            
            % Calculate wake diameter for zones 1-3: Eq. 13
            for zone = 1:3

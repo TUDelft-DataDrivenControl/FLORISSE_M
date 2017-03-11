@@ -13,10 +13,12 @@ function [ wake ] = floris_initwake( model,turbine,wake,turb_type )
     end
 
     % Calculate initial wake deflection due to blade rotation etc.
-    wake.zetaInit = 0.5*(cosd(turbine.YawWF).^2)*sind(turbine.YawWF)*turbine.Ct; % Eq. 8
-%     if model.useWakeAngle
-%         wake.wakeAngleInit = wake.wakeAngleInit + deg2rad(model.kd);
-%     end;
+%     wake.zetaInit = 0.5*(cosd(turbine.YawWF).^2)*sind(turbine.YawWF)*turbine.Ct; % Eq. 8
+    % The originial matlab-FLORIS omits the cos(Y)^2 ??
+    wake.zetaInit = 0.5*sind(turbine.YawWF)*turbine.Ct; % Eq. 8
+    if model.useWakeAngle
+        wake.zetaInit = wake.zetaInit + deg2rad(model.kd);
+    end;
 
     % Calculate initial wake diameter
     if model.adjustInitialWakeDiamToYaw

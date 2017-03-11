@@ -5,12 +5,12 @@ addpath('functions');
 %% Script settings
 plotLayout    = true;     % plot farm layout w.r.t. inertial and wind frame
 plot2DFlowfield = true ; % 2DflowFieldvisualisation in wind-aligned frame
-plot3DFlowfield = true ;  % 3DflowFieldvisualisation in wind-aligned frame
+plot3DFlowfield = false ;  % 3DflowFieldvisualisation in wind-aligned frame
 
 if (plot2DFlowfield || plot3DFlowfield)
    % resz is not used when only 2Dflowfield is plotted
-   flowField.resx   = 20;     % resolution in x-axis in meters (windframe)
-   flowField.resy   = 20;     % resolution in y-axis in meters (windframe)
+   flowField.resx   = 5;     % resolution in x-axis in meters (windframe)
+   flowField.resy   = 5;     % resolution in y-axis in meters (windframe)
    flowField.resz   = 10;     % resolution in z-axis in meters (windframe)
    flowField.fixYaw  = true;  % Account for yaw in near-turbine region in 2Dplot
    % TODO: implement fixyaw for 3d plot
@@ -45,9 +45,9 @@ wakes = struct( 'Ke',num2cell(zeros(1,length(turbines))),'mU',{[]}, ...
                 'diameters',[],'OverlapAreaRel',[]);
 
 % Atmospheric settings
-site.uInfIf   = 8;        % x-direction flow speed inertial frame (m/s)
-site.vInfIf   = 12;        % y-direction flow speed inertial frame (m/s)
-site.rho        = 1.1716;   % Atmospheric air density (kg/m3)
+site.uInfIf   = 12;       % x-direction flow speed inertial frame (m/s)
+site.vInfIf   = 4;        % y-direction flow speed inertial frame (m/s)
+site.rho      = 1.1716;   % Atmospheric air density (kg/m3)
 
 %% Internal code of FLORIS
 % Determine wind farm layout in wind-aligned frame. Note that the
@@ -70,7 +70,7 @@ if (plot2DFlowfield || plot3DFlowfield)
         0 : flowField.resz : 200);
     else
         [flowField.X,flowField.Y,flowField.Z] = meshgrid(...
-        -200 : flowField.resx : flowField.dims(1)+500,...
+        -200 : flowField.resx : flowField.dims(1)+1000,...
         -200 : flowField.resy : flowField.dims(2)+200,...
         turbType.hub_height);
     end
