@@ -1,4 +1,4 @@
-function [ wt_order,sortvector,site,yawAngles_if,wt_locations_wf ] = floris_frame( site,turb,yawAngles_wf,wt_locations_if )
+function [ wt_order,sortvector,site,yawAngles_if,wt_locations_wf,yawAngles_wf ] = floris_frame( site,turb,yawAngles_wf,wt_locations_if )
 %[ wt_order,sortvector,site,yawAngles_if,wt_locations_wf ] = floris_frame( site,turb,yawAngles_wf,wt_locations_if )
 %   This function calculates the (rearranged) wind farm layout in the wind-
 %   aligned frame ('*_wf'). It also groups turbines together in rows to 
@@ -17,6 +17,7 @@ wt_locations_wf    = (rotz(-site.windDirection)*wt_locations_if')'; % Wind frame
 wt_locations_wf = wt_locations_wf(sortvector,:);
 wt_locations_wf(:,2) = wt_locations_wf(:,2)-min([wt_locations_wf(:,2)]); % shift vertically (up-down)
 wt_locations_wf(:,1) = wt_locations_wf(:,1)-min([wt_locations_wf(:,1)]); % shift horizontally (sideways)
+yawAngles_wf = yawAngles_wf(sortvector);
 
 % Group turbines together in rows (depending on wind direction)
 rowi = 1; j = 1;

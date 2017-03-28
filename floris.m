@@ -30,8 +30,8 @@ turb.axialInduction = (1/3)*ones(1,size(wt_locations_if,1));  % Axial induction 
 yawAngles_wf        = [-27. 10. -30. 10. 10. -15. 0.0 0.0 0.0]; % Yaw misalignment with flow (counterclockwise, wind frame)
 
 % Atmospheric settings
-site.u_inf_if   = 8;        % x-direction flow speed inertial frame (m/s)
-site.v_inf_if   = 0.0;      % y-direction flow speed inertial frame (m/s)
+site.u_inf_if   = 4;        % x-direction flow speed inertial frame (m/s)
+site.v_inf_if   = 10;      % y-direction flow speed inertial frame (m/s)
 site.rho        = 1.1716;   % Atmospheric air density (kg/m3)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -42,7 +42,7 @@ turb  = floris_param_turbine(turb.name); % Import turbine settings
 
 % Determine wind farm layout in wind-aligned frame. Note that we renumber
 % the turbines in the order of appearance w.r.t wind direction (sortvector)
-[wt_order,sortvector,site,yawAngles_if,wt_locations_wf ] = floris_frame(site,turb,yawAngles_wf,wt_locations_if ); 
+[wt_order,sortvector,site,yawAngles_if,wt_locations_wf,yawAngles_wf ] = floris_frame(site,turb,yawAngles_wf,wt_locations_if ); 
 
 % Setup visualisation grid
 if plotFlowfield
