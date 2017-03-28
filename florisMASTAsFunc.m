@@ -36,7 +36,7 @@ turb  = floris_param_turbine(turb.name); % Import turbine settings
 
 % Determine wind farm layout in wind-aligned frame. Note that we renumber
 % the turbines in the order of appearance w.r.t wind direction (sortvector)
-[wt_order,sortvector,site,yawAngles_if,wt_locations_wf ] = floris_frame(site,turb,yawAngles_wf,wt_locations_if ); 
+[wt_order,sortvector,site,yawAngles_if,wt_locations_wf,yawAngles_wf ] = floris_frame(site,turb,yawAngles_wf,wt_locations_if ); 
 
 % Setup visualisation grid
 if plotFlowfield

@@ -13,8 +13,8 @@ LocIF =[300,    100.0,  90.0; ...
                    1600,   500.0,  90.0];
 % LocIF =[300,    100.0,  90.0]; 
 yawAngles_wf = [-27. 10. -30. 10. 10. -15. 0.0 0.0 0.0];
-siteU = 12;
-siteV = 4;
+siteU = 4;
+siteV = 12;
 p = [1 1];
 
 [ flowField, windspeeds ] = florisMASTAsFunc( FFres, LocIF, yawAngles_wf, siteU, siteV, p );
