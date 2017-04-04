@@ -1,12 +1,15 @@
-clear all; clc;
-addpath functions
+function [ flowfield, wsw ] = florisMASTAsFunc(  FFres, LocIF, yawAngles_wf, siteU, siteV, p )
+%FLORISASFUNC Summary of this function goes here
+%   Detailed explanation goes here
+
+addpath functionsMAST
 timer.script = tic;
 
 %% Script settings
-plotLayout    = 1; % plot farm layout w.r.t. inertial and wind frame
-plotFlowfield = 1; % visualisation in wind-aligned frame
-   vis.resx  =  5; % resolution in x-axis in meters (windframe)
-   vis.resy  =  5; % resolution in y-axis in meters (windframe)
+plotLayout    = p(1); % plot farm layout w.r.t. inertial and wind frame
+plotFlowfield = p(2); % visualisation in wind-aligned frame
+   vis.resx  =  FFres; % resolution in x-axis in meters (windframe)
+   vis.resy  =  FFres; % resolution in y-axis in meters (windframe)
    fixYaw    =  1; % Account for yaw in near-turbine region in plots
 
 %% Simulation setup
@@ -14,24 +17,15 @@ model.name = 'default';  % load default model parameters
 turb.name  = 'nrel5mw';  % load turbine settings (NREL 5MW baseline)
 
 % Wind turbine locations in internal frame 
-wt_locations_if = [300,    100.0,  90.0; ...
-                   300,    300.0,  90.0; ...
-                   300,    500.0,  90.0; ...
-                   1000,   100.0,  90.0; ...
-                   1000,   300.0,  90.0; ...
-                   1000,   500.0,  90.0; ...
-                   1600,   100.0,  90.0; ...
-                   1600,   300.0,  90.0; ...
-                   1600,   500.0,  90.0];
+wt_locations_if = LocIF;
 % wt_locations_if = [1118.1, 1279.5, 90; 1881.9, 1720.5, 90];
 
 % Turbine operation settings in wind frame
 turb.axialInduction = (1/3)*ones(1,size(wt_locations_if,1));  % Axial induction control setting (used only if model.axialIndProvided == true)
-yawAngles_wf        = [-27. 10. -30. 10. 10. -15. 0.0 0.0 0.0]; % Yaw misalignment with flow (counterclockwise, wind frame)
 
 % Atmospheric settings
-site.u_inf_if   = 4;        % x-direction flow speed inertial frame (m/s)
-site.v_inf_if   = 10;      % y-direction flow speed inertial frame (m/s)
+site.u_inf_if   = siteU;        % x-direction flow speed inertial frame (m/s)
+site.v_inf_if   = siteV;      % y-direction flow speed inertial frame (m/s)
 site.rho        = 1.1716;   % Atmospheric air density (kg/m3)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -150,13 +144,9 @@ end;
 disp(['TIMER: core operations: ' num2str(toc(timer.core)) ' s.']);
 
 % Plot wake effects on upstream turbine on downstream turbines
-hfigures=get(0,'Children');
 if plotLayout
-    if length(hfigures) > 0
-        set(0,'CurrentFigure',hfigures(1)); clf;
-    else
-        figure('Position',[218.6000 263.4000 944.8000 408.8000]);
-    end;
+
+    figure('Position',[218.6000 263.4000 944.8000 408.8000]);
     Nt = size(wt_locations_wf,1);
     
     subplot(1,2,1);
@@ -234,11 +224,7 @@ if plotFlowfield
             end;
         end;
     end;
-    if length(hfigures) >= plotLayout+plotFlowfield
-        set(0,'CurrentFigure',hfigures(1+plotLayout)); clf;
-    else
-        figure('Position',[218.6000 263.4000 944.8000 408.8000]);
-    end;
+    figure('Position',[218.6000 263.4000 944.8000 408.8000]);
     contourf(vis.x,vis.y,vis.U','Linecolor','none');
     colormap(parula(30));
     xlabel('x-direction (m)');
@@ -254,5 +240,8 @@ if plotFlowfield
     axis equal;
 end;
 
+flowfield = vis.U;
 clear x y turb_row turbi turbirow dw_row dw_turbi uw_turbi uw_turbrow sout sinn j ciq Nt
 disp(['TIMER: script: ' num2str(toc(timer.script)) ' s.']);
+
+rmpath functionsMAST
