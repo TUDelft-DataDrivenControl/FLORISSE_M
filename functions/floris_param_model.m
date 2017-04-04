@@ -8,7 +8,6 @@ function [ model ] = floris_param_model( name )
         model.baselineCT        = 4.0*(1.0/3.0)*(1.0-(1.0/3.0)); % Baseline CT for ke-correction
         model.me                = [-0.5, 0.22, 1.0]; % relative expansion of wake zones
         model.KdY               = 0.17; % Wake deflection recovery factor
-        model.KdT               = 0.15; % Tilt deflection recovery factor
 
         % define initial wake displacement and angle (not determined by yaw angle)
         model.useWakeAngle      = true;

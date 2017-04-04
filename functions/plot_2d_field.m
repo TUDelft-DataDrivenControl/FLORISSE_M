@@ -1,4 +1,4 @@
-function [UatHub ] = plot_2d_field( flowField,site,turbines,turbType )
+function [ ] = plot_2d_field( flowField,site,turbines,turbType )
 
     % Make the locations, yaw angles accesible in matrix form
     turbWF = [turbines.LocWF];
