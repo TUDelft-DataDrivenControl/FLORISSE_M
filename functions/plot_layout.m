@@ -11,8 +11,8 @@ function [ ] = plot_layout( wtRows,site,turbType,turbines,wakes )
     
     % Plot the turbines
     for j = 1:Nt
-        plot(turbIF(1,j)+ 0.5*[-1, 1]*turbType.rotorDiameter*sind(YawIfs(j)),...
-             turbIF(2,j)+ 0.5*[1, -1]*turbType.rotorDiameter*cosd(YawIfs(j)),'LineWidth',3); hold on;
+        plot(turbIF(1,j)+ 0.5*[-1, 1]*turbType.rotorDiameter*sin(YawIfs(j)),...
+             turbIF(2,j)+ 0.5*[1, -1]*turbType.rotorDiameter*cos(YawIfs(j)),'LineWidth',3); hold on;
         text(turbIF(1,j)+30,turbIF(2,(j))+20,['T' num2str(j)]);
     end;
 
@@ -31,8 +31,8 @@ function [ ] = plot_layout( wtRows,site,turbType,turbines,wakes )
     % Plot the turbines in the wind aligned frame
     subplot(1,2,2);   
     for j = 1:Nt
-        plot(turbWF(1,j) + 0.5*[-1, 1]*turbType.rotorDiameter*sind(YawWfs(j)),...
-             turbWF(2,j) + 0.5*[1, -1]*turbType.rotorDiameter*cosd(YawWfs(j)),'LineWidth',3); hold on;
+        plot(turbWF(1,j) + 0.5*[-1, 1]*turbType.rotorDiameter*sin(YawWfs(j)),...
+             turbWF(2,j) + 0.5*[1, -1]*turbType.rotorDiameter*cos(YawWfs(j)),'LineWidth',3); hold on;
         text(turbWF(1,j) +30,turbWF(2,j) +20,['T' num2str(j)]);
     end;
     % Plot the wake centerLines

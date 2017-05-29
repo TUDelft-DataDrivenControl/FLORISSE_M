@@ -11,7 +11,7 @@ function [ model ] = floris_param_model( name )
 
         % define initial wake displacement and angle (not determined by yaw angle)
         model.useWakeAngle      = true;
-        model.kd                = 1.5;  % initialWakeAngle
+        model.kd                = deg2rad(1.5);  % initialWakeAngle in X-Y plane
         model.ad                = -4.5; % initialWakeDisplacement
         model.bd                = -0.01;
 
@@ -21,8 +21,6 @@ function [ model ] = floris_param_model( name )
         model.bU                = 1.3;
 
         model.MU               = [0.5, 1.0, 5.5];
-        model.CTcorrected      = false;  % CT factor already corrected by CCBlade calculation (approximately factor cos(yaw)^2)
-        model.CPcorrected      = false;  % CP factor already corrected by CCBlade calculation (assumed with approximately factor cos(yaw)^3)
         model.axialIndProvided = false;
 
         % adjust initial wake diameter to yaw

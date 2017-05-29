@@ -18,15 +18,15 @@ function [ ] = plot_2d_field( flowField,site,turbines,turbType )
     % Correction for turbine yaw in flow field in turning radius of turbine
     if flowField.fixYaw
         for turbi = 1:size(turbWF,2) % for each turbine
-            ytop    = turbWF(2,turbi)+cosd(YawWfs(turbi))*turbType.rotorDiameter/2;
-            ybottom = turbWF(2,turbi)-cosd(YawWfs(turbi))*turbType.rotorDiameter/2;
+            ytop    = turbWF(2,turbi)+cos(YawWfs(turbi))*turbType.rotorDiameter/2;
+            ybottom = turbWF(2,turbi)-cos(YawWfs(turbi))*turbType.rotorDiameter/2;
 
             [~,celltopy]    = min(abs(ytop   - yVec));
             [~,cellbottomy] = min(abs(ybottom- yVec));
 
             for celly = cellbottomy-2:1:celltopy+2
                 % cell location of turbine blade x
-                xlocblade = turbWF(1,turbi)-sind(YawWfs(turbi))*(yVec(celly)-turbWF(2,turbi));
+                xlocblade = turbWF(1,turbi)-sin(YawWfs(turbi))*(yVec(celly)-turbWF(2,turbi));
                 [~,cellxtower] = min(abs(xVec-turbWF(1,turbi)));
                 [~,cellxblade] = min(abs(xVec-xlocblade));
                 
@@ -59,8 +59,8 @@ function [ ] = plot_2d_field( flowField,site,turbines,turbType )
     % Plot the turbine numbers
     for j = 1:size(turbWF,2)
         hold on;
-        plot(turbWF(1,j)+ [-0.5, +0.5]*turbType.rotorDiameter*sind(YawWfs(j)),...
-             turbWF(2,j)+ [+0.5, -0.5]*turbType.rotorDiameter*cosd(YawWfs(j)),'k','LineWidth',2); 
+        plot(turbWF(1,j)+ [-0.5, +0.5]*turbType.rotorDiameter*sin(YawWfs(j)),...
+             turbWF(2,j)+ [+0.5, -0.5]*turbType.rotorDiameter*cos(YawWfs(j)),'k','LineWidth',2); 
         text(turbWF(1,j)+30,turbWF(2,j),['T' num2str(j)]);
     end;
     axis equal;

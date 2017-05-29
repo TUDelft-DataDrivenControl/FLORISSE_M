@@ -14,10 +14,8 @@ function [ wake ] = floris_initwake( model,turbine,wake,turb_type )
 
     % Calculate initial wake deflection due to blade rotation etc.
     wake.zetaInit = 0.5*sin(turbine.YawWF)*turbine.Ct; % Eq. 8
-    
-    % Add an initial wakeangle to the zeta
     if model.useWakeAngle
-        wake.zetaInit = wake.zetaInit + model.kd;
+        wake.zetaInit = wake.zetaInit + deg2rad(model.kd);
     end;
 
     % Calculate initial wake diameter
