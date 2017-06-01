@@ -48,6 +48,7 @@ function [ ] = plot_2d_field( flowField,site,turbines,turbType )
     end;
     
     % Plot the flowfield
+    figure
     contourf(xVec,yVec,UatHub.','Linecolor','none');
     
     colormap(parula(30));

@@ -10,7 +10,7 @@ function [ wake ] = floris_overlap( downstreamRows,WtRows,wake,turbines,turbType
                [~,turbLocIndex] = min(abs(wake.centerLine(1,:)-turbines(dwTurbine).LocWF(1)));
                % Calculate overlap areas (intersection) of wake on dw turbines
                wakeOverlapTurb(zone) = floris_intersect(wake.diameters(turbLocIndex,zone)/2,turbType.rotorDiameter/2,...
-                   abs(wake.centerLine(2,turbLocIndex)-turbines(dwTurbine).LocWF(2)));
+                   hypot(wake.centerLine(2,turbLocIndex)-turbines(dwTurbine).LocWF(2),wake.centerLine(3,turbLocIndex)-turbines(dwTurbine).LocWF(3)));
                
                for zonej = 1:(zone-1) % minus overlap areas of lower zones
                    wakeOverlapTurb(zone) = wakeOverlapTurb(zone)-wakeOverlapTurb(zonej);

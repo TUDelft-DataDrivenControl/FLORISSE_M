@@ -2,7 +2,7 @@ function [ turb_type ] = floris_param_turbine( name )
 switch lower(name)
     case 'nrel5mw'
         turb_type.rotorDiameter           = 126.4;
-        turb_type.rotorArea               = pi*turb_type.rotorDiameter(1)*turb_type.rotorDiameter(1)/4.0;
+        turb_type.rotorArea               = pi*(turb_type.rotorDiameter/2)^2;
         turb_type.generator_efficiency    = 0.944;
         turb_type.hub_height              = 90.0;
         

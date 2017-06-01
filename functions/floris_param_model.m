@@ -11,8 +11,8 @@ function [ model ] = floris_param_model( name )
 
         % define initial wake displacement and angle (not determined by yaw angle)
         model.useWakeAngle      = true;
-        model.kd                = deg2rad(1.5);  % initialWakeAngle in X-Y plane
-        model.ad                = -4.5; % initialWakeDisplacement
+        model.kd                = deg2rad(1.5); % initialWakeAngle in X-Y plane
+        model.ad                = -4.5;         % initialWakeDisplacement
         model.bd                = -0.01;
 
         % correction recovery coefficients with yaw
