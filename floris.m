@@ -34,8 +34,8 @@ LocIF =   [300,    100.0,  turbType.hub_height
 % Turbine operation settings in wind frame
 % Yaw misalignment with flow (counterclockwise, wind frame)
 % Axial induction control setting (used only if model.axialIndProvided == true)
-turbines = struct(  'Tilt',num2cell(deg2rad([30 0 0 0 0 0 -30 0 0].')), ...
-                    'YawWF',num2cell(deg2rad([-30 10 -30 -30 -20 -15 0 10 0].')), ... %num2cell(deg2rad([-27 10 -30 -30 -20 -15 .05 10 0].'))
+turbines = struct(  'Tilt',num2cell(deg2rad([0 0 -30 0 0 0 30 0 0].')), ...
+                    'YawWF',num2cell(deg2rad([-30 0 -30 -30 -20 -15 0 10 0].')), ... %num2cell(deg2rad([-27 10 -30 -30 -20 -15 .05 10 0].'))
                     'axialInd',1/3,'windSpeed',[],'Cp',[],'Ct',[], ...
                     'power',[],'downstream',[],'ThrustAngle',[],'wakeNormal',[]);
 % TODO: implement effects of turbine tilt

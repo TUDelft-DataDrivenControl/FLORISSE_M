@@ -1,22 +1,23 @@
 function s = volumeVisualization(x,y,z,v)
 
+% Based on a program by Loren Shure
+
 %% Create a variable to store pointers to the various planes
 hAxis = [];         %initialize handle to axis
 hSlicePlanes = [];  %initialize handle to slice plane
-
-%% Create data for generic slice through yz-plane
-[yd,zd] = meshgrid(linspace(min(y(:)),max(y(:)),100), ...
-    linspace(min(z(:)),max(z(:)),100));
+% minmax holds the min and max values of the flowfield
+minmax = [min(x(:)),max(x(:));min(y(:)),max(y(:));min(z(:)),max(z(:))];
 
 %% Plot the volume initially
 initDisplay()
 
 %% Nested Functions
+    function addSlicePlane(Loc,Dim)
+        % addSlicePlane   Add a slice plane at specified coordinate.
+        dims = {[],[],[]};
+        dims{Dim} = minmax(Dim,1)+Loc*diff(minmax(Dim,:));
 
-    function addSlicePlane(xLoc)
-        % addSlicePlane   Add a slice plane at specified x-coordinate.
-        xd            = xLoc*ones(size(yd));
-        newSlicePlane = slice(hAxis, x, y, z, v, xd, yd, zd);
+        newSlicePlane = slice(hAxis, x, y, z, v, dims{1}, dims{2}, dims{3});
         hSlicePlanes   = [ hSlicePlanes, newSlicePlane ];
         set(newSlicePlane,'FaceColor'      ,'interp',...
             'EdgeColor'      ,'none'  ,...
@@ -27,7 +28,6 @@ initDisplay()
         if ~isempty(hSlicePlanes)
             delete(hSlicePlanes(end));
             hSlicePlanes = hSlicePlanes(1:end-1);
-            % hSlicePlanes(end) = [];
         end
     end
 
@@ -40,9 +40,9 @@ initDisplay()
             hold on;
             hAxis.BoxStyle = 'full';
         end
-        hx = slice(hAxis, x, y, z, v,max(x(:)),       [],       []) ;
-        hy = slice(hAxis, x, y, z, v,       [],max(y(:)),       []) ;
-        hz = slice(hAxis, x, y, z, v,       [],       [],min(z(:))) ;
+        hx = slice(hAxis, x, y, z, v,minmax(1,2),         [],         []) ;
+        hy = slice(hAxis, x, y, z, v,         [],minmax(2,2),         []) ;
+        hz = slice(hAxis, x, y, z, v,         [],         [],minmax(3,1)) ;
 
         % Make everything look nice
         set([hx hy hz],'FaceColor','interp','EdgeColor','none')
@@ -57,6 +57,4 @@ initDisplay()
 %% final code
 s.addSlicePlane    = @addSlicePlane    ;
 s.deleteLastSlicePlane = @deleteLastSlicePlane;
-s.xMin             = min(x(:))        ;
-s.xMax             = max(x(:))        ;
 end

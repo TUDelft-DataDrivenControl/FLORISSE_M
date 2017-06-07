@@ -9,13 +9,12 @@ function [ dwTurbs ] = floris_compute_windspeed( turbines,wakes,site,turbType,wt
                 for zone = 1:3
                     ciq = (turbType.rotorDiameter/(turbType.rotorDiameter + 2*wakes(uw_turbi).Ke*wakes(uw_turbi).mU(zone)*deltax))^2; % Eq. 16
                     sinn = sinn + ciq*wakes(uw_turbi).OverlapAreaRel(dw_turbi,zone);
-                end;
-
+                end
                 sout = sout + (turbines(uw_turbi).axialInd*sinn)^2;
-            end;
-        end;
+            end
+        end
         turbines(dw_turbi).windSpeed = site.uInfWf*(1-2*sqrt(sout));
-    end;
+    end
 
     dwTurbs = turbines(wt_rows{turbirow+1});
 end

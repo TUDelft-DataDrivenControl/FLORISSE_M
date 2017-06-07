@@ -4,27 +4,36 @@ function volvisApp(x,y,z,v)
 % Ex:
 % [x,y,z,v] = flow;
 % volvisApp(x,y,z,v)
+% Based on a program by Loren Shure
 
 %% Initalize visualization
 figure;
 s = volumeVisualization(x,y,z,v);
-s.addSlicePlane(s.xMin);
+s.addSlicePlane(0,1);
 
 %% Add uicontrol
+% Create Slider
 hSlider = uicontrol(...
     'Units','normalized', ...
     'Position',[.75 .05 .2 .05], ...
     'Style','slider', ...
-    'Min',s.xMin, ...
-    'Max',s.xMax, ...
-    'Value',s.xMin, ...
     'Callback',@updateSliderPosition);
 
-%%
-    function updateSliderPosition(varargin)
-        s.deleteLastSlicePlane();
-        xloc = get(hSlider,'Value');
-        s.addSlicePlane(xloc);
-    end
+% Create three radio buttons in a button group.
+bg = uibuttongroup('units','pixels','Position',[1 1 56 84],...
+                   'SelectionChangedFcn',@updateSliderPosition);
+texts = {'X','Y','Z'};
 
+for i = 1:length(texts)
+    uicontrol(bg,'Style','radiobutton',...
+                 'String',texts{i},...
+                 'Position',[10 50-(i-1)*25 100 30]);
+end
+
+%% Create a callback function for the UI elements that creates a new plane
+mapObj = containers.Map({'X', 'Y', 'Z'},[1 2 3]);
+function updateSliderPosition(varargin)
+    s.deleteLastSlicePlane();
+    s.addSlicePlane(get(hSlider,'Value'),mapObj(bg.SelectedObject.String));
+end
 end
