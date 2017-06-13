@@ -17,17 +17,22 @@ initDisplay()
         dims = {[],[],[]};
         dims{Dim} = minmax(Dim,1)+Loc*diff(minmax(Dim,:));
 
-        newSlicePlane = slice(hAxis, x, y, z, v, dims{1}, dims{2}, dims{3});
-        hSlicePlanes   = [ hSlicePlanes, newSlicePlane ];
-        set(newSlicePlane,'FaceColor'      ,'interp',...
+        newPlane = slice(hAxis, x, y, z, v, dims{1}, dims{2}, dims{3});
+        trp = @(a) [ a(1:2) a(4:-1:3) a(1)];
+        edgeLine = line(trp(newPlane.XData([1 end],[1 end])),...
+                        trp(newPlane.YData([1 end],[1 end])),...
+                        trp(newPlane.ZData([1 end],[1 end])),...
+                        'Color','k','LineWidth',1.5,'LineStyle','--');
+        hSlicePlanes   = [ hSlicePlanes newPlane edgeLine];
+        set(newPlane,'FaceColor'      ,'interp',...
             'EdgeColor'      ,'none'  ,...
             'DiffuseStrength',.8       );
     end
 
-    function deleteLastSlicePlane()
-        if ~isempty(hSlicePlanes)
-            delete(hSlicePlanes(end));
-            hSlicePlanes = hSlicePlanes(1:end-1);
+    function deleteLastSlicePlane(i)
+        if size(hSlicePlanes,2) >= i
+            delete(hSlicePlanes(end+1-i : end));
+            hSlicePlanes = hSlicePlanes(1:end-i);
         end
     end
 
@@ -53,6 +58,7 @@ initDisplay()
         box on
         view(-38.5,16)
         colormap(parula(30));
+        colorbar;
     end
 %% final code
 s.addSlicePlane    = @addSlicePlane    ;

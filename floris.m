@@ -137,7 +137,6 @@ end;
 % Plot the 3D flowfield as
 if plot3DFlowfield
     volvisApp(flowField.X, flowField.Y, flowField.Z, flowField.U)
-%     plot_3d_field(flowField, site)
 end
 
 disp(['TIMER: script: ' num2str(toc(timer.script)) ' s.']);
