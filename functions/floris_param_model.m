@@ -21,7 +21,7 @@ function [ model ] = floris_param_model( name )
         model.bU                = 1.3;
 
         model.MU               = [0.5, 1.0, 5.5];
-        model.axialIndProvided = false;
+        model.axialIndProvided = true;
 
         % adjust initial wake diameter to yaw
         model.adjustInitialWakeDiamToYaw = false;
