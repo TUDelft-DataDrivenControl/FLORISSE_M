@@ -31,23 +31,19 @@ classdef floris<handle
             inputData  = self.inputData;
             outputData = self.outputData;
             if isstruct(outputData) == 0
-                disp('outputData is not available/not formatted properly.');
-                disp(' Please run a SINGLE simulation, then call this function.');
+                disp('outputData is not available/not related to a single simulation.');
             end; 
             floris_visualization(inputData,outputData);
         end;
         
-        % FLORIS for a range of wind speeds and directions
-        function [self,outputDataAEP] = AEP(self,windRose)
-            % WindRose is an N x 2 matrix with uIf in 1st column and 
-            % vIf in 2nd. The simulation will simulate FLORIS for each row.
+        % FLORIS for a range of settings
+        function [self,outputDataAEP] = AEP(self)
+            WS_range  = [6:0.5:10];
             inputData = self.inputData;
-            for i = 1:size(windRose,1);
-                inputData.uInfIf      = WS_range(windRose,1);
-                inputData.vInfIf      = WS_range(windRose,2);
-                self.outputDataAEP{i} = floris_run(inputData);
+            for i = 1:length(WS_range);
+                inputData.uInfIf = WS_range(i);
+                outputData{i}    = self.run(inputData);
             end;
-            if nargout > 0; outputDataAEP = self.outputDataAEP; end;
         end        
     end
 end

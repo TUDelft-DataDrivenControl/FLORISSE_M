@@ -1,4 +1,4 @@
-function [ ] = plot_2d_field( flowField,site,turbines,turbType )
+function [ ] = plot_2d_field( flowField,turbines )
 
     % Make the locations, yaw angles accesible in matrix form
     turbWF = [turbines.LocWF];
@@ -6,7 +6,7 @@ function [ ] = plot_2d_field( flowField,site,turbines,turbType )
     
     % Select the flowfield at hub heigth and accompinying x and y index
     if ndims(flowField.U) == 3
-        UatHub = flowField.U(:,:,round(turbType.hub_height/flowField.resz)).';
+        UatHub = flowField.U(:,:,round(mean([turbines.hub_height])/flowField.resz)).';
         xVec = flowField.X(1,:,1);
         yVec = flowField.Y(:,1,1);
     else
@@ -18,8 +18,8 @@ function [ ] = plot_2d_field( flowField,site,turbines,turbType )
     % Correction for turbine yaw in flow field in turning radius of turbine
     if flowField.fixYaw
         for turbi = 1:size(turbWF,2) % for each turbine
-            ytop    = turbWF(2,turbi)+cos(YawWfs(turbi))*turbType.rotorDiameter/2;
-            ybottom = turbWF(2,turbi)-cos(YawWfs(turbi))*turbType.rotorDiameter/2;
+            ytop    = turbWF(2,turbi)+cos(YawWfs(turbi))*turbines(turbi).rotorDiameter/2;
+            ybottom = turbWF(2,turbi)-cos(YawWfs(turbi))*turbines(turbi).rotorDiameter/2;
 
             [~,celltopy]    = min(abs(ytop   - yVec));
             [~,cellbottomy] = min(abs(ybottom- yVec));
@@ -54,13 +54,13 @@ function [ ] = plot_2d_field( flowField,site,turbines,turbType )
     xlabel('x-direction (m)');
     ylabel('y-direction (m)');
     colorbar;
-    caxis([floor(min(flowField.U(:))) ceil(site.uInfWf)])
+    caxis([floor(min(flowField.U(:))) ceil(max(flowField.U(:)))])
     
     % Plot the turbine numbers
     for j = 1:size(turbWF,2)
         hold on;
-        plot(turbWF(1,j)+ [-0.5, +0.5]*turbType.rotorDiameter*sin(YawWfs(j)),...
-             turbWF(2,j)+ [+0.5, -0.5]*turbType.rotorDiameter*cos(YawWfs(j)),'k','LineWidth',2); 
+        plot(turbWF(1,j)+ [-0.5, +0.5]*turbines(j).rotorDiameter*sin(YawWfs(j)),...
+             turbWF(2,j)+ [+0.5, -0.5]*turbines(j).rotorDiameter*cos(YawWfs(j)),'k','LineWidth',2); 
         text(turbWF(1,j)+30,turbWF(2,j),['T' num2str(j)]);
     end;
     axis equal;

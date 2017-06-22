@@ -1,15 +1,16 @@
-function [ site,turbines,wtRows ] = floris_frame( site,turbines,wtLocationsIf )
-%[ wt_order,sortvector,site,yawAngles_if,wt_locations_wf ] = floris_frame( site,turb,yawAngles_wf,wt_locations_if )
+function [ inputData,turbines,wtRows ] = floris_frame( inputData,turbines )
+%[ wt_order,sortvector,inputData,yawAngles_if,wt_locations_wf ] = floris_frame( inputData,turb,yawAngles_wf,wt_locations_if )
 %   This function calculates the (rearranged) wind farm layout in the wind-
 %   aligned frame ('*_wf'). It also groups turbines together in rows to 
 %   avoid unnecessary calculations of the influence of downstream turbines 
 %   on their upwind turbines (which of course is none).
 
     % Calculate incoming flow direction
-    site.windDirection = atand(site.vInfIf/site.uInfIf);    % Wind dir in degrees (inertial frame)
-    site.uInfWf      = hypot(site.uInfIf,site.vInfIf);    % axial flow speed in wind frame
-    site.vInfWf      = 0;                                     % lateral flow speed in wind frame
-    wtLocationsWf    = wtLocationsIf*rotz(-site.windDirection).'; % Wind frame turbine locations in wind frame
+    inputData.windDirection = atand(inputData.vInfIf/inputData.uInfIf);       % Wind dir in degrees (inertial frame)
+    inputData.windSpeed     = hypot(inputData.uInfIf,inputData.vInfIf);       % axial flow speed in wind frame
+    Rz = [cosd(-inputData.windDirection), -sind(-inputData.windDirection); % Rotational matrix
+          sind(-inputData.windDirection), cosd(-inputData.windDirection)];
+    wtLocationsWf           = inputData.LocIF*Rz.'; % Wind frame turbine locations in wind frame
 
     % Order turbines from front to back, and project them on positive axes
     [LocX,sortvector] = sort(wtLocationsWf(:,1));
@@ -28,9 +29,9 @@ function [ site,turbines,wtRows ] = floris_frame( site,turbines,wtLocationsIf )
     % Repopulate the turbine struct ordered by wind direction x-coordinates
     turbines = turbines(sortvector);
     for i = 1:length(sortvector)
-        turbines(i).LocIF = wtLocationsIf(sortvector(i),:).';
+        turbines(i).LocIF = inputData.LocIF(sortvector(i),:).';
         turbines(i).LocWF = wtLocationsWf(i,:).';
         % Yaw angles (counterclockwise, inertial frame)
-        turbines(i).YawIF = site.windDirection+turbines(i).YawWF;
+        turbines(i).YawIF = inputData.windDirection+turbines(i).YawWF;
     end
 end
