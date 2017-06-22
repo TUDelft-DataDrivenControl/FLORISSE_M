@@ -3,7 +3,7 @@ timer.script = tic;
 
 turbines = outputData.turbines;
 wakes    = outputData.wakes;
-wtRows   = {outputData.wtRows};
+wtRows   = outputData.wtRows;
    
 % Setup flowField visualisation grid if neccesary
 if (inputData.plot2DFlowfield || inputData.plot3DFlowfield)
