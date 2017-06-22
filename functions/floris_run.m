@@ -1,4 +1,7 @@
-function [inputData,outputData] = floris_run(inputData)
+function [inputData,outputData] = floris_run(inputData,timeCPU)
+if nargin <= 1
+    timeCPU = true;
+end;
 % Turbine operation settings in wind frame
 % Yaw misalignment with flow (counterclockwise, wind frame)
 % Axial induction control setting (used only if model.axialIndProvided == true)
@@ -55,7 +58,9 @@ for turbirow = 1:length(wtRows) % for first to last row of turbines
             turbines([wtRows{1:turbirow+1}]),wakes([wtRows{1:turbirow}]),inputData,wtRows,turbirow);
     end;
 end;
-disp(['TIMER: core operations: ' num2str(toc(timer.core)) ' s.']);
+if timeCPU
+    disp(['TIMER: core operations: ' num2str(toc(timer.core)) ' s.']);
+end;
 
 % Prepare output data
 outputData = struct('turbines',turbines,...

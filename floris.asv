@@ -39,38 +39,7 @@ classdef floris<handle
         
         
         %% Optimization functions
-        function [axialIndOpt,self] = optimizeAxInd(self,inputData);
-            % Check if inputData specified manually. If not, use internal inputData.
-            if exist('inputData') == 0; inputData = self.inputData; end;            
-            if isstruct(inputData)== 0; % Check if init() has been run at least once before.
-                disp([' Please initialize the model before simulation by the init() command.']);
-                return; end;
-            
-            % Cost function
-            function J = costFunction(axialIndIn,inputData)
-                inputData.axialInd  = axialIndIn;
-                [~,outputData]      = floris_run(inputData,0);
-                J                   = -sum(outputData.power);
-            end
-            cost  = @(x)costFunction(x,self.inputData);
-            lb    = 0.000*ones(length(self.inputData.axialInd),1); 
-            ub    = 0.333*ones(length(self.inputData.axialInd),1);
-            
-            % Optimizer settings and optimization execution
-            %options = optimset('Display','final','MaxFunEvals',1000 ); % Display nothing
-            options = optimset('Algorithm','sqp','Display','final','MaxFunEvals',1000,'PlotFcns',{@optimplotx, @optimplotfval} ); % Display convergence
-            axialIndOpt = fmincon(cost,self.inputData.axialInd,[],[],[],[],lb,ub,[],options);
-                      
-            % Simulated annealing
-            %options = optimset('Display','iter','MaxFunEvals',1000,'PlotFcns',{@optimplotx, @optimplotfval} ); % Display convergence
-            %axialIndOpt = simulannealbnd(cost,self.inputData.axialInd,lb,ub,options);
-            
-            % Overwrite current settings with optimized
-            self.inputData.axialInd = axialIndOpt;
-        end;
-        
-        
-        function [yawAnglesOpt,self] = optimizeYaw(self,inputData);
+        function [yawAnglesOpt] = optimizeYaw(self,inputData);
             % Check if inputData specified manually. If not, use internal inputData.
             if exist('inputData') == 0; inputData = self.inputData; end;            
             if isstruct(inputData)== 0; % Check if init() has been run at least once before.
@@ -86,16 +55,8 @@ classdef floris<handle
             cost         = @(x)costFunction(x,self.inputData);
             
             % Optimizer settings and optimization execution
-            %options = optimset('Display','final','MaxFunEvals',1000 ); % Display nothing
-            options = optimset('Display','final','MaxFunEvals',1000,'PlotFcns',{@optimplotx, @optimplotfval} ); % Display convergence
-            
-            % Yaw angles are constrained between -25 and +25 degrees
-            lb = deg2rad(-25)*ones(length(self.inputData.yawAngles),1); 
-            ub = deg2rad(+25)*ones(length(self.inputData.yawAngles),1);
-            yawAnglesOpt = fmincon(cost,self.inputData.yawAngles,[],[],[],[],lb,ub,[],options);
-            
-            % Overwrite current settings with optimized
-            self.inputData.yawAngles = yawAnglesOpt;
+            options = optimoptions('fminunc');
+            yawAnglesOpt = fminunc(cost,self.inputData.yawAngles,options);
         end;
         
         
