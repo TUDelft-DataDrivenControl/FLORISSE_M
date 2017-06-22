@@ -44,7 +44,7 @@ function [ wakes,flowField ] = floris_compute_flowfield( inputData,flowField,tur
                             end
                         end
                     end
-                    flowField.U(i,flowField.X(1,:,1)==xSample,j) = inputData.windSpeed*(1-2*sqrt(sout));
+                    flowField.U(i,flowField.X(1,:,1)==xSample,j) = inputData.uInfWf*(1-2*sqrt(sout));
                 end
             end
         end

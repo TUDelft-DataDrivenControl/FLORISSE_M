@@ -32,7 +32,7 @@ if (inputData.plot2DFlowfield || inputData.plot3DFlowfield)
     end
     
     % initialize the flowfield as freestream in the U direction
-    flowField.U  = inputData.windSpeed*ones(size(flowField.X));
+    flowField.U  = inputData.uInfWf*ones(size(flowField.X));
     flowField.V  = zeros(size(flowField.X));
     flowField.W  = zeros(size(flowField.X));
 end;

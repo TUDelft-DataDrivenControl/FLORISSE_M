@@ -49,6 +49,6 @@ function [ ] = plot_layout( wtRows,inputData,turbines,wakes )
     xlim([min(turbWF(1,:))-500, max(turbWF(1,:))+500]);
     ylim([min(turbWF(2,:))-500, max(turbWF(2,:))+500]);
     vInfWf = 0; % FLORIS does not model lateral or vertical speeds
-    quiver(min(turbWF(1,:))-400,mean(turbWF(2,:)),inputData.windSpeed*30,vInfWf*30,'LineWidth',1,'MaxHeadSize',5);
+    quiver(min(turbWF(1,:))-400,mean(turbWF(2,:)),inputData.uInfWf*30,vInfWf*30,'LineWidth',1,'MaxHeadSize',5);
     text(min(turbWF(1,:))-400,mean(turbWF(2,:))-50,'U_{inf}');
 end

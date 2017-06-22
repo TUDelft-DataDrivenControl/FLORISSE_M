@@ -14,7 +14,7 @@ function [ dwTurbs ] = floris_compute_windspeed( turbines,wakes,inputData,wt_row
                 sout = sout + (turbines(uw_turbi).axialInd*sinn)^2;
             end;
         end;
-        turbines(dw_turbi).windSpeed = inputData.windSpeed*(1-2*sqrt(sout));
+        turbines(dw_turbi).windSpeed = inputData.uInfWf*(1-2*sqrt(sout));
     end;
 
     dwTurbs = turbines(wt_rows{turbirow+1});

@@ -7,7 +7,7 @@ function [ inputData,turbines,wtRows ] = floris_frame( inputData,turbines )
 
     % Calculate incoming flow direction
     inputData.windDirection = atand(inputData.vInfIf/inputData.uInfIf);       % Wind dir in degrees (inertial frame)
-    inputData.windSpeed     = hypot(inputData.uInfIf,inputData.vInfIf);       % axial flow speed in wind frame
+    inputData.uInfWf        = hypot(inputData.uInfIf,inputData.vInfIf);       % axial flow speed in wind frame
     Rz = [cosd(-inputData.windDirection), -sind(-inputData.windDirection); % Rotational matrix
           sind(-inputData.windDirection), cosd(-inputData.windDirection)];
     wtLocationsWf           = inputData.LocIF*Rz.'; % Wind frame turbine locations in wind frame

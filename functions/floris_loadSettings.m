@@ -71,7 +71,7 @@ switch lower(modelType)
 end;
 
 
-%% Derived settings
+%% Post-processing
 for i = 1:nTurbs
     inputData.rotorArea(i) = pi*inputData.rotorDiameter(i)*inputData.rotorDiameter(i)/4.0;
 end; 
