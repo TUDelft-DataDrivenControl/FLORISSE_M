@@ -1,27 +1,4 @@
-function [inputData] = floris_loadSettings(modelType,turbType,siteType,visualizationType)
-
-%% Visualization settings
-switch lower(visualizationType)
-    case 'none'
-        inputData.plotLayout      = false;  % plot farm layout w.r.t. inertial and wind frame
-        inputData.plot2DFlowfield = false;  % 2DflowFieldvisualisation in wind-aligned frame
-        inputData.plot3DFlowfield = false;  % 3DflowFieldvisualisation in wind-aligned frame       
-    case '2d'
-        inputData.plotLayout      = true;   % plot farm layout w.r.t. inertial and wind frame
-        inputData.plot2DFlowfield = true;   % 2DflowFieldvisualisation in wind-aligned frame
-        inputData.plot3DFlowfield = false;  % 3DflowFieldvisualisation in wind-aligned frame
-    case '3d'
-        inputData.plotLayout      = true;   % plot farm layout w.r.t. inertial and wind frame
-        inputData.plot2DFlowfield = false;  % 2DflowFieldvisualisation in wind-aligned frame
-        inputData.plot3DFlowfield = true;   % 3DflowFieldvisualisation in wind-aligned frame  
-    case 'all'
-        inputData.plotLayout      = true;   % plot farm layout w.r.t. inertial and wind frame
-        inputData.plot2DFlowfield = true;   % 2DflowFieldvisualisation in wind-aligned frame
-        inputData.plot3DFlowfield = true;   % 3DflowFieldvisualisation in wind-aligned frame          
-    otherwise
-        error(['Visualization type with name "' visualizationType '" not defined']);
-end;
-
+function [inputData] = floris_loadSettings(modelType,turbType,siteType)
 %% Site and topology settings
 switch siteType
     case '9turb'
@@ -102,12 +79,3 @@ end;
 % Dirty way to prevent negative ws problems. TODO: Fix negative windspeeds properly
 inputData.Ct_interp = fit([-5 NREL5MWCPCT.wind_speed].',[.6 NREL5MWCPCT.CT].','linearinterp');
 inputData.Cp_interp = fit([-5 NREL5MWCPCT.wind_speed].',[0 NREL5MWCPCT.CP].','linearinterp');
-
-if (inputData.plot2DFlowfield || inputData.plot3DFlowfield)
-   % resz is not used when only 2Dflowfield is plotted
-   inputData.flowField.resx   = 5;     % resolution in x-axis in meters (windframe)
-   inputData.flowField.resy   = 5;     % resolution in y-axis in meters (windframe)
-   inputData.flowField.resz   = 10;     % resolution in z-axis in meters (windframe)
-   inputData.flowField.fixYaw  = true;  % Account for yaw in near-turbine region in 2Dplot
-   % TODO: implement fixyaw for 3d plot
-end
