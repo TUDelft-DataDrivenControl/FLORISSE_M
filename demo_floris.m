@@ -4,6 +4,7 @@ clear all; close all; clc;
 disp('Performing baseline calculations...');
 FLORIS = floris();  % Initialize FLORIS class 
 FLORIS.init();      % Initialize model settings. Default: FLORIS.init('default','NREL5MW','9turb');
+FLORIS.inputData.yawAngles = zeros(1,9); % Set all yaw angles to 0 for baseline calculation
 FLORIS.run();       % Run FLORIS with default settings
 FLORIS.visualize(1,1,0); % Plot FLORIS results. Options: visualize(Plot layout (T/F), plot 2D (T/F), plot 3D (T/F))
 P_bl = sum(FLORIS.outputData.power);
