@@ -2,17 +2,18 @@ classdef floris<handle
     properties
         inputData
         outputData
+        outputFlowField
         outputDataAEP
     end
-    methods        
-        %% Initialization
-        function self = init(self,modelType,turbType,siteType)
+    methods
+        %% Constructor function initializes default inputData
+        function self = floris(modelType,turbType,siteType)
             addpath('functions');
             
             % Default setup
-            if exist('siteType') == 0;  siteType  = '9turb';   end;
-            if exist('turbType') == 0;  turbType  = 'NREL5MW'; end;
-            if exist('modelType')== 0;  modelType = 'default'; end;
+            if ~exist('siteType','var');    siteType  = '9turb';   end;
+            if ~exist('turbType','var');    turbType  = 'NREL5MW'; end;
+            if ~exist('modelType','var');   modelType = 'default'; end;
             
             % Call function
             self.inputData = floris_loadSettings(modelType,turbType,siteType);
@@ -23,18 +24,17 @@ classdef floris<handle
         % ....
         
         %% FLORIS single execution
-        function [self,outputData] = run(self,inputData)
-            % Check if inputData specified manually. If not, use internal inputData.
-            if exist('inputData') == 0; inputData = self.inputData; end;
-            
-            % Check if init() has been run at least once before.
-            if isstruct(inputData)== 0;
-                disp([' Please initialize the model before simulation by the init() command.']);
+        function [self,outputData] = run(self)
+
+            % Check if there ipnutdata has been specified
+            if ~isstruct(self.inputData)
+                disp(' Please make sure FLORIS.inputData contains valid inputdata');
                 return;
             end;
             
-            % Run FLORIS simulation
-            [self.inputData,self.outputData] = floris_run(inputData);
+            % Run FLORIS simulation and reset visualization
+            [self.outputData] = floris_core(self.inputData);
+            self.outputFlowField = [];
             
             % Results saved internally, but also returns externally if desired.
             if nargout > 0; outputData = self.outputData; end;
@@ -43,26 +43,25 @@ classdef floris<handle
         
         %% Visualize single FLORIS simulation results
         function [] = visualize(self,plotLayout,plot2D,plot3D)
-            inputData  = self.inputData;
-            outputData = self.outputData;
             
-            if isstruct(outputData) == 0
+            % Check if there is output data available for plotting
+            if ~isstruct(self.outputData)
                 disp([' outputData is not (yet) available/not formatted properly.' ...
                       ' Please run a (single) simulation, then call this function.']);
                 return;
-            end; 
+            end;
             
             % Default visualization settings, if not specified
-            if exist('plotLayout') == 0; plotLayout = true;  end;
-            if exist('plot2D')     == 0; plot2D     = true;  end;
-            if exist('plot3D')     == 0; plot3D     = false; end;
+            if ~exist('plotLayout','var');  plotLayout = true;  end;
+            if ~exist('plot2D','var');      plot2D     = true;  end;
+            if ~exist('plot3D','var');      plot3D     = false; end;
             
             % Set visualization settings
-            inputData.plotLayout      = plotLayout;
-            inputData.plot2DFlowfield = plot2D;
-            inputData.plot3DFlowfield = plot3D;
+            self.outputFlowField.plotLayout      = plotLayout;
+            self.outputFlowField.plot2DFlowfield = plot2D;
+            self.outputFlowField.plot3DFlowfield = plot3D;
             
-            floris_visualization(inputData,outputData);
+            self.outputFlowField = floris_visualization(self.inputData,self.outputData,self.outputFlowField);
         end;
         
         
@@ -70,13 +69,12 @@ classdef floris<handle
         function [self,outputDataAEP] = AEP(self,windRose)
             % WindRose is an N x 2 matrix with uIf in 1st column and 
             % vIf in 2nd. The simulation will simulate FLORIS for each row.
-            inputData = self.inputData;
             
             % Simulate over each uIf-vIf set (matrix row)
             for i = 1:size(windRose,1);
-                inputData.uInfIf      = WS_range(windRose,1);
-                inputData.vInfIf      = WS_range(windRose,2);
-                self.outputDataAEP{i} = floris_run(inputData);
+                self.inputData.uInfIf       = windRose(i,1);
+                self.inputData.vInfIf       = windRose(i,2);
+                [self.outputDataAEP{i}]   = self.run();
             end;
             
             % Results saved internally, but also returns externally if desired.

@@ -1,4 +1,4 @@
-function [ wake ] = floris_centerLine_and_diameter_at_x( inputData,turbine,wake )
+function [ wake ] = floris_wakeCenterLine_and_diameter( inputData,turbine,wake )
 
     for sample_x = 1:length(wake.centerLine)
         deltax = wake.centerLine(1,sample_x)-turbine.LocWF(1);

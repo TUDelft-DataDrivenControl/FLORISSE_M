@@ -17,6 +17,11 @@ switch siteType
         inputData.uInfIf   = 12;       % x-direction flow speed inertial frame (m/s)
         inputData.vInfIf   = 4;        % y-direction flow speed inertial frame (m/s)
         inputData.airDensity = 1.1716; % Atmospheric air density (kg/m3)      
+
+        % Compute windDirection and magnitude
+        inputData.windDirection = atand(inputData.vInfIf/inputData.uInfIf); % Wind dir in degrees (inertial frame)
+        inputData.uInfWf        = hypot(inputData.uInfIf,inputData.vInfIf); % axial flow speed in wind frame
+
     otherwise
         error(['Site type with name "' siteType '" not defined']);
 end;
@@ -77,5 +82,5 @@ for i = 1:nTurbs
 end; 
 
 % Dirty way to prevent negative ws problems. TODO: Fix negative windspeeds properly
-inputData.Ct_interp = fit([-5 NREL5MWCPCT.wind_speed].',[.6 NREL5MWCPCT.CT].','linearinterp');
-inputData.Cp_interp = fit([-5 NREL5MWCPCT.wind_speed].',[0 NREL5MWCPCT.CP].','linearinterp');
+inputData.Ct_interp = @(ws) interp1([-5 NREL5MWCPCT.wind_speed].',[.6 NREL5MWCPCT.CT].',ws);
+inputData.Cp_interp = @(ws) interp1([-5 NREL5MWCPCT.wind_speed].',[0 NREL5MWCPCT.CP].',ws);

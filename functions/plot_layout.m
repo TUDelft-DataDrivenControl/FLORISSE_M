@@ -1,4 +1,4 @@
-function [ ] = plot_layout( wtRows,inputData,turbines,wakes )
+function [ ] = plot_layout( inputData,turbines,wakeCenterLines )
 
     turbIF = [turbines.LocIF];
     turbWF = [turbines.LocWF];
@@ -29,19 +29,14 @@ function [ ] = plot_layout( wtRows,inputData,turbines,wakes )
     text(min(turbIF(1,:))-400,mean(turbIF(2,:))-50,'U_{inf}');
     
     % Plot the turbines in the wind aligned frame
-    subplot(1,2,2);   
+    subplot(1,2,2); hold on;
     for j = 1:Nt
-        plot(turbWF(1,j) + 0.5*[-1, 1]*turbines(j).rotorDiameter*sin(YawWfs(j)),...
-             turbWF(2,j) + 0.5*[1, -1]*turbines(j).rotorDiameter*cos(YawWfs(j)),'LineWidth',3); hold on;
+        p = plot(turbWF(1,j) + 0.5*[-1, 1]*turbines(j).rotorDiameter*sin(YawWfs(j)),...
+            turbWF(2,j) + 0.5*[1, -1]*turbines(j).rotorDiameter*cos(YawWfs(j)),'LineWidth',3);
+        plot([turbWF(1,j) wakeCenterLines{j}(1,:)],[turbWF(2,j) wakeCenterLines{j}(2,:)],'--','DisplayName','Wake Centerline','Color',get(p,'Color'));
         text(turbWF(1,j) +30,turbWF(2,j) +20,['T' num2str(j)]);
     end;
-    % Plot the wake centerLines
-    for TRow = 1:length(wtRows)
-        for Tnum = wtRows{TRow}
-            hold on;
-            plot([turbWF(1,Tnum) wakes(Tnum).centerLine(1,:)],[turbWF(2,Tnum) wakes(Tnum).centerLine(2,:)],'--','DisplayName','Wake Centerline');
-        end;
-    end;
+    
     ylabel('Aligned y-axis [m]');
     xlabel('Aligned x-axis [m]');
     title('Wind-aligned frame');

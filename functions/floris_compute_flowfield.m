@@ -1,4 +1,4 @@
-function [ wakes,flowField ] = floris_compute_flowfield( inputData,flowField,turbines,wakes )
+function [ flowField ] = floris_compute_flowfield( inputData,flowField,turbines,wakes )
 
     % Compute the centerLines and zone diameters at every voxel
     for  turb_num = 1:length(turbines)
@@ -8,45 +8,51 @@ function [ wakes,flowField ] = floris_compute_flowfield( inputData,flowField,tur
         wakes(turb_num).centerLine(1,:) = flowField.X(1,flowField.X(1,:,1)>=turbines(turb_num).LocWF(1),1);
         [wakes(turb_num)] = floris_wakeCenterLine_and_diameter(inputData, turbines(turb_num), wakes(turb_num));
     end
-    
+        
     % Compute the windspeed at a cutthrough of the wind farm
     for xSample = flowField.X(1,:,1)
-        % Select the upwind turbines and compute their distance
+        % Select the upwind turbines
         UwTurbines = turbines((xSample - arrayfun(@(x) x.LocWF(1), turbines))>=0);
-        deltaXs = xSample - arrayfun(@(x) x.LocWF(1), UwTurbines);
-        
-        % The tusF variable creates a map at every Xsample slice of the
-        % flowfield. It checks wether a voxel is affected by any upwind
-        % turbine. This is used later on to cut the computation time in
-        % half in extreme cases.
-        tusF = zeros(size(flowField.U(:,1,:)));
-        for turb_num = 1:length(UwTurbines)
-            [~,wakeLocIndex] = min(abs(wakes(turb_num).centerLine(1,:)-xSample));
-            tusF(hypot(flowField.Y(:,1,:)-wakes(turb_num).centerLine(2,wakeLocIndex), ...
-            flowField.Z(:,1,:)-turbines(turb_num).hub_height)<= ...
-            wakes(turb_num).diameters(wakeLocIndex,3)./2) = 1;
-        end
-    
-        for i = 1:size(squeeze((tusF)),1)
-            for j = 1:size(squeeze((tusF)),2)
-                % Check if the voxel is affected by some turbine.. if not
-                % skip the windspeed computation.
-                if tusF(i,1,j)
-                    sout = 0; % outer sum of Eq. 22
-                    for turb_num = 1:length(UwTurbines)
-                        [~,wakeLocIndex] = min(abs(wakes(turb_num).centerLine(1,:)-xSample));
-                        for zone = 1:3
-                            if hypot(flowField.Y(i,1,j)-wakes(turb_num).centerLine(2,wakeLocIndex), ...
-                                flowField.Z(i,1,j)-turbines(turb_num).hub_height)<= ...
-                                wakes(turb_num).diameters(wakeLocIndex,zone)./2
-                                sout = sout + (turbines(turb_num).axialInd*(turbines(turb_num).rotorDiameter/(turbines(turb_num).rotorDiameter + 2*wakes(turb_num).Ke*wakes(turb_num).mU(zone)*deltaXs(turb_num)))^2)^2; % Eq. 16
-                                break
-                            end
+        if ~isempty(UwTurbines)
+            % compute the upwind turbine distance with respect to xSample
+            deltaXs = xSample - arrayfun(@(x) x.LocWF(1), UwTurbines);
+
+            % affectedVoxels and hypotMarkers are very similar, they are
+            % both boolean matrices. hypotMarkers has a true/false value
+            % for every voxel for every turbine for every zone.
+            % affectedVoxels keeps track of all turbines and only zone 3.
+            affectedVoxels = false(size( squeeze(flowField.U(:,1,:))));
+            hypotMarkers = false([size( squeeze(flowField.U(:,1,:))) length(UwTurbines) 3]);
+
+            for turb_num = 1:length(UwTurbines)
+                [~,wakeLocIndex] = min(abs(wakes(turb_num).centerLine(1,:)-xSample));
+                for zone = 1:3
+                    hypotMarkers(:,:,turb_num,zone) = squeeze(hypot(flowField.Y(:,1,:)-wakes(turb_num).centerLine(2,wakeLocIndex), ...
+                    flowField.Z(:,1,:)-turbines(turb_num).hub_height)<= ...
+                    wakes(turb_num).diameters(wakeLocIndex,zone)./2);
+                end
+                affectedVoxels = (affectedVoxels | hypotMarkers(:,:,turb_num,3));
+            end
+            
+            % Only the voxels that are true in affectedVoxels have their
+            % flow affected by some turbine. The other voxels are the
+            % freestream.
+            [row,col] = find(affectedVoxels);
+            for i = 1:length(row)
+                sout = 0; % outer sum of Eq. 22
+                for turb_num = 1:length(UwTurbines)
+                    for zone = 1:3
+                        if hypotMarkers(row(i),col(i),turb_num,zone)
+                            sout = sout + (turbines(turb_num).axialInd*(turbines(turb_num).rotorDiameter/(turbines(turb_num).rotorDiameter + 2*wakes(turb_num).Ke*wakes(turb_num).mU(zone)*deltaXs(turb_num)))^2)^2; % Eq. 16
+                            break
                         end
                     end
-                    flowField.U(i,flowField.X(1,:,1)==xSample,j) = inputData.uInfWf*(1-2*sqrt(sout));
                 end
+                flowField.U(row(i),flowField.X(1,:,1)==xSample,col(i)) = inputData.uInfWf*(1-2*sqrt(sout));
             end
         end
+    end
+    for turb_num = 1:length(turbines)
+        flowField.wakeCenterLines{turb_num} = wakes(turb_num).centerLine;
     end
 end
