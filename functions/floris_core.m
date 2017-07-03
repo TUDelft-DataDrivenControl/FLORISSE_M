@@ -1,7 +1,5 @@
-function [inputData,outputData] = floris_run(inputData,timeCPU)
-if nargin <= 1
-    timeCPU = true;
-end;
+function [outputData] = floris_core(inputData,dispTimer)
+if nargin <= 1; dispTimer = true; end; % Required to disable timer for optimization calls
 % Turbine operation settings in wind frame
 % Yaw misalignment with flow (counterclockwise, wind frame)
 % Axial induction control setting (used only if model.axialIndProvided == true)
@@ -21,7 +19,7 @@ wakes = struct( 'Ke',num2cell(zeros(1,length(turbines))),'mU',{[]}, ...
 %% Internal code of FLORIS
 % Determine wind farm layout in wind-aligned frame. Note that the
 % turbines are renumbered in the order of appearance w.r.t wind direction
-[inputData,turbines,wtRows] = floris_frame(inputData,turbines);
+[turbines,wtRows] = floris_frame(inputData,turbines);
 % The first row of turbines has the freestream as inflow windspeed
 [turbines(wtRows{1}).windSpeed] = deal(inputData.uInfWf);
 
@@ -58,13 +56,10 @@ for turbirow = 1:length(wtRows) % for first to last row of turbines
             turbines([wtRows{1:turbirow+1}]),wakes([wtRows{1:turbirow}]),inputData,wtRows,turbirow);
     end;
 end;
-if timeCPU
-    disp(['TIMER: core operations: ' num2str(toc(timer.core)) ' s.']);
-end;
+if dispTimer; disp(['TIMER: core operations: ' num2str(toc(timer.core)) ' s.']); end;
 
 % Prepare output data
 outputData = struct('turbines',turbines,...
                     'wakes',wakes,...
-                    'power',[turbines.power],...
-                    'wtRows',{wtRows});
+                    'power',[turbines.power]);
 end
