@@ -44,15 +44,15 @@ classdef floris<handle
                 ub = [ub, deg2rad(+25)*ones(inputData.nTurbs,1)];
             end;
             if optimizeAxInd; 
-                x0 = [x0, inputData.AxInd];     
-                lb = [lb, 0.000*ones(length(self.inputData.axialInd),1)];
-                ub = [ub, 0.333*ones(length(self.inputData.axialInd),1)];
+                x0 = [x0, inputData.axialInd];     
+                lb = [lb, 0.000*ones(inputData.nTurbs,1)];
+                ub = [ub, 0.333*ones(inputData.nTurbs,1)];
             end;
             
             % Cost function
             function J = costFunction(x,inputData,optimizeYaw,optimizeAxInd)
-                if optimizeYaw;   inputData.yawAngles = x(1:inputData.nTurbs); end;
-                if optimizeAxInd; inputData.AxInd     = x(end-nTurbs+1:end);   end;
+                if optimizeYaw;   inputData.yawAngles = x(1:inputData.nTurbs);          end;
+                if optimizeAxInd; inputData.axialInd  = x(end-inputData.nTurbs+1:end);  end;
 
                 [outputData] = floris_core(inputData,0);
                 J            = -sum(outputData.power);
@@ -63,7 +63,7 @@ classdef floris<handle
             % Optimizer settings and optimization execution
             %options = optimset('Display','final','MaxFunEvals',1000 ); % Display nothing
             %options = optimset('Algorithm','sqp','Display','final','MaxFunEvals',1000,'PlotFcns',{@optimplotx, @optimplotfval} ); % Display convergence
-            options = optimset('Display','final','MaxFunEvals',1000,'PlotFcns',{@optimplotx, @optimplotfval} ); % Display convergence
+            options = optimset('Display','final','MaxFunEvals',1e4,'PlotFcns',{@optimplotx, @optimplotfval} ); % Display convergence
             xopt    = fmincon(cost,x0,[],[],[],[],lb,ub,[],options);
             
             % Simulated annealing
@@ -71,8 +71,8 @@ classdef floris<handle
             %xopt    = simulannealbnd(cost,self.inputData.axialInd,lb,ub,options);
             
             % Overwrite current settings with optimized
-            if optimizeYaw;   self.inputData.yawAngles = xopt(1:inputData.nTurbs); end;
-            if optimizeAxInd; self.inputData.AxInd     = xopt(end-nTurbs+1:end);   end;
+            if optimizeYaw;   self.inputData.yawAngles = xopt(1:inputData.nTurbs);         end;
+            if optimizeAxInd; self.inputData.axialInd  = xopt(end-inputData.nTurbs+1:end); end;
             
             % Update outputData for optimized settings
             self.run(); 
