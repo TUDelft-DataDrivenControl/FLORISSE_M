@@ -6,7 +6,7 @@ function [ flowField ] = floris_compute_flowfield( inputData,flowField,turbines,
         % turbine locations. Use an array of x-coordinates instead
         wakes(turb_num).centerLine = [];
         wakes(turb_num).centerLine(1,:) = flowField.X(1,flowField.X(1,:,1)>=turbines(turb_num).LocWF(1),1);
-        [wakes(turb_num)] = floris_wakeCenterLine_and_diameter(inputData, turbines(turb_num), wakes(turb_num));
+        [wakes(turb_num)] = floris_wakeCenterLine_and_radius(inputData, turbines(turb_num), wakes(turb_num));
     end
         
     % Compute the windspeed at a cutthrough of the wind farm
@@ -29,7 +29,7 @@ function [ flowField ] = floris_compute_flowfield( inputData,flowField,turbines,
                 for zone = 1:3
                     hypotMarkers(:,:,turb_num,zone) = squeeze(hypot(flowField.Y(:,1,:)-wakes(turb_num).centerLine(2,wakeLocIndex), ...
                     flowField.Z(:,1,:)-turbines(turb_num).hub_height)<= ...
-                    wakes(turb_num).diameters(wakeLocIndex,zone)./2);
+                    wakes(turb_num).radii(wakeLocIndex,zone));
                 end
                 affectedVoxels = (affectedVoxels | hypotMarkers(:,:,turb_num,3));
             end
@@ -43,7 +43,7 @@ function [ flowField ] = floris_compute_flowfield( inputData,flowField,turbines,
                 for turb_num = 1:length(UwTurbines)
                     for zone = 1:3
                         if hypotMarkers(row(i),col(i),turb_num,zone)
-                            sout = sout + (turbines(turb_num).axialInd*(turbines(turb_num).rotorDiameter/(turbines(turb_num).rotorDiameter + 2*wakes(turb_num).Ke*wakes(turb_num).mU(zone)*deltaXs(turb_num)))^2)^2; % Eq. 16
+                            sout = sout + (turbines(turb_num).axialInd*(turbines(turb_num).rotorRadius/(turbines(turb_num).rotorRadius + wakes(turb_num).Ke*wakes(turb_num).mU(zone)*deltaXs(turb_num)))^2)^2; % Eq. 16
                             break
                         end
                     end

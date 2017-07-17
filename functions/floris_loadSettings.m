@@ -24,14 +24,14 @@ switch siteType
 
     otherwise
         error(['Site type with name "' siteType '" not defined']);
-end;
+end
        
 %% Turbine settings
 switch lower(turbType)
     case 'nrel5mw'
         nTurbs                          = size(inputData.LocIF,1);
         inputData.nTurbs                = nTurbs;
-        inputData.rotorDiameter         = 126.4 * ones(1,nTurbs);
+        inputData.rotorRadius           = (126.4/2) * ones(1,nTurbs);
         inputData.generator_efficiency  = 0.944 * ones(1,nTurbs);
         inputData.hub_height            = 90.0  * ones(1,nTurbs);
         
@@ -43,7 +43,7 @@ switch lower(turbType)
         load('NREL5MWCPCT.mat'); % converted from .p file        
     otherwise
         error(['Turbine type with name "' turbType '" not defined']);
-end;
+end
        
 %% FLORIS model settings        
 switch lower(modelType)
@@ -74,13 +74,13 @@ switch lower(modelType)
         inputData.adjustInitialWakeDiamToYaw = false;
     otherwise
         error(['Model type with name: "' modelType '" not defined']);
-end;
+end
 
 
 %% Post-processing
 for i = 1:nTurbs
-    inputData.rotorArea(i) = pi*inputData.rotorDiameter(i)*inputData.rotorDiameter(i)/4.0;
-end; 
+    inputData.rotorArea(i) = pi*inputData.rotorRadius(i).^2;
+end
 
 % Dirty way to prevent negative ws problems. TODO: Fix negative windspeeds properly
 inputData.Ct_interp = @(ws) interp1([-5 NREL5MWCPCT.wind_speed].',[.6 NREL5MWCPCT.CT].',ws);

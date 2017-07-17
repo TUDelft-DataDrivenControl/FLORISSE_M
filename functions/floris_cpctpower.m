@@ -9,26 +9,23 @@ function turbine = floris_cpctpower(inputData,turbine)
         % calculate Ct and Cp by approximation using AIF
         turbine.Ct = 4*ai*(1-ai);
         turbine.Cp = 4*ai*(1-ai)^2;
-        
-        % Correct Cp and Ct for yaw misallignment
-        turbine.Ct = turbine.Ct * cos(turbine.YawWF)^2;
-        turbine.Cp = turbine.Cp * cos(turbine.YawWF)^inputData.pP;  
     else
-        % Correct windspeed for yaw misallignment
-        wind_speed_ax = turbine.windSpeed*cos(turbine.YawWF)^(model.pP/3.0);
         % calculate Ct and Cp from CCblade data
-        turbine.Ct = inputData.Ct_interp(wind_speed_ax);
-        turbine.Cp = inputData.Cp_interp(wind_speed_ax);
+        turbine.Ct = inputData.Ct_interp(turbine.windSpeed);
+        turbine.Cp = inputData.Cp_interp(turbine.windSpeed);
     end
-
-
+    
+    % Correct Cp and Ct for yaw misallignment
+    turbine.Ct = turbine.Ct * cos(turbine.YawWF)^2;
+    turbine.Cp = turbine.Cp * cos(turbine.YawWF)^inputData.pP;  
+    
     % Calculate axial induction factor if neccesary
     if ~inputData.axialIndProvided
         if turbine.Ct > 0.96 % Glauert condition
             turbine.axialInd = 0.143+sqrt(0.0203-0.6427*(0.889-turbine.Ct));
         else
             turbine.axialInd = 0.5*(1-sqrt(1-turbine.Ct));
-        end;
+        end
     end
     
     % Compute turbine power

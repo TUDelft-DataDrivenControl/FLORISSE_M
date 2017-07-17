@@ -11,10 +11,10 @@ function [ ] = plot_layout( inputData,turbines,wakeCenterLines )
     
     % Plot the turbines
     for j = 1:Nt
-        plot(turbIF(1,j)+ 0.5*[-1, 1]*turbines(j).rotorDiameter*sin(YawIfs(j)),...
-             turbIF(2,j)+ 0.5*[1, -1]*turbines(j).rotorDiameter*cos(YawIfs(j)),'LineWidth',3); hold on;
+        plot(turbIF(1,j)+ [-1, 1]*turbines(j).rotorRadius*sin(YawIfs(j)),...
+             turbIF(2,j)+ [1, -1]*turbines(j).rotorRadius*cos(YawIfs(j)),'LineWidth',3); hold on;
         text(turbIF(1,j)+30,turbIF(2,(j))+20,['T' num2str(j)]);
-    end;
+    end
 
     % Set labels and image size
     ylabel('Internal y-axis [m]');
@@ -31,11 +31,11 @@ function [ ] = plot_layout( inputData,turbines,wakeCenterLines )
     % Plot the turbines in the wind aligned frame
     subplot(1,2,2); hold on;
     for j = 1:Nt
-        p = plot(turbWF(1,j) + 0.5*[-1, 1]*turbines(j).rotorDiameter*sin(YawWfs(j)),...
-            turbWF(2,j) + 0.5*[1, -1]*turbines(j).rotorDiameter*cos(YawWfs(j)),'LineWidth',3);
+        p = plot(turbWF(1,j) + [-1, 1]*turbines(j).rotorRadius*sin(YawWfs(j)),...
+            turbWF(2,j) + [1, -1]*turbines(j).rotorRadius*cos(YawWfs(j)),'LineWidth',3);
         plot([turbWF(1,j) wakeCenterLines{j}(1,:)],[turbWF(2,j) wakeCenterLines{j}(2,:)],'--','DisplayName','Wake Centerline','Color',get(p,'Color'));
         text(turbWF(1,j) +30,turbWF(2,j) +20,['T' num2str(j)]);
-    end;
+    end
     
     ylabel('Aligned y-axis [m]');
     xlabel('Aligned x-axis [m]');

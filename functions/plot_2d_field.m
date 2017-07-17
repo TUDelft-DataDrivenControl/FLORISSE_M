@@ -18,8 +18,8 @@ function [ ] = plot_2d_field( flowField,turbines )
     % Correction for turbine yaw in flow field in turning radius of turbine
     if flowField.fixYaw
         for turbi = 1:size(turbWF,2) % for each turbine
-            ytop    = turbWF(2,turbi)+cos(YawWfs(turbi))*turbines(turbi).rotorDiameter/2;
-            ybottom = turbWF(2,turbi)-cos(YawWfs(turbi))*turbines(turbi).rotorDiameter/2;
+            ytop    = turbWF(2,turbi)+cos(YawWfs(turbi))*turbines(turbi).rotorRadius;
+            ybottom = turbWF(2,turbi)-cos(YawWfs(turbi))*turbines(turbi).rotorRadius;
 
             [~,celltopy]    = min(abs(ytop   - yVec));
             [~,cellbottomy] = min(abs(ybottom- yVec));
@@ -35,17 +35,17 @@ function [ ] = plot_2d_field( flowField,turbines )
                         UatHub(cellxtower:cellxblade,celly) = UatHub(cellxtower-1,celly);
                     else
                         UatHub(cellxblade:cellxtower,celly) = UatHub(cellxtower+1,celly);
-                    end;
+                    end
                 else % lower part
                     if YawWfs(turbi) < 0
                         UatHub(cellxblade:cellxtower,celly) = UatHub(cellxtower+1,celly);
                     else
                         UatHub(cellxtower:cellxblade,celly) = UatHub(cellxtower-1,celly);
-                    end;
-                end;
-            end;
-        end;
-    end;
+                    end
+                end
+            end
+        end
+    end
     
     % Plot the flowfield
     contourf(xVec,yVec,UatHub.','Linecolor','none');
@@ -59,9 +59,9 @@ function [ ] = plot_2d_field( flowField,turbines )
     % Plot the turbine numbers
     for j = 1:size(turbWF,2)
         hold on;
-        plot(turbWF(1,j)+ [-0.5, +0.5]*turbines(j).rotorDiameter*sin(YawWfs(j)),...
-             turbWF(2,j)+ [+0.5, -0.5]*turbines(j).rotorDiameter*cos(YawWfs(j)),'k','LineWidth',2); 
+        plot(turbWF(1,j)+ [-1  1]*turbines(j).rotorRadius*sin(YawWfs(j)),...
+             turbWF(2,j)+ [ 1 -1]*turbines(j).rotorRadius*cos(YawWfs(j)),'k','LineWidth',2); 
         text(turbWF(1,j)+30,turbWF(2,j),['T' num2str(j)]);
-    end;
+    end
     axis equal;
 end

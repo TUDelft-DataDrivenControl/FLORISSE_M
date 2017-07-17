@@ -22,8 +22,8 @@ function [ wake ] = floris_initwake( inputData,turbine,wake )
 
     % Calculate initial wake diameter
     if inputData.adjustInitialWakeDiamToYaw
-        wake.wakeDiameterInit = turbine.rotorDiameter*cos(turbine.YawWF);
+        wake.wakeRadiusInit = turbine.rotorRadius*cos(turbine.YawWF);
     else
-        wake.wakeDiameterInit = turbine.rotorDiameter;
+        wake.wakeRadiusInit = turbine.rotorRadius;
     end
 end

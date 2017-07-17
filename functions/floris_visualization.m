@@ -47,12 +47,12 @@ function [flowField] = floris_visualization(inputData,outputData,flowField)
     if flowField.plot2DFlowfield
         figure;
         plot_2d_field( flowField,outputData.turbines )
-    end;
+    end
 
     % Plot the 3D flowfield as
     if flowField.plot3DFlowfield
         volvisApp(flowField.X, flowField.Y, flowField.Z, flowField.U)
-    end;
+    end
 
     disp(['TIMER: visualization: ' num2str(toc(timer.script)) ' s.']);
 end
