@@ -1,4 +1,5 @@
 clear all; clc;
+
 %% Run a single simulation without optimization
 FLORIS = floris();          % Initialize FLORIS class. Default: floris('default','NREL5MW','9turb');
 FLORIS.run();               % Run a single simulation with the settings 'FLORIS.inputData'

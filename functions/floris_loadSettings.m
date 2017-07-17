@@ -35,8 +35,12 @@ switch lower(turbType)
         inputData.generator_efficiency  = 0.944 * ones(1,nTurbs);
         inputData.hub_height            = 90.0  * ones(1,nTurbs);
         
+        inputData.LocIF(:,3)            = inputData.hub_height;
+        
         % Control settings
         inputData.yawAngles = deg2rad([-27 10 -30 -30 -20 -15 0 10 0]);
+        inputData.tiltAngles = deg2rad([0 0 0 0 0 0 0 0 0]);
+
         inputData.axialInd  = 1/3 * ones(1,nTurbs);
         
         % Determine Cp and Ct interpolation functions as functions of velocity
