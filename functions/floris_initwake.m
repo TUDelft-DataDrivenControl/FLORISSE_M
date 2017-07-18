@@ -41,18 +41,14 @@ function [ wake ] = floris_initwake( inputData,turbine,wake )
         wake.wakeRadiusInit = turbine.rotorRadius;
     end
     
-%     % Calculate initial wake deflection due to blade rotation etc.
-%     wake.zetaInit = 0.5*sin(turbine.YawWF)*turbine.Ct; % Eq. 8
-%     
-%     % Add an initial wakeangle to the zeta
-%     if inputData.useWakeAngle
-%         wake.zetaInit = wake.zetaInit + inputData.kd;
-%     end;
-% 
-%     % Calculate initial wake diameter
-%     if inputData.adjustInitialWakeDiamToYaw
-%         wake.wakeRadiusInit = turbine.rotorRadius*cos(turbine.YawWF);
-%     else
-%         wake.wakeRadiusInit = turbine.rotorRadius;
-%     end
+    % Define the wake shape
+    wake.rZones = @(x,z) max(wake.wakeRadiusInit+wake.Ke.*inputData.me(z)*x,0*x);
+    wake.cZones = @(x,z) (wake.wakeRadiusInit./(wake.wakeRadiusInit + wake.Ke.*wake.mU(z).*x)).^2;
+    
+    % c is the wake intensity reduction factor
+    wake.cFull = @(x,r) ((abs(r)<=wake.rZones(x,3))-(abs(r)<wake.rZones(x,2))).*wake.cZones(x,3)+...
+        ((abs(r)<wake.rZones(x,2))-(abs(r)<wake.rZones(x,1))).*wake.cZones(x,2)+...
+        (abs(r)<wake.rZones(x,1)).*wake.cZones(x,1);
+
+
 end

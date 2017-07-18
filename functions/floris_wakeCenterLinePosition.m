@@ -1,4 +1,4 @@
-function [ wake ] = floris_wakeCenterLine_and_radius( inputData,turbine,wake )
+function [ wake ] = floris_wakeCenterLinePosition( inputData,turbine,wake )
 
     % WakeDirection is used to determine the plane into which the wake is
     % displaced. displacement*wakeDir + linearOffset = centerlinePosition
@@ -20,12 +20,6 @@ function [ wake ] = floris_wakeCenterLine_and_radius( inputData,turbine,wake )
                             (1-inputData.useWakeAngle) *(deltax * inputData.bd);                % bladerotation-induced lateral offset
             
             wake.centerLine(3,sample_x) = turbine.LocWF(3) + wakeDir(3)*displacement;       % initial position + yaw*tilt induced offset
-
-                        
-           % Calculate wake diameter for zones 1-3: Eq. 13
-           for zone = 1:3
-               wake.radii(sample_x,zone) = max(wake.wakeRadiusInit + wake.Ke*inputData.me(zone)*deltax,0);
-           end
         end
     end
 end

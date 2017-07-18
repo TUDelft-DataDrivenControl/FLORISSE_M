@@ -57,7 +57,7 @@ switch lower(modelType)
         % inputData.KeCorrArray     = 0.0; % array-correction factor: NOT YET IMPLEMENTED!
         inputData.KeCorrCT          = 0.0; % CT-correction factor
         inputData.baselineCT        = 4.0*(1.0/3.0)*(1.0-(1.0/3.0)); % Baseline CT for ke-correction
-        inputData.me                = [0.5, -0.78, 1.0]; % relative expansion of wake zones
+        inputData.me                = [-0.5, 0.22, 1.0]; % relative expansion of wake zones
         inputData.KdY               = 0.17; % Wake deflection recovery factor
         
         % define initial wake displacement and angle (not determined by yaw angle)

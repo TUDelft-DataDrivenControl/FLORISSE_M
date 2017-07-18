@@ -1,5 +1,5 @@
 function [outputData] = floris_core(inputData,dispTimer)
-if nargin <= 1; dispTimer = true; end; % Required to disable timer for optimization calls
+if nargin <= 1; dispTimer = true; end % Required to disable timer for optimization calls
 % Turbine operation settings in wind frame
 % Yaw misalignment with flow (counterclockwise, wind frame)
 % Axial induction control setting (used only if model.axialIndProvided == true)
@@ -15,7 +15,7 @@ turbines = struct(  'YawWF',num2cell(inputData.yawAngles), ...
 
 wakes = struct( 'Ke',num2cell(zeros(1,length(turbines))),'mU',{[]}, ...
     'zetaInit',[],'wakeRadiusInit',[],'centerLine',[], ...
-    'radii',[],'OverlapAreaRel',[]);
+    'rZones',[],'cZones',[],'cFull',[]);
 
 %% Internal code of FLORIS
 % Determine wind farm layout in wind-aligned frame. Note that the
@@ -37,15 +37,12 @@ for turbirow = 1:length(wtRows) % for first to last row of turbines
         % calculate ke, mU, and initial wake deflection & diameter
         wakes(turbNum) = floris_initwake( inputData,turbines(turbNum),wakes(turbNum) );
         
-        % Compute  the X locations of  the downstream turbines rows
+        % Compute the X locations of the downstream turbines rows
         wakes(turbNum).centerLine(1,:) = arrayfun(@(x) x.LocWF(1), turbines(cellfun(@(x) x(1),wtRows(turbirow+1:end)))).';
         wakes(turbNum).centerLine(1,end+1) = turbines(end).LocWF(1)+300;
         
-        % Compute the wake centerLines and diameters at those X locations
-        wakes(turbNum) = floris_wakeCenterLine_and_radius(inputData,turbines(turbNum), wakes(turbNum));
-        
-        % Calculate overlap of this turbine on downstream turbines
-        wakes(turbNum) = floris_overlap( (turbirow+1):length(wtRows),wtRows,wakes(turbNum),turbines );
+        % Compute the wake centerLines position at the downstream turbine x-coordinates
+        wakes(turbNum) = floris_wakeCenterLinePosition(inputData,turbines(turbNum), wakes(turbNum));
     end
     
     % If this is not the last turbine row compute the windspeeds at the next row
@@ -54,7 +51,7 @@ for turbirow = 1:length(wtRows) % for first to last row of turbines
         % downstream row to the function: wt_rows{1:turbirow+1}
         % Return only the downstream turbine row: wt_rows{turbirow+1}.
         turbines(wtRows{turbirow+1}) = floris_compute_windspeed(...
-            turbines([wtRows{1:turbirow+1}]),wakes([wtRows{1:turbirow}]),inputData,wtRows,turbirow);
+            turbines([wtRows{1:turbirow+1}]),wakes([wtRows{1:turbirow+1}]),inputData,wtRows,turbirow);
     end
 end
 if dispTimer; disp(['TIMER: core operations: ' num2str(toc(timer.core)) ' s.']); end
