@@ -81,6 +81,8 @@ classdef floris<handle
             if P_opt > P_bl
                 if optimizeYaw;   self.inputData.yawAngles = xopt(1:inputData.nTurbs);         end;
                 if optimizeAxInd; self.inputData.axialInd  = xopt(end-inputData.nTurbs+1:end); end;
+            else
+                disp('Optimization was unsuccessful. Sticking to old control settings.');
             end;
             
             % Update outputData for optimized settings
@@ -127,9 +129,9 @@ classdef floris<handle
                 
                 % Simulate over each uIf-vIf set (matrix row)
                 for i = 1:size(windRose,1);
-                    self.inputData.uInfIf       = windRose(i,1);
-                    self.inputData.vInfIf       = windRose(i,2);
-                    [self.outputDataAEP{i}]   = self.run();
+                    self.inputData.uInfIf   = windRose(i,1);
+                    self.inputData.vInfIf   = windRose(i,2);
+                    [self.outputDataAEP{i}] = self.run();
                 end;
                 
                 % Results saved internally, but also returns externally if desired.
