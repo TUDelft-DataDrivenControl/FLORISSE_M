@@ -70,19 +70,22 @@ classdef floris<handle
             %options = optimset('Display','iter','MaxFunEvals',1000,'PlotFcns',{@optimplotx, @optimplotfval} ); % Display convergence
             %xopt    = simulannealbnd(cost,self.inputData.axialInd,lb,ub,options);
             
-            % Overwrite current settings with optimized
-            if optimizeYaw;   self.inputData.yawAngles = xopt(1:inputData.nTurbs);         end;
-            if optimizeAxInd; self.inputData.axialInd  = xopt(end-inputData.nTurbs+1:end); end;
-            
-            % Update outputData for optimized settings
-            self.run(); 
-            
             % Display improvements
             P_bl  = -costFunction(x0,  inputData,optimizeYaw,optimizeAxInd); % Calculate baseline power
             P_opt = -costFunction(xopt,inputData,optimizeYaw,optimizeAxInd); % Calculate optimal power
             disp(['Initial power: ' num2str(P_bl/10^6) ' MW']);
             disp(['Optimized power: ' num2str(P_opt/10^6) ' MW']);
             disp(['Relative increase: ' num2str((P_opt/P_bl-1)*100) '%.']);
+            
+            % Overwrite current settings with optimized oness
+            if P_opt > P_bl
+                if optimizeYaw;   self.inputData.yawAngles = xopt(1:inputData.nTurbs);         end;
+                if optimizeAxInd; self.inputData.axialInd  = xopt(end-inputData.nTurbs+1:end); end;
+            end;
+            
+            % Update outputData for optimized settings
+            self.run(); 
+            
             end;
             
             function [self] = optimizeYaw(self)
