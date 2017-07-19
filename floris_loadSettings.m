@@ -52,7 +52,7 @@ end
 %% FLORIS model settings        
 switch lower(modelType)
     case {'default','default_porteagel'}  %% original tuning parameters
-        inputData.wakeModel         = 'gebraad';
+        inputData.wakeModel         = 'porteagel';
         inputData.pP                = 1.88; % yaw power correction parameter
         inputData.Ke                = 0.05; % wake expansion parameters
         % inputData.KeCorrArray     = 0.0; % array-correction factor: NOT YET IMPLEMENTED!
