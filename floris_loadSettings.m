@@ -35,7 +35,7 @@ switch lower(modelType)
         % 0: use pitch angles and Cp-Ct LUTs for pitch and WS, 
         % 1: greedy control   and Cp-Ct LUT for WS,
         % 2: specify axial induction directly.
-        inputData.axialControlMethod = 2;  
+        inputData.axialControlMethod = 1;  
         
         inputData.pP                = 1.88; % yaw power correction parameter
         inputData.Ke                = 0.05; % wake expansion parameters

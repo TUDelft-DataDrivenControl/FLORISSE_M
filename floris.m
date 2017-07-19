@@ -45,11 +45,20 @@ classdef floris<handle
                 ub = [ub, deg2rad(+25)*ones(inputData.nTurbs,1)];
             end;
             if optimizeAxInd
-                if inputData.usePitchAngles
+                if inputData.axialControlMethod == 0
                     x0 = [x0, inputData.pitchAngles];  
                     lb = [lb, deg2rad(0.0)*ones(inputData.nTurbs,1)];
                     ub = [ub, deg2rad(5.0)*ones(inputData.nTurbs,1)];
-                else
+                elseif inputData.axialControlMethod == 1
+                    disp(['Cannot optimize axialInd for axialControlMethod == 1.']);
+                    if optimizeYaw == false; 
+                        disp('Exiting optimization call.');
+                        return; 
+                    else
+                        disp('Optimizing yaw only.');
+                        optimizeAxInd = false;
+                    end;
+                elseif inputData.axialControlMethod == 2
                     x0 = [x0, inputData.axialInd];     
                     lb = [lb, 0.0*ones(inputData.nTurbs,1)];
                     ub = [ub, 1/3*ones(inputData.nTurbs,1)];
@@ -61,9 +70,9 @@ classdef floris<handle
                 % Overwrite settings for yaw and/or axial induction
                 if optimizeYaw;   inputData.yawAngles = x(1:inputData.nTurbs); end;
                 if optimizeAxInd;
-                    if inputData.usePitchAngles;
+                    if inputData.axialControlMethod == 0
                         inputData.pitchAngles = x(end-inputData.nTurbs+1:end);
-                    else
+                    elseif inputData.axialControlMethod == 2
                         inputData.axialInd    = x(end-inputData.nTurbs+1:end); 
                     end;
                 end;
@@ -95,13 +104,13 @@ classdef floris<handle
             if P_opt > P_bl
                 if optimizeYaw; self.inputData.yawAngles = xopt(1:inputData.nTurbs); end;
                 if optimizeAxInd; 
-                    if inputData.usePitchAngles
+                    if inputData.axialControlMethod == 0
                         self.inputData.pitchAngles = xopt(end-inputData.nTurbs+1:end); 
                         self.inputData.axialInd    = NaN*ones(1,inputData.nTurbs);
                         % The implicit values for axialInd calculated from
                         % blade pitch angles can be found in outputData,
                         % under the 'turbine.axialInd' substructure.
-                    else
+                    elseif inputData.axialControlMethod == 2
                         self.inputData.pitchAngles = NaN*ones(1,inputData.nTurbs);
                         self.inputData.axialInd    = xopt(end-inputData.nTurbs+1:end); 
                     end;
