@@ -98,6 +98,9 @@ classdef floris<handle
                     if inputData.usePitchAngles
                         self.inputData.pitchAngles = xopt(end-inputData.nTurbs+1:end); 
                         self.inputData.axialInd    = NaN*ones(1,inputData.nTurbs);
+                        % The implicit values for axialInd calculated from
+                        % blade pitch angles can be found in outputData,
+                        % under the 'turbine.axialInd' substructure.
                     else
                         self.inputData.pitchAngles = NaN*ones(1,inputData.nTurbs);
                         self.inputData.axialInd    = xopt(end-inputData.nTurbs+1:end); 
