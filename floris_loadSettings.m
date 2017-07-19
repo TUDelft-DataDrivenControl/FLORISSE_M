@@ -38,13 +38,18 @@ switch lower(turbType)
         inputData.LocIF(:,3)            = inputData.hub_height;
         
         % Control settings
-        inputData.yawAngles =  deg2rad([-27 10 -30 -30 -20 -15 0 10 0]);
-        inputData.tiltAngles = deg2rad([0 0 0 0 0 0 0 0 0]);
-
-        inputData.axialInd  = 1/3 * ones(1,nTurbs);
+        inputData.yawAngles   = deg2rad([-27 10 -30 -30 -20 -15 0 10 0]);
+        inputData.tiltAngles  = deg2rad([0 0 0 0 0 0 0 0 0]);
+        inputData.pitchAngles = deg2rad([1.9 1.9 1.9 1.9 1.9 1.9 1.9 1.9]);
         
         % Determine Cp and Ct interpolation functions as functions of velocity
-        load('NREL5MWCPCT.mat'); % converted from .p file        
+        for airfoilDataType = {'cp','ct'}
+            lut        = csvread([airfoilDataType{1} 'Pitch.csv']);
+            lut_ws     = lut(1,2:end);          % Wind speed in LUT in m/s
+            lut_pitch  = deg2rad(lut(2:end,1)); % Blade pitch angle in LUT in radians
+            lut_value  = lut(2:end,2:end);      % Values of Cp/Ct [dimensionless]
+            inputData.([airfoilDataType{1} '_interp'])  = @(ws,pitch) interp2(lut_ws,lut_pitch,lut_value,ws,pitch);
+        end;
     otherwise
         error(['Turbine type with name "' turbType '" not defined']);
 end
@@ -52,7 +57,8 @@ end
 %% FLORIS model settings        
 switch lower(modelType)
     case {'default','default_porteagel'}  %% original tuning parameters
-        inputData.wakeModel         = 'porteagel';
+        inputData.wakeModel         = 'porteagel'; % Does nothing yet...
+        
         inputData.pP                = 1.88; % yaw power correction parameter
         inputData.Ke                = 0.05; % wake expansion parameters
         % inputData.KeCorrArray     = 0.0; % array-correction factor: NOT YET IMPLEMENTED!
@@ -73,37 +79,36 @@ switch lower(modelType)
         inputData.bU                = 1.3;
         
         inputData.MU               = [0.5, 1.0, 5.5];
-        inputData.axialIndProvided = true;
         
         % adjust initial wake diameter to yaw
         inputData.adjustInitialWakeDiamToYaw = false;        
         
-    case 'default_gebraad'  %% original tuning parameters
-        inputData.wakeModel         = 'gebraad';
-        inputData.pP                = 1.88; % yaw power correction parameter
-        inputData.Ke                = 0.05; % wake expansion parameters
-        % inputData.KeCorrArray     = 0.0; % array-correction factor: NOT YET IMPLEMENTED!
-        inputData.KeCorrCT          = 0.0; % CT-correction factor
-        inputData.baselineCT        = 4.0*(1.0/3.0)*(1.0-(1.0/3.0)); % Baseline CT for ke-correction
-        inputData.me                = [-0.5, 0.22, 1.0]; % relative expansion of wake zones
-        inputData.KdY               = 0.17; % Wake deflection recovery factor
-        
-        % define initial wake displacement and angle (not determined by yaw angle)
-        inputData.useWakeAngle      = true;
-        inputData.kd                = deg2rad(1.5);  % initialWakeAngle in X-Y plane
-        inputData.ad                = -4.5; % initialWakeDisplacement
-        inputData.bd                = -0.01;
-        
-        % correction recovery coefficients with yaw
-        inputData.useaUbU           = true;
-        inputData.aU                = 12.0; % units: degrees
-        inputData.bU                = 1.3;
-        
-        inputData.MU               = [0.5, 1.0, 5.5];
-        inputData.axialIndProvided = true;
-        
-        % adjust initial wake diameter to yaw
-        inputData.adjustInitialWakeDiamToYaw = false;
+%     case 'default_gebraad'  %% original tuning parameters
+%         inputData.wakeModel         = 'gebraad';
+%         inputData.pP                = 1.88; % yaw power correction parameter
+%         inputData.Ke                = 0.05; % wake expansion parameters
+%         % inputData.KeCorrArray     = 0.0; % array-correction factor: NOT YET IMPLEMENTED!
+%         inputData.KeCorrCT          = 0.0; % CT-correction factor
+%         inputData.baselineCT        = 4.0*(1.0/3.0)*(1.0-(1.0/3.0)); % Baseline CT for ke-correction
+%         inputData.me                = [-0.5, 0.22, 1.0]; % relative expansion of wake zones
+%         inputData.KdY               = 0.17; % Wake deflection recovery factor
+%         
+%         % define initial wake displacement and angle (not determined by yaw angle)
+%         inputData.useWakeAngle      = true;
+%         inputData.kd                = deg2rad(1.5);  % initialWakeAngle in X-Y plane
+%         inputData.ad                = -4.5; % initialWakeDisplacement
+%         inputData.bd                = -0.01;
+%         
+%         % correction recovery coefficients with yaw
+%         inputData.useaUbU           = true;
+%         inputData.aU                = 12.0; % units: degrees
+%         inputData.bU                = 1.3;
+%         
+%         inputData.MU               = [0.5, 1.0, 5.5];
+%         inputData.axialIndProvided = true;
+%         
+%         % adjust initial wake diameter to yaw
+%         inputData.adjustInitialWakeDiamToYaw = false;
         
     otherwise
         error(['Model type with name: "' modelType '" not defined']);
@@ -116,5 +121,5 @@ for i = 1:nTurbs
 end
 
 % Dirty way to prevent negative ws problems. TODO: Fix negative windspeeds properly
-inputData.Ct_interp = @(ws) interp1([-5 NREL5MWCPCT.wind_speed].',[.6 NREL5MWCPCT.CT].',ws);
-inputData.Cp_interp = @(ws) interp1([-5 NREL5MWCPCT.wind_speed].',[0 NREL5MWCPCT.CP].',ws);
+% inputData.Ct_interp = @(ws) interp1([-5 NREL5MWCPCT.wind_speed].',[.6 NREL5MWCPCT.CT].',ws);
+% inputData.Cp_interp = @(ws) interp1([-5 NREL5MWCPCT.wind_speed].',[0 NREL5MWCPCT.CP].',ws);

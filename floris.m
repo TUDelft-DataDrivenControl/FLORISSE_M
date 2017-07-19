@@ -8,7 +8,8 @@ classdef floris<handle
     methods
         %% Constructor function initializes default inputData
         function self = floris(modelType,turbType,siteType)
-            addpath('functions');
+            addpath('functions'); % Model functions
+            addpath('NREL5MW');   % Airfoil data
             
             % Default setup
             if ~exist('siteType','var');    siteType  = '9turb';   end;
