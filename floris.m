@@ -93,8 +93,16 @@ classdef floris<handle
             
             % Overwrite current settings with optimized oness
             if P_opt > P_bl
-                if optimizeYaw;   self.inputData.yawAngles = xopt(1:inputData.nTurbs);         end;
-                if optimizeAxInd; self.inputData.axialInd  = xopt(end-inputData.nTurbs+1:end); end;
+                if optimizeYaw; self.inputData.yawAngles = xopt(1:inputData.nTurbs); end;
+                if optimizeAxInd; 
+                    if inputData.usePitchAngles
+                        self.inputData.pitchAngles = xopt(end-inputData.nTurbs+1:end); 
+                        self.inputData.axialInd    = NaN*ones(1,inputData.nTurbs);
+                    else
+                        self.inputData.pitchAngles = NaN*ones(1,inputData.nTurbs);
+                        self.inputData.axialInd    = xopt(end-inputData.nTurbs+1:end); 
+                    end;
+                end;
             else
                 disp('Optimization was unsuccessful. Sticking to old control settings.');
             end;
