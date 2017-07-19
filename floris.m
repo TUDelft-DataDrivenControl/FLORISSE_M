@@ -39,21 +39,34 @@ classdef floris<handle
             
             % Define initial guess and bounds
             x0 = []; lb = []; ub = [];
-            if optimizeYaw;   
+            if optimizeYaw  
                 x0 = [x0, inputData.yawAngles]; 
                 lb = [lb, deg2rad(-25)*ones(inputData.nTurbs,1)];
                 ub = [ub, deg2rad(+25)*ones(inputData.nTurbs,1)];
             end;
-            if optimizeAxInd; 
-                x0 = [x0, inputData.axialInd];     
-                lb = [lb, 0.000*ones(inputData.nTurbs,1)];
-                ub = [ub, 0.333*ones(inputData.nTurbs,1)];
+            if optimizeAxInd
+                if inputData.usePitchAngles
+                    x0 = [x0, inputData.pitchAngles];  
+                    lb = [lb, deg2rad(0.0)*ones(inputData.nTurbs,1)];
+                    ub = [ub, deg2rad(5.0)*ones(inputData.nTurbs,1)];
+                else
+                    x0 = [x0, inputData.axialInd];     
+                    lb = [lb, 0.0*ones(inputData.nTurbs,1)];
+                    ub = [ub, 1/3*ones(inputData.nTurbs,1)];
+                end;
             end;
             
             % Cost function
             function J = costFunction(x,inputData,optimizeYaw,optimizeAxInd)
-                if optimizeYaw;   inputData.yawAngles = x(1:inputData.nTurbs);          end;
-                if optimizeAxInd; inputData.axialInd  = x(end-inputData.nTurbs+1:end);  end;
+                % Overwrite settings for yaw and/or axial induction
+                if optimizeYaw;   inputData.yawAngles = x(1:inputData.nTurbs); end;
+                if optimizeAxInd;
+                    if inputData.usePitchAngles;
+                        inputData.pitchAngles = x(end-inputData.nTurbs+1:end);
+                    else
+                        inputData.axialInd    = x(end-inputData.nTurbs+1:end); 
+                    end;
+                end;
 
                 [outputData] = floris_core(inputData,0);
                 J            = -sum(outputData.power);

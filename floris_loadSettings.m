@@ -25,43 +25,15 @@ switch siteType
     otherwise
         error(['Site type with name "' siteType '" not defined']);
 end
-       
-%% Turbine settings
-switch lower(turbType)
-    case 'nrel5mw'
-        nTurbs                          = size(inputData.LocIF,1);
-        inputData.nTurbs                = nTurbs;
-        inputData.rotorRadius           = (126.4/2) * ones(1,nTurbs);
-        inputData.generator_efficiency  = 0.944 * ones(1,nTurbs);
-        inputData.hub_height            = 90.0  * ones(1,nTurbs);
-        
-        inputData.LocIF(:,3)            = inputData.hub_height;
-        
-        % Control settings
-        inputData.yawAngles   = deg2rad([-27 10 -30 -30 -20 -15 0 10 0]);
-        inputData.tiltAngles  = deg2rad([0 0 0 0 0 0 0 0 0]);
-        inputData.pitchAngles = deg2rad([1.9 1.9 1.9 1.9 1.9 1.9 1.9 1.9]);
-        
-        % Determine Cp and Ct interpolation functions as functions of velocity
-        for airfoilDataType = {'cp','ct'}
-            lut        = csvread([airfoilDataType{1} 'Pitch.csv']);
-            lut_ws     = lut(1,2:end);          % Wind speed in LUT in m/s
-            lut_pitch  = deg2rad(lut(2:end,1)); % Blade pitch angle in LUT in radians
-            lut_value  = lut(2:end,2:end);      % Values of Cp/Ct [dimensionless]
-            inputData.([airfoilDataType{1} '_interp'])  = @(ws,pitch) interp2(lut_ws,lut_pitch,lut_value,ws,pitch);
-        end;
-    otherwise
-        error(['Turbine type with name "' turbType '" not defined']);
-end
-       
+              
 %% FLORIS model settings        
 switch lower(modelType)
     case {'default','default_porteagel'}  %% original tuning parameters
         inputData.wakeModel         = 'porteagel'; % Does nothing yet...
+        inputData.usePitchAngles    = true; % Work with pitch angles using LUTs (true) or with axial induction only (false)
         
         inputData.pP                = 1.88; % yaw power correction parameter
         inputData.Ke                = 0.05; % wake expansion parameters
-        % inputData.KeCorrArray     = 0.0; % array-correction factor: NOT YET IMPLEMENTED!
         inputData.KeCorrCT          = 0.0; % CT-correction factor
         inputData.baselineCT        = 4.0*(1.0/3.0)*(1.0-(1.0/3.0)); % Baseline CT for ke-correction
         inputData.me                = [-0.5, 0.22, 1.0]; % relative expansion of wake zones
@@ -78,7 +50,7 @@ switch lower(modelType)
         inputData.aU                = 12.0; % units: degrees
         inputData.bU                = 1.3;
         
-        inputData.MU               = [0.5, 1.0, 5.5];
+        inputData.MU             = [0.5, 1.0, 5.5];
         
         % adjust initial wake diameter to yaw
         inputData.adjustInitialWakeDiamToYaw = false;        
@@ -114,12 +86,43 @@ switch lower(modelType)
         error(['Model type with name: "' modelType '" not defined']);
 end
 
+%% Turbine settings
+switch lower(turbType)
+    case 'nrel5mw'
+        nTurbs                          = size(inputData.LocIF,1);
+        inputData.nTurbs                = nTurbs;
+        inputData.rotorRadius           = (126.4/2) * ones(1,nTurbs);
+        inputData.generator_efficiency  = 0.944     * ones(1,nTurbs);
+        inputData.hub_height            = 90.0      * ones(1,nTurbs);
+        
+        inputData.LocIF(:,3)            = inputData.hub_height;
+        
+        % Control settings
+        inputData.yawAngles   = zeros(1,nTurbs); % Set default as greedy
+        inputData.tiltAngles  = zeros(1,nTurbs); % Set default as greedy
+        
+        if inputData.usePitchAngles
+            inputData.pitchAngles = zeros(1,nTurbs); % Set default as greedy
+            inputData.axialInd    = zeros(1,nTurbs); % Create empty vector to write values to
+            
+            % Determine Cp and Ct interpolation functions as functions of velocity
+            for airfoilDataType = {'cp','ct'}
+                lut        = csvread([airfoilDataType{1} 'Pitch.csv']);
+                lut_ws     = lut(1,2:end);          % Wind speed in LUT in m/s
+                lut_pitch  = deg2rad(lut(2:end,1)); % Blade pitch angle in LUT in radians
+                lut_value  = lut(2:end,2:end);      % Values of Cp/Ct [dimensionless]
+                inputData.([airfoilDataType{1} '_interp'])  = @(ws,pitch) interp2(lut_ws,lut_pitch,lut_value,ws,pitch);
+            end;
+        else
+            inputData.axialInd    = 1/3*ones(1,nTurbs); % Set default as greedy
+            inputData.pitchAngles = NaN*ones(1,nTurbs); % set as NaN to avoid confusion
+        end;
+        
+    otherwise
+        error(['Turbine type with name "' turbType '" not defined']);
+end;
 
 %% Post-processing
 for i = 1:nTurbs
     inputData.rotorArea(i) = pi*inputData.rotorRadius(i).^2;
 end
-
-% Dirty way to prevent negative ws problems. TODO: Fix negative windspeeds properly
-% inputData.Ct_interp = @(ws) interp1([-5 NREL5MWCPCT.wind_speed].',[.6 NREL5MWCPCT.CT].',ws);
-% inputData.Cp_interp = @(ws) interp1([-5 NREL5MWCPCT.wind_speed].',[0 NREL5MWCPCT.CP].',ws);

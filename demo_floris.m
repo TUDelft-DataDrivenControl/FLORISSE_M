@@ -17,8 +17,9 @@ FLORIS.optimize(true,false);                 % Optimization for yaw angles: same
 
 %% Optimize axial induction factor
 FLORIS = floris();  % Initialize FLORIS class. Default: floris('default','NREL5MW','9turb');
-FLORIS.inputData.yawAngles = zeros(1,9);     % Set all turbines to greedy
-FLORIS.inputData.axialInd  = 0.33*ones(1,9); % Set all turbines to greedy
+FLORIS.inputData.yawAngles  = zeros(1,9);     % Set all turbines to greedy
+FLORIS.inputData.bladePitch = zeros(1,9);     % Set all turbines to greedy
+%FLORIS.inputData.axialInd  = 0.33*ones(1,9); % Set all turbines to greedy
 FLORIS.optimize(false,true);                 % Optimization for axial ind: same as .optimizeAxInd()
 %disp('Press a key to continue...'); pause; disp('');
 
