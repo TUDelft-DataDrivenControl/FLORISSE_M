@@ -17,10 +17,15 @@ function turbine = floris_cpctpower(inputData,turbine)
     end
 
     % Calculate Ct and Cp either by approximation or interpolation
-    if inputData.usePitchAngles
-        % calculate Ct and Cp from FAST LUT data and correct for yaw misallignment
-        turbine.Ct = inputData.ct_interp(turbine.windSpeed,turbine.bladePitch)*cos(turbine.ThrustAngle)^2;
-        turbine.Cp = inputData.cp_interp(turbine.windSpeed,turbine.bladePitch)*cos(turbine.ThrustAngle)^(inputData.pP/3.0);
+    if inputData.axialControlMethod <= 1
+        % calculate Ct and Cp from FAST LUT data
+        if inputData.axialControlMethod == 0
+            turbine.Ct = inputData.ct_interp(turbine.windSpeed,turbine.bladePitch);
+            turbine.Cp = inputData.cp_interp(turbine.windSpeed,turbine.bladePitch);
+        else
+            turbine.Ct = inputData.ct_interp(turbine.windSpeed);
+            turbine.Cp = inputData.cp_interp(turbine.windSpeed);
+        end;
         
         % Calculate axial induction factor
         if turbine.Ct > 0.96 % Glauert condition
@@ -33,11 +38,10 @@ function turbine = floris_cpctpower(inputData,turbine)
         % calculate Ct and Cp by approximation using AIF
         turbine.Ct = 4*ai*(1-ai);
         turbine.Cp = 4*ai*(1-ai)^2;
-        
-        % Correct Cp and Ct for yaw misallignment
-        turbine.Ct = turbine.Ct * cos(turbine.ThrustAngle)^2;
-        turbine.Cp = turbine.Cp * cos(turbine.ThrustAngle)^inputData.pP;  
-    end
+    end;
+    % Correct Cp and Ct for yaw misallignment
+    turbine.Ct = turbine.Ct * cos(turbine.ThrustAngle)^2;
+    turbine.Cp = turbine.Cp * cos(turbine.ThrustAngle)^inputData.pP;
     
     % Compute turbine power
     turbine.power = (0.5*inputData.airDensity*turbine.rotorArea*turbine.Cp)*(turbine.windSpeed^3.0)*turbine.eta;

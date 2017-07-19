@@ -29,8 +29,13 @@ end
 %% FLORIS model settings        
 switch lower(modelType)
     case {'default','default_porteagel'}  %% original tuning parameters
-        inputData.wakeModel         = 'porteagel'; % Does nothing yet...
-        inputData.usePitchAngles    = true; % Work with pitch angles using LUTs (true) or with axial induction only (false)
+        inputData.wakeModel          = 'porteagel'; % Does nothing yet...
+        
+        % Choice of how a turbine's axial control setting is determined
+        % 0: use pitch angles and Cp-Ct LUTs for pitch and WS, 
+        % 1: greedy control   and Cp-Ct LUT for WS,
+        % 2: specify axial induction directly.
+        inputData.axialControlMethod = 2;  
         
         inputData.pP                = 1.88; % yaw power correction parameter
         inputData.Ke                = 0.05; % wake expansion parameters
@@ -101,9 +106,9 @@ switch lower(turbType)
         inputData.yawAngles   = zeros(1,nTurbs); % Set default as greedy
         inputData.tiltAngles  = zeros(1,nTurbs); % Set default as greedy
         
-        if inputData.usePitchAngles
+        if inputData.axialControlMethod == 0  % Control through blade pitch
             inputData.pitchAngles = zeros(1,nTurbs); % Set default as greedy
-            inputData.axialInd    = zeros(1,nTurbs); % Create empty vector to write values to
+            inputData.axialInd    = zeros(1,nTurbs); % Create empty vector
             
             % Determine Cp and Ct interpolation functions as functions of velocity
             for airfoilDataType = {'cp','ct'}
@@ -113,9 +118,20 @@ switch lower(turbType)
                 lut_value  = lut(2:end,2:end);      % Values of Cp/Ct [dimensionless]
                 inputData.([airfoilDataType{1} '_interp'])  = @(ws,pitch) interp2(lut_ws,lut_pitch,lut_value,ws,pitch);
             end;
-        else
+            
+        elseif inputData.axialControlMethod == 1 % Greedy control with LUT for wind speed
+            inputData.pitchAngles    = NaN*ones(1,nTurbs); % set blade pitch as NaN to avoid confusion
+            inputData.axialInd       = zeros(1,nTurbs); % Create empty vector
+            lut                      = load('NREL5MWCPCT.mat');
+            inputData.('cp_interp')  = @(ws) interp1(lut.NREL5MWCPCT.wind_speed,lut.NREL5MWCPCT.CP,ws);
+            inputData.('ct_interp')  = @(ws) interp1(lut.NREL5MWCPCT.wind_speed,lut.NREL5MWCPCT.CT,ws);
+            
+        elseif inputData.axialControlMethod == 2 % Directly control axial induction factor (ADM)
             inputData.axialInd    = 1/3*ones(1,nTurbs); % Set default as greedy
-            inputData.pitchAngles = NaN*ones(1,nTurbs); % set as NaN to avoid confusion
+            inputData.pitchAngles = NaN*ones(1,nTurbs); % set blade pitch as NaN to avoid confusion
+            
+        else
+            error('Please specify inputData.axialControlMethod as 0, 1 or 2.');
         end;
         
     otherwise
