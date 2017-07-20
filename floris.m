@@ -7,16 +7,17 @@ classdef floris<handle
     end
     methods
         %% Constructor function initializes default inputData
-        function self = floris(modelType,turbType,siteType)
+        function self = floris(modelType,turbType,siteType,wakeType)
             addpath('functions');
             
             % Default setup
             if ~exist('siteType','var');    siteType  = '9turb';   end;
             if ~exist('turbType','var');    turbType  = 'NREL5MW'; end;
             if ~exist('modelType','var');   modelType = 'default'; end;
+            if ~exist('wakeType','var');    wakeType  = 'Zones'; end;
             
             % Call function
-            self.inputData = floris_loadSettings(modelType,turbType,siteType);
+            self.inputData = floris_loadSettings(modelType,turbType,siteType,wakeType);
         end
         
         

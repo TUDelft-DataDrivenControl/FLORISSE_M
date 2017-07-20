@@ -3,8 +3,7 @@ clear all; clc;
 %% Run a single simulation without optimization
 FLORIS = floris();          % Initialize FLORIS class. Default: floris('default','NREL5MW','9turb');
 FLORIS.run();               % Run a single simulation with the settings 'FLORIS.inputData'
-FLORIS.visualize(1,1,0);    % Calculate and display wind farm layout and top-view plot
-FLORIS.visualize(0,0,1);    % 3D visualization of the complete flow in the farm
+FLORIS.visualize(1,1,1);    % Generate all visualizations
 disp('Press a key to continue...'); pause;
 
 %% Optimize yaw angles

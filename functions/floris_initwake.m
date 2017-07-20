@@ -41,14 +41,28 @@ function [ wake ] = floris_initwake( inputData,turbine,wake )
         wake.wakeRadiusInit = turbine.rotorRadius;
     end
     
-    % Define the wake shape
-    wake.rZones = @(x,z) max(wake.wakeRadiusInit+wake.Ke.*inputData.me(z)*x,0*x);
-    wake.cZones = @(x,z) (wake.wakeRadiusInit./(wake.wakeRadiusInit + wake.Ke.*wake.mU(z).*x)).^2;
-    
-    % c is the wake intensity reduction factor
-    wake.cFull = @(x,r) ((abs(r)<=wake.rZones(x,3))-(abs(r)<wake.rZones(x,2))).*wake.cZones(x,3)+...
-        ((abs(r)<wake.rZones(x,2))-(abs(r)<wake.rZones(x,1))).*wake.cZones(x,2)+...
-        (abs(r)<wake.rZones(x,1)).*wake.cZones(x,1);
+    switch inputData.wakeType
+        case 'Zones'
+            wake.rZones = @(x,z) max(wake.wakeRadiusInit+wake.Ke.*inputData.me(z)*x,0*x);
+            wake.cZones = @(x,z) (wake.wakeRadiusInit./(wake.wakeRadiusInit + wake.Ke.*wake.mU(z).*x)).^2;
 
+            % c is the wake intensity reduction factor, b is the boundary
+            wake.cFull = @(x,r) ((abs(r)<=wake.rZones(x,3))-(abs(r)<wake.rZones(x,2))).*wake.cZones(x,3)+...
+                ((abs(r)<wake.rZones(x,2))-(abs(r)<wake.rZones(x,1))).*wake.cZones(x,2)+...
+                (abs(r)<wake.rZones(x,1)).*wake.cZones(x,1);
+            wake.boundary = @(x) wake.rZones(x,3);
+        
+        case 'Gauss'
+            r0Jens = turbine.rotorRadius;
+            rJens = @(x) wake.Ke*x+r0Jens;
+            cJens = @(x) (r0Jens./rJens(x)).^2;
+
+            gv = .65;
+            sd = 2;%*(.5/.65);
+
+            sig = @(x) rJens(x).*gv;
+            wake.cFull = @(x,r) (pi*rJens(x).^2).*(normpdf(r,0,sig(x))./((normcdf(sd,0,1)-normcdf(-sd,0,1))*sig(x)*sqrt(2*pi))).*cJens(x);
+            wake.boundary = @(x) sd*sig(x);
+    end
 
 end

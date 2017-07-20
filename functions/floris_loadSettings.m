@@ -1,4 +1,4 @@
-function [inputData] = floris_loadSettings(modelType,turbType,siteType)
+function [inputData] = floris_loadSettings(modelType,turbType,siteType,wakeType)
 %% Site and topology settings
 switch siteType
     case '9turb'
@@ -79,6 +79,8 @@ switch lower(modelType)
     otherwise
         error(['Model type with name: "' modelType '" not defined']);
 end
+
+inputData.wakeType = wakeType;
 
 
 %% Post-processing

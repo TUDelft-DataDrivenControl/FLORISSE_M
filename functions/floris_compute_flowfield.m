@@ -31,7 +31,7 @@ function [ flowField ] = floris_compute_flowfield( inputData,flowField,turbines,
             % deficits.^2 and takign the root as described in katic(1986)
             sout = zeros(size(squeeze(flowField.U(:,1,:))));
             for turb_num = 1:length(UwTurbines)
-                sout = sout + (hypots(:,:,turb_num)<wakes(turb_num).rZones(deltaXs(turb_num),3)).*((turbines(turb_num).axialInd*wakes(turb_num).cFull(deltaXs(turb_num),hypots(:,:,turb_num))).^2); % Eq. 16
+                sout = sout + (hypots(:,:,turb_num)<wakes(turb_num).boundary(deltaXs(turb_num))).*((turbines(turb_num).axialInd*wakes(turb_num).cFull(deltaXs(turb_num),hypots(:,:,turb_num))).^2); % Eq. 16
             end
             flowField.U(:,flowField.X(1,:,1)==xSample,:) = inputData.uInfWf*(1-2*sqrt(sout));
         end
