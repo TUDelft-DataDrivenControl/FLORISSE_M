@@ -1,32 +1,39 @@
 function [outputData] = floris_core(inputData,dispTimer)
-if nargin <= 1; dispTimer = true; end % Required to disable timer for optimization calls
-% Turbine operation settings in wind frame
-% Yaw misalignment with flow (counterclockwise, wind frame)
-% Axial induction control setting (used only if model.axialIndProvided == true)
-turbines = struct(  'YawWF',num2cell(inputData.yawAngles), ...
-    'Tilt',num2cell(inputData.tiltAngles), ...
-    'axialInd',num2cell(inputData.axialInd),...
-    'hub_height',num2cell(inputData.hub_height),...
-    'rotorRadius',num2cell(inputData.rotorRadius),...
-    'rotorArea',num2cell(inputData.rotorArea),...
-    'eta',num2cell(inputData.generator_efficiency),...
-    'windSpeed',[],'Cp',[],'Ct',[], ...
-    'power',[],'downstream',[],'ThrustAngle',[],'wakeNormal',[]);
 
+% Required to disable timer for optimization calls
+if nargin <= 1
+    dispTimer = true; 
+end 
+
+% Turbine operation settings in wind frame
+turbines = struct(...
+    'YawWF',        num2cell(inputData.yawAngles), ...   % Yaw misalignment with flow (counterclockwise, wind frame)
+    'Tilt',         num2cell(inputData.tiltAngles), ...  % Tilt misalignment with flow
+    'bladePitch',   num2cell(inputData.pitchAngles), ... % Collective blade pitch angles
+    'axialInd',     num2cell(inputData.axialInd),...     % Axial induction control setting (used only if model.axialIndProvided == true)
+    'hub_height',   num2cell(inputData.hub_height),...
+    'rotorRadius',  num2cell(inputData.rotorRadius),...
+    'rotorArea',    num2cell(inputData.rotorArea),...
+    'eta',          num2cell(inputData.generator_efficiency),...
+    'windSpeed',[],'Cp',[],'Ct',[],'power',[],...
+    'downstream',[],'ThrustAngle',[],'wakeNormal',[]);
+
+% Wake properties
 wakes = struct( 'Ke',num2cell(zeros(1,length(turbines))),'mU',{[]}, ...
     'zetaInit',[],'wakeRadiusInit',[],'centerLine',[], ...
     'rZones',[],'cZones',[],'cFull',[],'boundary',[]);
+
 
 %% Internal code of FLORIS
 % Determine wind farm layout in wind-aligned frame. Note that the
 % turbines are renumbered in the order of appearance w.r.t wind direction
 [turbines,wtRows] = floris_frame(inputData,turbines);
+
 % The first row of turbines has the freestream as inflow windspeed
 [turbines(wtRows{1}).windSpeed] = deal(inputData.uInfWf);
 
 % Start the core model. Without any visualization this is all that runs, It
-% computes the power produced at all turbines given the flow and
-% turbine settings
+% computes the power produced at all turbines given the flow and turbine settings
 timer.core = tic;
 for turbirow = 1:length(wtRows) % for first to last row of turbines
     for turbNum = wtRows{turbirow} % for each turbine in this row
