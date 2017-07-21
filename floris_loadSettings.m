@@ -1,4 +1,4 @@
-function [inputData] = floris_loadSettings(modelType,turbType,siteType,wakeType)
+function [inputData] = floris_loadSettings(modelType,turbType,siteType)
 %% Site and topology settings
 switch siteType
     case '9turb'
@@ -104,7 +104,8 @@ switch lower(turbType)
         inputData.LocIF(:,3)            = inputData.hub_height;
         
         % Control settings
-        inputData.yawAngles   = zeros(1,nTurbs);     % Set default as greedy
+%         inputData.yawAngles   = zeros(1,nTurbs);     % Set default as greedy
+        inputData.yawAngles   = deg2rad([-27 10 -30 -30 -20 -15 0 10 0]);
         inputData.tiltAngles  = zeros(1,nTurbs);     % Set default as greedy
         inputData.pitchAngles = zeros(1,nTurbs);     % Only relevant if inputData.axialControlMethod == 0
         inputData.axialInd    = 1/3*ones(1,nTurbs);  % Only relevant if inputData.axialControlMethod == 2
@@ -112,8 +113,6 @@ switch lower(turbType)
     otherwise
         error(['Turbine type with name "' turbType '" not defined']);
 end
-
-inputData.wakeType = wakeType;
 
 %% Post-processing
 % Compute windDirection and magnitude

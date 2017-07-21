@@ -50,8 +50,10 @@ function [ wake ] = floris_initwake( inputData,turbine,wake )
             wake.cFull = @(x,r) ((abs(r)<=wake.rZones(x,3))-(abs(r)<wake.rZones(x,2))).*wake.cZones(x,3)+...
                 ((abs(r)<wake.rZones(x,2))-(abs(r)<wake.rZones(x,1))).*wake.cZones(x,2)+...
                 (abs(r)<wake.rZones(x,1)).*wake.cZones(x,1);
+            
+            wake.V = @(U,a,x,r) U*(1-2*a*wake.cFull(x,r));
             wake.boundary = @(x) wake.rZones(x,3);
-        
+            
         case 'Gauss'
             r0Jens = turbine.rotorRadius;
             rJens = @(x) wake.Ke*x+r0Jens;
@@ -62,6 +64,7 @@ function [ wake ] = floris_initwake( inputData,turbine,wake )
 
             sig = @(x) rJens(x).*gv;
             wake.cFull = @(x,r) (pi*rJens(x).^2).*(normpdf(r,0,sig(x))./((normcdf(sd,0,1)-normcdf(-sd,0,1))*sig(x)*sqrt(2*pi))).*cJens(x);
+            wake.V = @(U,a,x,r) U*(1-2*a*wake.cFull(x,r));
             wake.boundary = @(x) sd*sig(x);
     end
 
