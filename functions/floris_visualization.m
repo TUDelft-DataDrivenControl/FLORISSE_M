@@ -6,7 +6,7 @@ function [flowField] = floris_visualization(inputData,outputData,flowField)
     flowField.resy   = 5;   % resolution in y-axis in meters (windframe)
     flowField.resz   = 10;  % resolution in z-axis in meters (windframe)
     flowField.dims = max([outputData.turbines.LocWF],[],2);
-    flowField.fixYaw = true;% Account for yaw in near-turbine region in 2Dplot
+    flowField.fixYaw = false;% Account for yaw in near-turbine region in 2Dplot
 
     computeField = false;
 

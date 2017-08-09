@@ -66,6 +66,21 @@ function [ wake ] = floris_initwake( inputData,turbine,wake )
             wake.cFull = @(x,r) (pi*rJens(x).^2).*(normpdf(r,0,sig(x))./((normcdf(sd,0,1)-normcdf(-sd,0,1))*sig(x)*sqrt(2*pi))).*cJens(x);
             wake.V = @(U,a,x,r) U*(1-2*a*wake.cFull(x,r));
             wake.boundary = @(x) sd*sig(x);
+        case 'Larsen'
+            D = 2*turbine.rotorRadius;
+            A = pi*turbine.rotorRadius^2;
+            H = turbine.hub_height;
+            
+            IaLars = .06; % ambient turbulence
+            RnbLars = D*max(1.08,1.08+21.7*(IaLars-0.05));
+            R95Lars = 0.5*(RnbLars+min(H,RnbLars));
+            DeffLars = D*sqrt((1+sqrt(1-turbine.Ct))/(2*sqrt(1-turbine.Ct)));
+
+            x0 = 9.5*D/((2*R95Lars/DeffLars)^3-1);
+            c1Lars = (DeffLars/2)^(5/2)*(105/(2*pi))^(-1/2)*(turbine.Ct*A*x0).^(-5/6);
+
+            wake.boundary = @(x) (35/(2*pi))^(1/5)*(3*(c1Lars)^2)^(1/5)*((x).*turbine.Ct*A).^(1/3);
+            wake.V  = @(U,a,x,r) U-U*((1/9)*(turbine.Ct.*A.*((x0+x).^-2)).^(1/3).*( abs(r).^(3/2).*((3.*c1Lars.^2).*turbine.Ct.*A.*(x0+x)).^(-1/2) - (35/(2.*pi)).^(3/10).*(3.*c1Lars^2).^(-1/5) ).^2);
     end
 
 end

@@ -16,7 +16,7 @@ classdef floris<handle
             if ~exist('siteType','var');    siteType  = '9turb';   end
             if ~exist('turbType','var');    turbType  = 'NREL5MW'; end
             if ~exist('modelType','var');   modelType = 'default'; end
-            if ~exist('wakeType','var');    wakeType  = 'Gauss'; end
+            if ~exist('wakeType','var');    wakeType  = 'Zones'; end
             if ~exist('wakeSum','var');     wakeSum   = 'Katic'; end
             
             % Call function
