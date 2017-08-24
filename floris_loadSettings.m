@@ -1,4 +1,4 @@
-function [inputData] = floris_loadSettings(modelType,turbType,siteType)
+function [inputData] = floris_loadSettings(modelType,turbType,siteType,atmoType)
 %% Site and topology settings
 switch siteType
     case '9turb'
@@ -16,12 +16,12 @@ switch siteType
         % Atmospheric settings
         inputData.uInfIf   = 12;       % x-direction flow speed inertial frame (m/s)
         inputData.vInfIf   = 4;        % y-direction flow speed inertial frame (m/s)
-        inputData.airDensity = 1.1716; % Atmospheric air density (kg/m3)      
-        
+        inputData.airDensity = 1.1716; % Atmospheric air density (kg/m3)
+                
         % The following values are only necessary for Porte-Agels wake model
         inputData.turbIntensity = 0.10;
         inputData.shear         = 0.12;
-
+        
     otherwise
         error(['Site type with name "' siteType '" not defined']);
 end
@@ -118,6 +118,16 @@ end
 % Compute windDirection and magnitude
 inputData.windDirection = atand(inputData.vInfIf/inputData.uInfIf); % Wind dir in degrees (inertial frame)
 inputData.uInfWf        = hypot(inputData.uInfIf,inputData.vInfIf); % axial flow speed in wind frame
+
+switch lower(atmoType)
+    case 'boundary'
+        % initialize the flow field used in the 3D model based on shear using the power log law
+        inputData.Ufun = @(z) inputData.uInfWf.*(z./90).^inputData.shear;
+    case 'uniform'
+        inputData.Ufun = @(z) inputData.uInfWf;
+    otherwise
+        error(['Atmosphere type with name "' atmoType '" not defined']);
+end
 
 % Compute control settings and turbine DOF
 if inputData.axialControlMethod == 0  % Control through blade pitch

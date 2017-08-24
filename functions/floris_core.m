@@ -30,7 +30,9 @@ wakes = struct( 'Ke',num2cell(zeros(1,length(turbines))),'mU',{[]}, ...
 [turbines,wtRows] = floris_frame(inputData,turbines);
 
 % The first row of turbines has the freestream as inflow windspeed
-[turbines(wtRows{1}).windSpeed] = deal(inputData.uInfWf);
+for turbNum = wtRows{1}
+    turbines(turbNum).windSpeed = inputData.Ufun(turbines(turbNum).hub_height);
+end
 
 % Start the core model. Without any visualization this is all that runs, It
 % computes the power produced at all turbines given the flow and turbine settings

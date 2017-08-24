@@ -51,7 +51,7 @@ function [ wake ] = floris_initwake( inputData,turbine,wake )
                 ((abs(r)<wake.rZones(x,2))-(abs(r)<wake.rZones(x,1))).*wake.cZones(x,2)+...
                 (abs(r)<wake.rZones(x,1)).*wake.cZones(x,1);
             
-            wake.V = @(U,a,x,r) U*(1-2*a*wake.cFull(x,r));
+            wake.V = @(U,a,x,r) U.*(1-2*a*wake.cFull(x,r));
             wake.boundary = @(x) wake.rZones(x,3);
             
         case 'Gauss'
@@ -64,7 +64,7 @@ function [ wake ] = floris_initwake( inputData,turbine,wake )
 
             sig = @(x) rJens(x).*gv;
             wake.cFull = @(x,r) (pi*rJens(x).^2).*(normpdf(r,0,sig(x))./((normcdf(sd,0,1)-normcdf(-sd,0,1))*sig(x)*sqrt(2*pi))).*cJens(x);
-            wake.V = @(U,a,x,r) U*(1-2*a*wake.cFull(x,r));
+            wake.V = @(U,a,x,r) U.*(1-2*a*wake.cFull(x,r));
             wake.boundary = @(x) sd*sig(x);
         case 'Larsen'
             D = 2*turbine.rotorRadius;
@@ -80,7 +80,7 @@ function [ wake ] = floris_initwake( inputData,turbine,wake )
             c1Lars = (DeffLars/2)^(5/2)*(105/(2*pi))^(-1/2)*(turbine.Ct*A*x0).^(-5/6);
 
             wake.boundary = @(x) (35/(2*pi))^(1/5)*(3*(c1Lars)^2)^(1/5)*((x).*turbine.Ct*A).^(1/3);
-            wake.V  = @(U,a,x,r) U-U*((1/9)*(turbine.Ct.*A.*((x0+x).^-2)).^(1/3).*( abs(r).^(3/2).*((3.*c1Lars.^2).*turbine.Ct.*A.*(x0+x)).^(-1/2) - (35/(2.*pi)).^(3/10).*(3.*c1Lars^2).^(-1/5) ).^2);
+            wake.V  = @(U,a,x,r) U-U.*((1/9)*(turbine.Ct.*A.*((x0+x).^-2)).^(1/3).*( abs(r).^(3/2).*((3.*c1Lars.^2).*turbine.Ct.*A.*(x0+x)).^(-1/2) - (35/(2.*pi)).^(3/10).*(3.*c1Lars^2).^(-1/5) ).^2);
     end
 
 end

@@ -15,38 +15,6 @@ function [ ] = plot_2d_field( flowField,turbines )
         yVec = flowField.Y(:,1);
     end
     
-    % Correction for turbine yaw in flow field in turning radius of turbine
-    if flowField.fixYaw
-        for turbi = 1:size(turbWF,2) % for each turbine
-            ytop    = turbWF(2,turbi)+cos(YawWfs(turbi))*turbines(turbi).rotorRadius;
-            ybottom = turbWF(2,turbi)-cos(YawWfs(turbi))*turbines(turbi).rotorRadius;
-
-            [~,celltopy]    = min(abs(ytop   - yVec));
-            [~,cellbottomy] = min(abs(ybottom- yVec));
-
-            for celly = cellbottomy-2:1:celltopy+2
-                % cell location of turbine blade x
-                xlocblade = turbWF(1,turbi)-sin(YawWfs(turbi))*(yVec(celly)-turbWF(2,turbi));
-                [~,cellxtower] = min(abs(xVec-turbWF(1,turbi)));
-                [~,cellxblade] = min(abs(xVec-xlocblade));
-                
-                if yVec(celly) > turbWF(2,turbi) % top part
-                    if YawWfs(turbi) < 0
-                        UatHub(cellxtower:cellxblade,celly) = UatHub(cellxtower-1,celly);
-                    else
-                        UatHub(cellxblade:cellxtower,celly) = UatHub(cellxtower+1,celly);
-                    end
-                else % lower part
-                    if YawWfs(turbi) < 0
-                        UatHub(cellxblade:cellxtower,celly) = UatHub(cellxtower+1,celly);
-                    else
-                        UatHub(cellxtower:cellxblade,celly) = UatHub(cellxtower-1,celly);
-                    end
-                end
-            end
-        end
-    end
-    
     % Plot the flowfield
     contourf(xVec,yVec,UatHub.','Linecolor','none');
     

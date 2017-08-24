@@ -18,11 +18,13 @@ classdef floris<handle
             if ~exist('modelType','var');   modelType = 'default'; end
             if ~exist('wakeType','var');    wakeType  = 'Zones'; end
             if ~exist('wakeSum','var');     wakeSum   = 'Katic'; end
+            if ~exist('atmoType','var');    atmoType  = 'uniform'; end
             
             % Call function
-            self.inputData = floris_loadSettings(modelType,turbType,siteType);
+            self.inputData = floris_loadSettings(modelType,turbType,siteType,atmoType);
             self.inputData.wakeType = wakeType;
             self.inputData.wakeSum  = wakeSum;
+            self.inputData.atmoType = atmoType;
         end
         
         

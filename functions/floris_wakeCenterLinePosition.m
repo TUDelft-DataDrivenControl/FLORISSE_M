@@ -1,25 +1,24 @@
 function [ wake ] = floris_wakeCenterLinePosition( inputData,turbine,wake )
+    if strcmp(inputData.wakeType,'PorteAgel')
+        wake.centerLine(2,:) = turbine.LocWF(2);
+        wake.centerLine(3,:) = turbine.LocWF(3);
+    else
+        % WakeDirection is used to determine the plane into which the wake is
+        % displaced. displacement*wakeDir + linearOffset = centerlinePosition
+        wakeDir = rotx(-90)*turbine.wakeNormal;
 
-    % WakeDirection is used to determine the plane into which the wake is
-    % displaced. displacement*wakeDir + linearOffset = centerlinePosition
-    wakeDir = rotx(-90)*turbine.wakeNormal;
-    
-    for sample_x = 1:length(wake.centerLine)
-        deltax = wake.centerLine(1,sample_x)-turbine.LocWF(1);
-        if deltax >= 0
-            % Calculate wake location delta Y: Eq. 8-12
-            factor       = (inputData.KdY*deltax/turbine.rotorRadius)+1;
-            displacement = (wake.zetaInit*(15*(factor^4)+(wake.zetaInit^2))/ ...
-                           ((15*inputData.KdY*(factor^5))/turbine.rotorRadius))- ...
-                           (wake.zetaInit*turbine.rotorRadius*...
-                           (15+(wake.zetaInit^2))/(15*inputData.KdY));
+        deltaxs = wake.centerLine(1,:)-turbine.LocWF(1);
+        % Calculate wake displacements as described in Jimenez
+        factors       = (inputData.KdY*deltaxs/turbine.rotorRadius)+1;
+        displacements = (wake.zetaInit*(15*(factors.^4)+(wake.zetaInit^2))./ ...
+                       ((15*inputData.KdY*(factors.^5))/turbine.rotorRadius))- ...
+                       (wake.zetaInit*turbine.rotorRadius*...
+                       (15+(wake.zetaInit^2))/(15*inputData.KdY));
 
-            % Wake centerLine position of this turbine at location x
-%  Possible correction: (1-inputData.useWakeAngle) *(inputData.ad + deltax * inputData.bd); 
-            wake.centerLine(2,sample_x) = turbine.LocWF(2) + inputData.ad + wakeDir(2)*displacement + ...  % initial position + yaw induced offset
-                            (1-inputData.useWakeAngle) *(deltax * inputData.bd);                % bladerotation-induced lateral offset
-            
-            wake.centerLine(3,sample_x) = turbine.LocWF(3) + wakeDir(3)*displacement;       % initial position + yaw*tilt induced offset
-        end
+        % Wake centerLine position of this turbine at location x
+        wake.centerLine(2,:) = turbine.LocWF(2) + wakeDir(2)*displacements + ...      % initial position + yaw induced offset
+                        (1-inputData.useWakeAngle) *(inputData.ad + deltaxs * inputData.bd); % bladerotation-induced lateral offset
+
+        wake.centerLine(3,:) = turbine.LocWF(3) + wakeDir(3)*displacements;       % initial position + yaw*tilt induced offset
     end
 end

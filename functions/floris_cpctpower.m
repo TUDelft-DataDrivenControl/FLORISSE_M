@@ -42,7 +42,7 @@ function turbine = floris_cpctpower(inputData,turbine)
     % Correct Cp and Ct for yaw misallignment
     turbine.Ct = turbine.Ct * cos(turbine.ThrustAngle)^2;
     turbine.Cp = turbine.Cp * cos(turbine.ThrustAngle)^inputData.pP;
-    
+
     % Compute turbine power
     turbine.power = (0.5*inputData.airDensity*turbine.rotorArea*turbine.Cp)*(turbine.windSpeed^3.0)*turbine.eta;
 end

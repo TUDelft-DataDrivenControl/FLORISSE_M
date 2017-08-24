@@ -8,11 +8,11 @@ function [ dwTurbs ] = floris_compute_windspeed( turbines,wakes,inputData,wt_row
                 deltax = turbines(dw_turbi).LocWF(1)-turbines(uw_turbi).LocWF(1);
                 [~,turbLocIndex] = min(abs(wakes(uw_turbi).centerLine(1,:)-turbines(dw_turbi).LocWF(1)));
                 
-                switch inputData.wakeType
-                    case 'Zones'
-                        Q = FlorisQ();
-                    otherwise
-                        Q = integralQ()./inputData.uInfWf;
+                % Q is the normalized velocity deficit on the turbine swept area
+                if strcmp(inputData.wakeType,'Zones') && strcmp(inputData.atmoType,'uniform')
+                    Q = FlorisQ();
+                else
+                    Q = integralQ();
                 end
                 
                 % Vni = Wake velocity of upwind turbine at this location
@@ -22,16 +22,21 @@ function [ dwTurbs ] = floris_compute_windspeed( turbines,wakes,inputData,wt_row
 
                 switch inputData.wakeSum
                     case 'Katic'
-                        sumKed = sumKed+(inputData.uInfWf*(1-Vni)).^2;
+%                         (inputData.Ufun(turbines(dw_turbi).hub_height)*(1-Vni)).^2
+%                         keyboard
+
+                        sumKed = sumKed+(inputData.Ufun(turbines(dw_turbi).hub_height)*(1-Vni)).^2;
                     case 'Voutsinas'
                         % To compute the energy deficit use the inflow
                         % speed of the upwind turbine instead of Uinf
                         sumKed = sumKed+(turbines(uw_turbi).windSpeed*(1-Vni)).^2;
                 end
-                
             end
         end
-        turbines(dw_turbi).windSpeed = inputData.uInfWf-sqrt(sumKed);
+        turbines(dw_turbi).windSpeed = inputData.Ufun(turbines(dw_turbi).hub_height)-sqrt(sumKed);
+        if imag(turbines(dw_turbi).windSpeed)>0
+            keyboard
+        end
     end
     dwTurbs = turbines(wt_rows{turbirow+1});
 
@@ -52,26 +57,26 @@ function [ dwTurbs ] = floris_compute_windspeed( turbines,wakes,inputData,wt_row
 
     function Q = integralQ()
 
-        Q   = turbines(dw_turbi).rotorArea*inputData.uInfWf;
+        Q   = turbines(dw_turbi).rotorArea;
         % Compute the distance between the center of the downwind turbine and the wake centerline of the upwind turbine
         d = wakes(uw_turbi).boundary(deltax)+turbines(dw_turbi).rotorRadius;
         % Compute the distance to the center of the wake of the downwind turbine for some (y,z), (0,0) is the wake centerline
         Rdwt = @(y,z) hypot(turbines(dw_turbi).LocWF(2)+y-(wakes(uw_turbi).centerLine(2,turbLocIndex)),...
                 turbines(dw_turbi).LocWF(3)+z-(wakes(uw_turbi).centerLine(3,turbLocIndex)));
-
+        
         if Rdwt(0,0)<d
-            VelocityFun =@(y,z) (Rdwt(y,z)>=wakes(uw_turbi).boundary(deltax)).* inputData.uInfWf+...
-                (Rdwt(y,z)<wakes(uw_turbi).boundary(deltax)).*wakes(uw_turbi).V(inputData.uInfWf,turbines(uw_turbi).axialInd,deltax,Rdwt(y,z));
+            zabs = @(z) z+(wakes(uw_turbi).centerLine(3,turbLocIndex));
+            VelocityFun =@(y,z) ((Rdwt(y,z)>=wakes(uw_turbi).boundary(deltax)).*inputData.Ufun(zabs(z))+...
+                (Rdwt(y,z)<wakes(uw_turbi).boundary(deltax)).*wakes(uw_turbi).V(inputData.Ufun(zabs(z)),turbines(uw_turbi).axialInd,deltax,Rdwt(y,z)))./inputData.Ufun(zabs(z));
             polarfun = @(theta,r) VelocityFun(r.*cos(theta),r.*sin(theta)).*r;
-
+            
             Q = quad2d(polarfun,0,2*pi,0,turbines(dw_turbi).rotorRadius,'Abstol',15,...
                 'Singular',false,'FailurePlot',true,'MaxFunEvals',3500);
-            
+
 %             [PHI,R] = meshgrid([0:.1:2*pi 2*pi],0:turbines(dw_turbi).rotorRadius);
 %             figure;surf(R.*cos(PHI), R.*sin(PHI), polarfun(PHI,R)./R);
 %             title(Q);
 %             keyboard
-
         end
     end
 

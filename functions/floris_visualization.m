@@ -29,7 +29,7 @@ function [flowField] = floris_visualization(inputData,outputData,flowField)
 
     if computeField
         disp(' Computing flowfield, this may take some time');
-        flowField.U  = inputData.uInfWf*ones(size(flowField.X));
+        flowField.U  = inputData.Ufun(flowField.Z).*ones(size(flowField.X));
         flowField.V  = zeros(size(flowField.X));
         flowField.W  = zeros(size(flowField.X));
 
