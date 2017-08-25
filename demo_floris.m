@@ -27,3 +27,21 @@ FLORIS = floris();  % Initialize FLORIS class. Default: floris('default','NREL5M
 FLORIS.inputData.yawAngles = zeros(1,9);     % Set all turbines to greedy
 FLORIS.inputData.axialInd  = 0.33*ones(1,9); % Set all turbines to greedy
 FLORIS.optimize(true,true);                  % Optimization for yaw angles and axial induction
+
+%% Floris testoptions
+
+for atmoType = {'uniform','boundary'}
+    for modelType = {'pitch','greedy','axialInduction'}
+        for wakeType = {'Zones','Gauss','Larsen'}%,'PorteAgel'}
+            for wakeSum = {'Katic','Voutsinas'}
+                for deflType = {'Jimenez','PorteAgel'}
+
+FLORIS = floris('9turb','NREL5MW',atmoType{1},modelType{1},wakeType{1},wakeSum{1},deflType{1});
+FLORIS.run();
+FLORIS.visualize(1,0,0);
+clear FLORIS
+                end
+            end
+        end
+    end
+end

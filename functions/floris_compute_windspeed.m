@@ -22,9 +22,6 @@ function [ dwTurbs ] = floris_compute_windspeed( turbines,wakes,inputData,wt_row
 
                 switch inputData.wakeSum
                     case 'Katic'
-%                         (inputData.Ufun(turbines(dw_turbi).hub_height)*(1-Vni)).^2
-%                         keyboard
-
                         sumKed = sumKed+(inputData.Ufun(turbines(dw_turbi).hub_height)*(1-Vni)).^2;
                     case 'Voutsinas'
                         % To compute the energy deficit use the inflow

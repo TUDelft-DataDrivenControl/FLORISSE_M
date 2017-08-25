@@ -23,7 +23,6 @@ function [ flowField ] = floris_compute_flowfield( inputData,flowField,turbines,
         % Select the upwind turbines and store them in a struct
         UwTurbines = turbines((xSample - arrayfun(@(x) x.LocWF(1)-tpr, turbines))>=0);
         if ~isempty(UwTurbines)
-%             keyboard
             % compute the upwind turbine distance with respect to xSample
             deltaXs = xSample - arrayfun(@(x) x.LocWF(1), UwTurbines);
 

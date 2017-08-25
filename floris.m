@@ -8,23 +8,31 @@ classdef floris<handle
     methods
         %% Constructor function initializes default inputData
 
-        function self = floris(modelType,turbType,siteType,wakeType)
+        function self = floris(siteType,turbType,atmoType,...
+                modelType,wakeType,wakeSum,deflType)
+            
             addpath('functions'); % Model functions
             addpath('NREL5MW');   % Airfoil data
             
             % Default setup
             if ~exist('siteType','var');    siteType  = '9turb';   end
             if ~exist('turbType','var');    turbType  = 'NREL5MW'; end
-            if ~exist('modelType','var');   modelType = 'default'; end
-            if ~exist('wakeType','var');    wakeType  = 'Zones'; end
-            if ~exist('wakeSum','var');     wakeSum   = 'Katic'; end
+            % Choose between 'uniform' 'boundary'
             if ~exist('atmoType','var');    atmoType  = 'uniform'; end
+            % Choose between 'pitch' 'greedy' 'axialInduction'
+            if ~exist('modelType','var');   modelType = 'pitch'; end
+            % Choose between 'Zones' 'Gauss' 'Larsen' 'PorteAgel'
+            if ~exist('wakeType','var');    wakeType  = 'Zones'; end
+            % Choose between 'Katic' 'Voutsinas'
+            if ~exist('wakeSum','var');     wakeSum   = 'Katic'; end
+            % Choose between 'Jimenez' 'PorteAgel'
+            if ~exist('deflType','var');    deflType  = 'PorteAgel'; end
             
             % Call function
-            self.inputData = floris_loadSettings(modelType,turbType,siteType,atmoType);
-            self.inputData.wakeType = wakeType;
+            self.inputData = floris_loadSettings(siteType,turbType,...
+                atmoType,modelType,wakeType,deflType);
+            
             self.inputData.wakeSum  = wakeSum;
-            self.inputData.atmoType = atmoType;
         end
         
         
@@ -36,11 +44,11 @@ classdef floris<handle
             self.outputFlowField = [];
             
             % Results saved internally, but also returns externally if desired.
-            if nargout > 0; outputData = self.outputData; end;
+            if nargout > 0; outputData = self.outputData; end
         end
         
       
-        function [self] = optimize(self,optimizeYaw,optimizeAxInd);
+        function [self] = optimize(self,optimizeYaw,optimizeAxInd)
             inputData = self.inputData;
             disp(['Performing optimization: optimizeYaw = ' num2str(optimizeYaw) ', optimizeAxInd: ' num2str(optimizeAxInd) '.']);
             
@@ -50,7 +58,7 @@ classdef floris<handle
                 x0 = [x0, inputData.yawAngles]; 
                 lb = [lb, deg2rad(-25)*ones(inputData.nTurbs,1)];
                 ub = [ub, deg2rad(+25)*ones(inputData.nTurbs,1)];
-            end;
+            end
             if optimizeAxInd
                 if inputData.axialControlMethod == 0
                     x0 = [x0, inputData.pitchAngles];  
@@ -58,19 +66,19 @@ classdef floris<handle
                     ub = [ub, deg2rad(5.0)*ones(inputData.nTurbs,1)];
                 elseif inputData.axialControlMethod == 1
                     disp(['Cannot optimize axialInd for axialControlMethod == 1.']);
-                    if optimizeYaw == false; 
+                    if optimizeYaw == false
                         disp('Exiting optimization call.');
                         return; 
                     else
                         disp('Optimizing yaw only.');
                         optimizeAxInd = false;
-                    end;
+                    end
                 elseif inputData.axialControlMethod == 2
                     x0 = [x0, inputData.axialInd];     
                     lb = [lb, 0.0*ones(inputData.nTurbs,1)];
                     ub = [ub, 1/3*ones(inputData.nTurbs,1)];
-                end;
-            end;
+                end
+            end
             
             % Cost function
             function J = costFunction(x,inputData,optimizeYaw,optimizeAxInd)
