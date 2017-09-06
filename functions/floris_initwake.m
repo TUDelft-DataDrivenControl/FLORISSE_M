@@ -9,6 +9,7 @@ function [ wake ] = floris_initwake( inputData,turbine,wake )
         wake.wakeRadiusInit = turbine.rotorRadius;
     end
     
+    D = 2*turbine.rotorRadius;
     switch inputData.wakeType
     case 'Zones'
         % Calculate ke, the basic expansion coefficient
@@ -21,16 +22,16 @@ function [ wake ] = floris_initwake( inputData,turbine,wake )
             wake.mU = inputData.MU;
         end
 
-        wake.rZones = @(x,z) max(wake.wakeRadiusInit+wake.Ke.*inputData.me(z)*x,0*x);
-        wake.cZones = @(x,z) (wake.wakeRadiusInit./(wake.wakeRadiusInit + wake.Ke.*wake.mU(z).*x)).^2;
+        wake.rZones = @(x,zone) max(wake.wakeRadiusInit+wake.Ke.*inputData.me(zone)*x,0*x);
+        wake.cZones = @(x,zone) (wake.wakeRadiusInit./(wake.wakeRadiusInit + wake.Ke.*wake.mU(zone).*x)).^2;
 
         % c is the wake intensity reduction factor, b is the boundary
-        wake.cFull = @(x,r) ((abs(r)<=wake.rZones(x,3))-(abs(r)<wake.rZones(x,2))).*wake.cZones(x,3)+...
+        cFull = @(x,r) ((abs(r)<=wake.rZones(x,3))-(abs(r)<wake.rZones(x,2))).*wake.cZones(x,3)+...
             ((abs(r)<wake.rZones(x,2))-(abs(r)<wake.rZones(x,1))).*wake.cZones(x,2)+...
             (abs(r)<wake.rZones(x,1)).*wake.cZones(x,1);
 
-        wake.V = @(U,a,x,r) U.*(1-2*a*wake.cFull(x,r));
-        wake.boundary = @(x) wake.rZones(x,3);
+        wake.V = @(U,Ti,a,x,y,z) U.*(1-2*a*cFull(x,hypot(y,z)));
+        wake.boundary = @(Ti,x,y,z) hypot(y,z)<(wake.rZones(x,3));
 
     case 'Gauss'
         % Calculate ke, the basic expansion coefficient
@@ -43,12 +44,11 @@ function [ wake ] = floris_initwake( inputData,turbine,wake )
         gv = .65;
         sd = 2;%*(.5/.65);
 
-        sig = @(x) rJens(x).*gv;
-        wake.cFull = @(x,r) (pi*rJens(x).^2).*(normpdf(r,0,sig(x))./((normcdf(sd,0,1)-normcdf(-sd,0,1))*sig(x)*sqrt(2*pi))).*cJens(x);
-        wake.V = @(U,a,x,r) U.*(1-2*a*wake.cFull(x,r));
-        wake.boundary = @(x) sd*sig(x);
+        varWake = @(x) rJens(x).*gv;
+        cFull = @(x,r) (pi*rJens(x).^2).*(normpdf(r,0,varWake(x))./((normcdf(sd,0,1)-normcdf(-sd,0,1))*varWake(x)*sqrt(2*pi))).*cJens(x);
+        wake.V = @(U,Ti,a,x,y,z) U.*(1-2*a*cFull(x,hypot(y,z)));
+        wake.boundary = @(Ti,x,y,z) hypot(y,z)<( sd*varWake(x));
     case 'Larsen'
-        D = 2*turbine.rotorRadius;
         A = pi*turbine.rotorRadius^2;
         H = turbine.hub_height;
 
@@ -59,13 +59,63 @@ function [ wake ] = floris_initwake( inputData,turbine,wake )
         x0 = 9.5*D/((2*R95Lars/DeffLars)^3-1);
         c1Lars = (DeffLars/2)^(5/2)*(105/(2*pi))^(-1/2)*(turbine.Ct*A*x0).^(-5/6);
 
-        wake.boundary = @(x) (35/(2*pi))^(1/5)*(3*(c1Lars)^2)^(1/5)*((x).*turbine.Ct*A).^(1/3);
-        wake.V  = @(U,a,x,r) U-U.*((1/9)*(turbine.Ct.*A.*((x0+x).^-2)).^(1/3).*( abs(r).^(3/2).*((3.*c1Lars.^2).*turbine.Ct.*A.*(x0+x)).^(-1/2) - (35/(2.*pi)).^(3/10).*(3.*c1Lars^2).^(-1/5) ).^2);
+        wake.boundary = @(Ti,x,y,z) hypot(y,z)<((35/(2*pi))^(1/5)*(3*(c1Lars)^2)^(1/5)*((x).*turbine.Ct*A).^(1/3));
+        wake.V  = @(U,Ti,a,x,y,z) U-U.*((1/9)*(turbine.Ct.*A.*((x0+x).^-2)).^(1/3).*( hypot(y,z).^(3/2).*((3.*c1Lars.^2).*turbine.Ct.*A.*(x0+x)).^(-1/2) - (35/(2.*pi)).^(3/10).*(3.*c1Lars^2).^(-1/5) ).^2);
     case 'PorteAgel'
+        Ti = .1;%inputData.TI_0;% TODO: Implement turbulence model
         
+        % Eq. 7.3, x0 is the start of the far wake
+        x0 = @(Ti) D.*(cos(turbine.ThrustAngle).*(1+sqrt(1-turbine.Ct*cos(turbine.ThrustAngle))))./...
+                (sqrt(2)*(inputData.alpha*Ti + inputData.beta*(1-sqrt(1-turbine.Ct))));
+        % C0 is the relative velocity deficit in the near wake core
+        C0 = 1-sqrt(1-turbine.Ct.*cos(turbine.ThrustAngle));
+        
+        R = eul2rotm(-[turbine.YawWF turbine.Tilt 0],'ZYZ');
+        C = R(2:3,2:3)*(R(2:3,2:3).');
+        ellipseA = inv(C*turbine.rotorRadius.^2);
+        ellipse = @(y,z) ellipseA(1)*y.^2+2*ellipseA(2)*y.*z+ellipseA(4)*z.^2;
+        
+        % sigNeutralx0 is the wake standard deviation in the case of a wind
+        % alligned turbine. This expression uses: Ur./(Uinf+U0) = approx 1/2
+        sigNeutral_x0 = eye(2)*turbine.rotorRadius*sqrt(1/2);
+        
+        % r<=rpc Eq 6.13
+        NW_mask = @(Ti,x,y,z) (sqrt(ellipse(y,z))<=(1-x/x0(Ti)));
+        % r-rpc Eq 6.13
+        elipRatio = @(Ti,x,y,z) 1-(1-x/x0(Ti))./(eps+sqrt(ellipse(y,z)));
+        % exp(-((r-rpc)/(2s)).^2 Eq 6.13
+        NW_exp = @(Ti,x,y,z) exp(-.5*squeeze(mmat(permute(cat(4,y,z),[3 4 1 2]),...
+            mmat(inv((((eps+0*(x<=0)) + x* (x>0))/x0(Ti)).^2*C*(sigNeutral_x0.^2)),permute(cat(4,y,z),[4 3 1 2])))).*(elipRatio(Ti,x,y,z).^2));
+        % Eq 6.13
+        NW = @(U,Ti,x,y,z) U.*(1-C0*(NW_mask(Ti,x,y,z)+NW_exp(Ti,x,y,z).*~NW_mask(Ti,x,y,z)));
+        
+        % Eq 7.2
+        varWake = @(Ti,x) C*((diag([inputData.ky(Ti) inputData.kz(Ti)])*(x-x0(Ti)))+sigNeutral_x0).^2;
+        % exp(-.5*[y z]*inv(SIGMA(x))*[y;z]) Eq 7.1
+        FW_exp = @(Ti,x,y,z) exp(-.5*squeeze(mmat(permute(cat(4,y,z),[3 4 1 2]),...
+            mmat(inv(varWake(Ti,x)),permute(cat(4,y,z),[4 3 1 2])))));
+        % Eq 7.1
+        FW = @(U,Ti,x,y,z) U.*(1-(1-sqrt(1-turbine.Ct.*cos(turbine.ThrustAngle)*...
+            sqrt(det((C*(sigNeutral_x0.^2))/varWake(Ti,x))))).*FW_exp(Ti,x,y,z));
+%         FW = @(U,x,y,z) U.*(1-(1-sqrt(1-turbine.Ct.*cos(turbine.ThrustAngle)*...
+%             sqrt(trace(C*(sigNeutral_x0.^2))/trace(varWake(x))))).*FW_exp(x,y,z));
+        
+        % Eq 7.1 and 6.13 form the wake velocity profile
+        wake.V  = @(U,Ti,a,x,y,z) NW(U,Ti,x,y,z).*(x<=x0(Ti)) + FW(U,Ti,x,y,z).*(x>x0(Ti));
+        wake.boundary = @(Ti,x,y,z) (NW_mask(Ti,x,y,z)+~NW_mask(Ti,x,y,z).*NW_exp(Ti,x,y,z).*(x<=x0(Ti)) + FW_exp(Ti,x,y,z).*(x>x0(Ti)))>normcdf(-2,0,1);
+
+%         keyboard
+%         [X,Y,Z] = meshgrid(-20:20:3000,-200:2:200,-200:2:200);
+%         Uinf=X.*0+13;
+%         U=X.*0;
+%         for i = 1:length(X(1,:,1))
+%             U(:,i,:) = wake.V(squeeze(Uinf(:,i,:)),inputData.TI_0 ...
+%                 ,0,X(1,i,1),squeeze(Y(:,i,:)),squeeze(Z(:,i,:)));
+%         end
+%         volvisApp(X,Y,Z,U)
 
     otherwise
-        error(['Wake type with name: "' modelType '" not defined']);
+        error(['Wake type with name: "' inputData.wakeType '" not defined']);
     end
 
 end

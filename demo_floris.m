@@ -2,9 +2,10 @@ clear all; clc;
 
 %% Run a single simulation without optimization
 disp('Running a single simulation...');
-FLORIS = floris();          % Initialize FLORIS class. Default: floris('default','NREL5MW','9turb');
+FLORIS = floris('9turb','NREL5MW','uniform','pitch','PorteAgel','Katic','PorteAgel');
+% FLORIS = floris();          % Initialize FLORIS class. Default: floris('default','NREL5MW','9turb');
 FLORIS.run();               % Run a single simulation with the settings 'FLORIS.inputData'
-FLORIS.visualize(0,1,0);    % Generate all visualizations
+FLORIS.visualize(0,0,1);    % Generate all visualizations
 % disp('Press a key to continue...'); pause;
 
 %% Optimize yaw angles
@@ -31,12 +32,12 @@ FLORIS.optimize(true,true);                  % Optimization for yaw angles and a
 %% Floris testoptions
 
 for atmoType = {'uniform','boundary'}
-    for modelType = {'pitch','greedy','axialInduction'}
-        for wakeType = {'Zones','Gauss','Larsen'}%,'PorteAgel'}
+    for controlType = {'pitch','greedy','axialInduction'}
+        for wakeType = {'Zones','Gauss','Larsen','PorteAgel'}
             for wakeSum = {'Katic','Voutsinas'}
                 for deflType = {'Jimenez','PorteAgel'}
 
-FLORIS = floris('9turb','NREL5MW',atmoType{1},modelType{1},wakeType{1},wakeSum{1},deflType{1});
+FLORIS = floris('9turb','NREL5MW',atmoType{1},controlType{1},wakeType{1},wakeSum{1},deflType{1});
 FLORIS.run();
 FLORIS.visualize(1,0,0);
 clear FLORIS

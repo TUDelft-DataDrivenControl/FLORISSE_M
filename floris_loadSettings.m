@@ -1,4 +1,4 @@
-function [inputData] = floris_loadSettings(siteType,turbType,atmoType,modelType,wakeType,deflType)
+function [inputData] = floris_loadSettings(siteType,turbType,atmoType,controlType,wakeType,deflType)
 
 inputData.airDensity = 1.1716; % Atmospheric air density (kg/m3)
 inputData.deflType = deflType;
@@ -23,8 +23,21 @@ switch siteType
         
         % Control settings
 %         inputData.yawAngles   = zeros(1,nTurbs);     % Set default as greedy
-        inputData.yawAngles   = deg2rad([-27 10 -10 -30 -20 -15 0 10 0]);
-        inputData.tiltAngles  = zeros(1,nTurbs);     % Set default as greedy
+        inputData.yawAngles   = deg2rad([-30 10 -10 -30 -20 -15 0 10 0]);
+%         inputData.tiltAngles  = zeros(1,nTurbs);     % Set default as greedy
+        inputData.tiltAngles  = deg2rad([30 0 0 0 0 0 0 0 0]);
+   
+        % Atmospheric settings
+        inputData.uInfIf   = 12;       % x-direction flow speed inertial frame (m/s)
+        inputData.vInfIf   = 4;        % y-direction flow speed inertial frame (m/s)
+    case '1turb'
+        % Wind turbine locations in inertial frame 
+        inputData.LocIF = [0 0];
+        nTurbs          = size(inputData.LocIF,1);
+        inputData.nTurbs                = nTurbs;
+        
+        inputData.yawAngles   = deg2rad([ 30 ]);
+        inputData.tiltAngles  = deg2rad([ 0 ]);
    
         % Atmospheric settings
         inputData.uInfIf   = 12;       % x-direction flow speed inertial frame (m/s)
@@ -75,25 +88,17 @@ switch inputData.deflType
         inputData.bd                = -0.01;
         
     case 'PorteAgel'
-        inputData.alpha       = .232;     % near wake parameter
-        inputData.beta        = .154;     % near wake parameter
-        inputData.veer        = 0;        % veer of atmosphere
-        inputData.ad          = -4.5;     % lateral wake displacement bias parameter (a + bx)
-        inputData.bd          = -.01;     % lateral wake displacement bias parameter (a + bx)
-        
-        D = 2*inputData.rotorRadius(1);
-        inputData.TI_0        = .1;       % turbulence intensity [-] ex: 0.1 is 10% turbulence intensity
-        inputData.TIthreshold = 15*D;     % threshold distance of turbines to include in \"added turbulence\"
-        inputData.TIa         = .73;      % magnitude of turbulence added
-        inputData.TIb         = .8325;    % contribution of turbine operation
-        inputData.TIc         = .0325;    % contribution of ambient turbulence intensity
-        inputData.TId         = -.32;     % contribution of downstream distance from turbine
+        inputData = IPD_PorteAgel(inputData);
     otherwise
         error(['Deflection type with name "' deflType '" not defined']);
 end
 
 %% Velocity model type
+% Adjust the intial swept surface overlap
 inputData.adjustInitialWakeDiamToYaw = false;
+% turbulence intensity [-] ex: 0.1 is 10% turbulence intensity
+inputData.TI_0        = .1;
+
 switch inputData.wakeType
     case 'Zones'
         inputData.useaUbU       = true;
@@ -115,16 +120,14 @@ switch inputData.wakeType
         inputData.IaLars        = .06; % ambient turbulence
         
     case 'PorteAgel'
-        inputData.ka			= .3871;    % wake expansion parameter (ka*TI + kb)
-        inputData.kb 			= .004;     % wake expansion parameter (ka*TI + kb)
-
+        inputData = IPD_PorteAgel(inputData);
     otherwise
-        error(['Wake type with name: "' modelType '" not defined']);
+        error(['Wake type with name: "' inputData.wakeType '" not defined']);
 end
 
 %% Turbine model type
 inputData.pP                = 1.88; % yaw power correction parameter
-switch modelType
+switch controlType
     case {'pitch'}
         % Choice of how a turbine's axial control setting is determined
         % 0: use pitch angles and Cp-Ct LUTs for pitch and WS, 
@@ -161,5 +164,25 @@ switch modelType
         inputData.axialInd    = 1/3*ones(1,nTurbs);  % Only relevant if inputData.axialControlMethod == 2
       
     otherwise
-        error(['Model type with name: "' modelType '" not defined']);
+        error(['Model type with name: "' controlType '" not defined']);
+end
+end
+
+function inputData = IPD_PorteAgel(inputData)
+    inputData.alpha       = 2.32;     % near wake parameter
+    inputData.beta        = .154;     % near wake parameter
+    inputData.veer        = 0;        % veer of atmosphere
+    inputData.ad          = -4.5;     % lateral wake displacement bias parameter (a + bx)
+    inputData.bd          = -.01;     % lateral wake displacement bias parameter (a + bx)
+
+    inputData.TIthresholdMult = 30;   % threshold distance of turbines to include in \"added turbulence\"
+    inputData.TIa         = .73;      % magnitude of turbulence added
+    inputData.TIb         = .8325;    % contribution of turbine operation
+    inputData.TIc         = .0325;    % contribution of ambient turbulence intensity
+    inputData.TId         = -.32;     % contribution of downstream distance from turbine
+
+    inputData.ka			= .3837;    % wake expansion parameter (ka*TI + kb)
+    inputData.kb 			= .0037;     % wake expansion parameter (ka*TI + kb)
+    inputData.ky            = @(I) inputData.ka*I + inputData.kb;
+    inputData.kz            = @(I) inputData.ka*I + inputData.kb;
 end

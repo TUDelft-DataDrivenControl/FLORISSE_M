@@ -9,7 +9,7 @@ classdef floris<handle
         %% Constructor function initializes default inputData
 
         function self = floris(siteType,turbType,atmoType,...
-                modelType,wakeType,wakeSum,deflType)
+                controlType,wakeType,wakeSum,deflType)
             
             addpath('functions'); % Model functions
             addpath('NREL5MW');   % Airfoil data
@@ -17,10 +17,11 @@ classdef floris<handle
             % Default setup
             if ~exist('siteType','var');    siteType  = '9turb';   end
             if ~exist('turbType','var');    turbType  = 'NREL5MW'; end
+            
             % Choose between 'uniform' 'boundary'
             if ~exist('atmoType','var');    atmoType  = 'uniform'; end
             % Choose between 'pitch' 'greedy' 'axialInduction'
-            if ~exist('modelType','var');   modelType = 'pitch'; end
+            if ~exist('controlType','var');   controlType = 'pitch'; end
             % Choose between 'Zones' 'Gauss' 'Larsen' 'PorteAgel'
             if ~exist('wakeType','var');    wakeType  = 'Zones'; end
             % Choose between 'Katic' 'Voutsinas'
@@ -30,7 +31,7 @@ classdef floris<handle
             
             % Call function
             self.inputData = floris_loadSettings(siteType,turbType,...
-                atmoType,modelType,wakeType,deflType);
+                atmoType,controlType,wakeType,deflType);
             
             self.inputData.wakeSum  = wakeSum;
         end

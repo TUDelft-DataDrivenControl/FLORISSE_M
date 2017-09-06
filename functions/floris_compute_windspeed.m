@@ -3,6 +3,8 @@ function [ dwTurbs ] = floris_compute_windspeed( turbines,wakes,inputData,wt_row
     for  dw_turbi = wt_rows{turbirow+1}% for all turbines in dw row
         % Sum of kinetic energy deficits
         sumKed  = 0; % outer sum of Eq. 22
+        % Turbulence intensity vector
+        TiVec = inputData.TI_0;
         for uw_turbrow = 1:turbirow % for all rows upstream of this current row
             for uw_turbi = wt_rows{uw_turbrow} % for each turbine in that row
                 deltax = turbines(dw_turbi).LocWF(1)-turbines(uw_turbi).LocWF(1);
@@ -19,6 +21,24 @@ function [ dwTurbs ] = floris_compute_windspeed( turbines,wakes,inputData,wt_row
                 % multiplied with the relative overlap between the wake and
                 % turbine swept area
                 Vni = Q/turbines(dw_turbi).rotorArea;
+                
+                if strcmp(inputData.deflType,'PorteAgel') || strcmp(inputData.wakeType,'PorteAgel')
+                    if (Vni < 1)&&(deltax < turbines(uw_turbi).rotorRadius*inputData.TIthresholdMult)
+                        R = round(turbines(dw_turbi).rotorRadius+1);
+                        [Y,Z]=meshgrid(-R:R,-R:R);
+
+                        overlapRatio = nnz((hypot(Y,Z)<turbines(dw_turbi).rotorRadius)&...
+                            (wakes(uw_turbi).boundary(turbines(uw_turbi).TI,deltax,Y+turbines(dw_turbi).LocWF(2)-wakes(uw_turbi).centerLine(2,turbLocIndex),...
+                            Z+turbines(dw_turbi).LocWF(3)-wakes(uw_turbi).centerLine(3,turbLocIndex))))/...
+                            nnz(hypot(Y,Z)<turbines(dw_turbi).rotorRadius);
+
+                        TI_calc = inputData.TIa*(turbines(uw_turbi).axialInd^inputData.TIb)*...
+                            (inputData.TI_0^inputData.TIc)*...
+                            ((deltax/(2*turbines(uw_turbi).rotorRadius))^inputData.TId);
+
+                        TiVec = [TiVec overlapRatio*TI_calc];
+                    end
+                end
 
                 switch inputData.wakeSum
                     case 'Katic'
@@ -31,6 +51,7 @@ function [ dwTurbs ] = floris_compute_windspeed( turbines,wakes,inputData,wt_row
             end
         end
         turbines(dw_turbi).windSpeed = inputData.Ufun(turbines(dw_turbi).hub_height)-sqrt(sumKed);
+        turbines(dw_turbi).TI = norm(TiVec);
         if imag(turbines(dw_turbi).windSpeed)>0
             keyboard
         end
@@ -53,26 +74,27 @@ function [ dwTurbs ] = floris_compute_windspeed( turbines,wakes,inputData,wt_row
     end
 
     function Q = integralQ()
-
+        bladeR = turbines(dw_turbi).rotorRadius;
         Q   = turbines(dw_turbi).rotorArea;
-        % Compute the distance between the center of the downwind turbine and the wake centerline of the upwind turbine
-        d = wakes(uw_turbi).boundary(deltax)+turbines(dw_turbi).rotorRadius;
-        % Compute the distance to the center of the wake of the downwind turbine for some (y,z), (0,0) is the wake centerline
-        Rdwt = @(y,z) hypot(turbines(dw_turbi).LocWF(2)+y-(wakes(uw_turbi).centerLine(2,turbLocIndex)),...
-                turbines(dw_turbi).LocWF(3)+z-(wakes(uw_turbi).centerLine(3,turbLocIndex)));
+
+        dY_wc = @(y) y+turbines(dw_turbi).LocWF(2)-wakes(uw_turbi).centerLine(2,turbLocIndex);
+        dZ_wc = @(z) z+turbines(dw_turbi).LocWF(3)-wakes(uw_turbi).centerLine(3,turbLocIndex);
         
-        if Rdwt(0,0)<d
+        if max(wakes(uw_turbi).boundary(turbines(uw_turbi).TI,deltax,dY_wc(bladeR*sin(0:.05:2*pi)),dZ_wc(bladeR*cos(0:.05:2*pi))))
+            
             zabs = @(z) z+(wakes(uw_turbi).centerLine(3,turbLocIndex));
-            VelocityFun =@(y,z) ((Rdwt(y,z)>=wakes(uw_turbi).boundary(deltax)).*inputData.Ufun(zabs(z))+...
-                (Rdwt(y,z)<wakes(uw_turbi).boundary(deltax)).*wakes(uw_turbi).V(inputData.Ufun(zabs(z)),turbines(uw_turbi).axialInd,deltax,Rdwt(y,z)))./inputData.Ufun(zabs(z));
+            mask = @(y,z) wakes(uw_turbi).boundary(turbines(uw_turbi).TI,deltax,dY_wc(y),dZ_wc(z));
+
+            VelocityFun =@(y,z) (~mask(y,z).*inputData.Ufun(zabs(z))+...
+                mask(y,z).*wakes(uw_turbi).V(inputData.Ufun(zabs(z)),turbines(uw_turbi).TI,turbines(uw_turbi).axialInd,deltax,dY_wc(y),dZ_wc(z)))./inputData.Ufun(zabs(z));
             polarfun = @(theta,r) VelocityFun(r.*cos(theta),r.*sin(theta)).*r;
             
             Q = quad2d(polarfun,0,2*pi,0,turbines(dw_turbi).rotorRadius,'Abstol',15,...
                 'Singular',false,'FailurePlot',true,'MaxFunEvals',3500);
 
-%             [PHI,R] = meshgrid([0:.1:2*pi 2*pi],0:turbines(dw_turbi).rotorRadius);
+%             [PHI,R] = meshgrid([0:.1:2*pi 2*pi],0:bladeR);
 %             figure;surf(R.*cos(PHI), R.*sin(PHI), polarfun(PHI,R)./R);
-%             title(Q);
+%             title(Q/turbines(dw_turbi).rotorArea); daspect([1 1 .001]);
 %             keyboard
         end
     end
