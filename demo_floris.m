@@ -11,10 +11,10 @@ disp(' '); disp(' ');
 %% Optimize the turbine yaw angles
 disp('Performing yaw optimization ...');
 FLORIS_optYaw = floris();  % Initialize FLORIS class with default configuration
-FLORIS_optYaw.inputData.yawAngles = zeros(1,9);     % Set all turbines to greedy
-FLORIS_optYaw.inputData.axialInd  = 0.33*ones(1,9); % Set all turbines to greedy
-FLORIS_optYaw.optimize(true,false);                 % Optimization for yaw angles: same as .optimizeYaw()
-FLORIS_optYaw.visualize(0,1,0);                     % Generate a 2D visualization only
+FLORIS_optYaw.inputData.yawAngles = zeros(1,9); % Set all turbines to greedy
+FLORIS_optAx.inputData.bladePitch = zeros(1,9); % Set all turbines in baseline case to greedy 
+FLORIS_optYaw.optimize(true,false);             % Optimization for yaw angles: same as .optimizeYaw()
+FLORIS_optYaw.visualize(0,1,0);                 % Generate a 2D visualization only
 disp(' '); disp(' ');
 
 %% Optimize the turbine blade pitch angles
