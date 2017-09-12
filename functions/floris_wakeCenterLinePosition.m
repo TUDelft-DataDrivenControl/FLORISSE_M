@@ -8,7 +8,7 @@ function [ wake ] = floris_wakeCenterLinePosition( inputData,turbine,wake )
     case 'Jimenez'
         % Calculate initial wake deflection due to blade rotation etc.
         wake.zetaInit = 0.5*sin(turbine.ThrustAngle)*turbine.Ct; % Eq. 8
-
+        
         % Add an initial wakeangle to the zeta
         if inputData.useWakeAngle
             % Rodriques rotation formula to rotate 'v', 'th' radians around 'k'
@@ -26,8 +26,11 @@ function [ wake ] = floris_wakeCenterLinePosition( inputData,turbine,wake )
                 turbine.wakeNormal = normalize(cross([1;0;0],wakeVector));
             end
         end
+        
         % WakeDirection is used to determine the plane into which the wake is
         % displaced. displacement*wakeDir + linearOffset = centerlinePosition
+        % A positive angle causes a negative displacement, for that reason
+        % -90 is used.
         wakeDir = rotx(-90)*turbine.wakeNormal;
     
         % Calculate wake displacements as described in Jimenez
@@ -49,10 +52,10 @@ function [ wake ] = floris_wakeCenterLinePosition( inputData,turbine,wake )
         C = R(2:3,2:3)*(R(2:3,2:3).');
         
         % Eq. 7.3, x0 is the start of the far wake
-        x0 = 2*turbine.rotorRadius*(cos(turbine.ThrustAngle).*(1+sqrt(1-turbine.Ct)))./...
-                (sqrt(2)*(inputData.alpha*Ti + inputData.beta*(1-sqrt(1-turbine.Ct))));
+        x0 = 2*turbine.rotorRadius*(cos(turbine.ThrustAngle).*(1+sqrt(1-Ct)))./...
+                (sqrt(2)*(inputData.alpha*Ti + inputData.beta*(1-sqrt(1-Ct))));
         % Eq. 6.12
-        theta_C0 = -((0.3*turbine.ThrustAngle)./cos(turbine.ThrustAngle)).*...
+        theta_C0 = ((0.3*turbine.ThrustAngle)./cos(turbine.ThrustAngle)).*...
             (1-sqrt(1-turbine.Ct.*cos(turbine.ThrustAngle)));  % skew angle in near wake
 
         % sigNeutralx0 is the wake standard deviation in the case of an
@@ -64,20 +67,25 @@ function [ wake ] = floris_wakeCenterLinePosition( inputData,turbine,wake )
         vecdet = @(ar) ar(1,1,:).*ar(2,2,:)-ar(1,2,:).*ar(2,1,:);
         
         % Terms that are used in eq 7.4
-        lnInnerTerm = @(x) sqrt(squeeze(vecdet(mmat(varWake(x),inv(C*sigNeutral_x0.^2)))));
+        lnInnerTerm = @(x) sqrt(sqrt(squeeze(vecdet(mmat(varWake(x),inv(C*sigNeutral_x0.^2))))));
         lnTerm = @(x) log(((1.6+sqrt(Ct))*(1.6*lnInnerTerm(x)-sqrt(Ct)))./...
             ((1.6-sqrt(Ct))*(1.6*lnInnerTerm(x)+sqrt(Ct))));
+        % displacement at the end of the near wake
         delta_x0 = tan(theta_C0)*x0;
         
         % Eq. 7.4
         FW_delta = @(x) delta_x0+theta_C0*(turbine.rotorRadius/7.35)*...
-            sqrt(cos(turbine.ThrustAngle)/(inputData.ky(Ti)*inputData.kz(Ti)*Ct))*...
+            sqrt(sqrt(det(C/((diag([inputData.ky(Ti) inputData.kz(Ti)])*Ct)^2))))*...
             (2.9+1.3*sqrt(1-Ct)-Ct)*lnTerm(x).';
+        
+%         FW_delta = @(x) delta_x0+theta_C0*(turbine.rotorRadius/7.35)*...
+%             sqrt(cos(turbine.ThrustAngle)/(inputData.ky(Ti)*inputData.kz(Ti)*Ct))*...
+%             (2.9+1.3*sqrt(1-Ct)-Ct)*lnTerm(x).';
         
         NW_delta = @(x) delta_x0*x/x0;
         displacements = NW_delta(deltaxs).*(deltaxs<=x0)+FW_delta(deltaxs).*(deltaxs>x0);
         
-        wakeDir = rotx(-90)*turbine.wakeNormal;
+        wakeDir = rotx(90)*turbine.wakeNormal;
         wake.centerLine(2,:) = turbine.LocWF(2) + wakeDir(2)*displacements;
         wake.centerLine(3,:) = turbine.LocWF(3) + wakeDir(3)*displacements;  
 

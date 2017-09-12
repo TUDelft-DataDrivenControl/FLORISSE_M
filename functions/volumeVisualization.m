@@ -52,7 +52,7 @@ initDisplay()
         % Make everything look nice
         set([hx hy hz],'FaceColor','interp','EdgeColor','none')
         set(hAxis,'FontSize',18,'FontWeight','Bold');
-        xlabel('X'); ylabel('Y');  zlabel('Z')
+        xlabel('X [m]'); ylabel('Y [m]');  zlabel('Z [m]')
         daspect([1,1,1])
         axis tight
         box on

@@ -62,7 +62,9 @@ function [ wake ] = floris_initwake( inputData,turbine,wake )
         wake.boundary = @(Ti,x,y,z) hypot(y,z)<((35/(2*pi))^(1/5)*(3*(c1Lars)^2)^(1/5)*((x).*turbine.Ct*A).^(1/3));
         wake.V  = @(U,Ti,a,x,y,z) U-U.*((1/9)*(turbine.Ct.*A.*((x0+x).^-2)).^(1/3).*( hypot(y,z).^(3/2).*((3.*c1Lars.^2).*turbine.Ct.*A.*(x0+x)).^(-1/2) - (35/(2.*pi)).^(3/10).*(3.*c1Lars^2).^(-1/5) ).^2);
     case 'PorteAgel'
-        Ti = .1;%inputData.TI_0;% TODO: Implement turbulence model
+        % All the equation numbers in this section refer to "Experimental
+        % and theoretical study of wind turbine wakes in yawed conditions"
+        % By Majid Bastankhah and Fernando Porté-Agel
         
         % Eq. 7.3, x0 is the start of the far wake
         x0 = @(Ti) D.*(cos(turbine.ThrustAngle).*(1+sqrt(1-turbine.Ct*cos(turbine.ThrustAngle))))./...
@@ -80,9 +82,10 @@ function [ wake ] = floris_initwake( inputData,turbine,wake )
         sigNeutral_x0 = eye(2)*turbine.rotorRadius*sqrt(1/2);
         
         % r<=rpc Eq 6.13
-        NW_mask = @(Ti,x,y,z) (sqrt(ellipse(y,z))<=(1-x/x0(Ti)));
+        NW_mask = @(Ti,x,y,z) sqrt(ellipse(y,z))<=(1-x/x0(Ti));
         % r-rpc Eq 6.13
         elipRatio = @(Ti,x,y,z) 1-(1-x/x0(Ti))./(eps+sqrt(ellipse(y,z)));
+        
         % exp(-((r-rpc)/(2s)).^2 Eq 6.13
         NW_exp = @(Ti,x,y,z) exp(-.5*squeeze(mmat(permute(cat(4,y,z),[3 4 1 2]),...
             mmat(inv((((eps+0*(x<=0)) + x* (x>0))/x0(Ti)).^2*C*(sigNeutral_x0.^2)),permute(cat(4,y,z),[4 3 1 2])))).*(elipRatio(Ti,x,y,z).^2));
@@ -105,14 +108,18 @@ function [ wake ] = floris_initwake( inputData,turbine,wake )
         wake.boundary = @(Ti,x,y,z) (NW_mask(Ti,x,y,z)+~NW_mask(Ti,x,y,z).*NW_exp(Ti,x,y,z).*(x<=x0(Ti)) + FW_exp(Ti,x,y,z).*(x>x0(Ti)))>normcdf(-2,0,1);
 
 %         keyboard
-%         [X,Y,Z] = meshgrid(-20:20:3000,-200:2:200,-200:2:200);
+%         [X,Y,Z] = meshgrid(0:20:x0(.1),-200:2:200,-200:2:200);
+%         [X,Y,Z] = meshgrid(0:20:3000,-200:2:200,-200:2:200);
 %         Uinf=X.*0+13;
 %         U=X.*0;
+%         Ui=X.*0;
 %         for i = 1:length(X(1,:,1))
-%             U(:,i,:) = wake.V(squeeze(Uinf(:,i,:)),inputData.TI_0 ...
+%             U(:,i,:) = wake.V(squeeze(Uinf(:,i,:)),.1 ...
 %                 ,0,X(1,i,1),squeeze(Y(:,i,:)),squeeze(Z(:,i,:)));
+%             Ui(:,i,:) = NW_mask(.1,X(1,i,1),squeeze(Y(:,i,:)),squeeze(Z(:,i,:)));
 %         end
 %         volvisApp(X,Y,Z,U)
+%         volvisApp(X,Y,Z,Ui)
 
     otherwise
         error(['Wake type with name: "' inputData.wakeType '" not defined']);

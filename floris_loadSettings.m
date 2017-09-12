@@ -36,7 +36,7 @@ switch siteType
         nTurbs          = size(inputData.LocIF,1);
         inputData.nTurbs                = nTurbs;
         
-        inputData.yawAngles   = deg2rad([ 30 ]);
+        inputData.yawAngles   = deg2rad([ 25 ]);
         inputData.tiltAngles  = deg2rad([ 0 ]);
    
         % Atmospheric settings
@@ -97,7 +97,7 @@ end
 % Adjust the intial swept surface overlap
 inputData.adjustInitialWakeDiamToYaw = false;
 % turbulence intensity [-] ex: 0.1 is 10% turbulence intensity
-inputData.TI_0        = .1;
+inputData.TI_0        = .2;
 
 switch inputData.wakeType
     case 'Zones'

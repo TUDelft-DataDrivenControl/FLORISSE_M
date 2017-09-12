@@ -3,9 +3,10 @@ clear all; clc;
 %% Run a single simulation without optimization
 disp('Running a single simulation...');
 FLORIS = floris('9turb','NREL5MW','uniform','pitch','PorteAgel','Katic','PorteAgel');
+% FLORIS = floris('9turb','NREL5MW','uniform','pitch','PorteAgel','Katic','Jimenez');
 % FLORIS = floris();          % Initialize FLORIS class. Default: floris('default','NREL5MW','9turb');
 FLORIS.run();               % Run a single simulation with the settings 'FLORIS.inputData'
-FLORIS.visualize(0,0,1);    % Generate all visualizations
+FLORIS.visualize(0,1,0);    % Generate all visualizations
 % disp('Press a key to continue...'); pause;
 
 %% Optimize yaw angles
