@@ -1,8 +1,10 @@
 clear all; close all; clc;
 
-addpath functions
-addpath NREL5MW
+% Initialize FLORIS class with specific set of settings
+FLORIS = floris('9turb','NREL5MW','uniform','pitch','PorteAgel','Katic','PorteAgel');
 
-inputData  = floris_loadSettings('default','NREL5MW','9turb');
-outputData = floris_core(inputData);
-powerTotal = sum(outputData.power)
+% Run a single simulation
+FLORIS.run();
+
+% Generate 2D flow field visualization
+FLORIS.visualize(0,1,0); 

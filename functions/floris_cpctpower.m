@@ -1,6 +1,6 @@
 function turbine = floris_cpctpower(inputData,turbine)
 % This function computes Cp and Ct based on the axialInductionFactor or it
-% computes Cp, Ct and the axialInductionFactor based on the inlet windspeed
+% computes Cp, Ct and the axialInductionFactor based on the inlet windspeed.
 % After this the current power of the turbine is computed.
 
     % ThrustDirection is a unit vector that determines the plane the wake is
@@ -8,8 +8,10 @@ function turbine = floris_cpctpower(inputData,turbine)
     ThrustDirection = eul2rotm(-[turbine.YawWF turbine.Tilt 0],'ZYZ')*-[1;0;0];
     turbine.ThrustAngle = acos(dot(ThrustDirection,-[1;0;0]));
     
-    normalize = @(v) v./norm(v);
+    normalize = @(v) v./norm(v); % Normalization function
     
+    % Determine the unit vector orthogonal to the mean wake plane
+    % (for tilt = 0 rad, this means [0 0 1], e.g. the z-axis)
     if abs(ThrustDirection(1))==1
         turbine.wakeNormal = [0 0 1].';
     else

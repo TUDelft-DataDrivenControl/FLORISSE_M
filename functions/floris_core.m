@@ -1,27 +1,51 @@
 function [outputData] = floris_core(inputData,dispTimer)
+% This is the FLORIS core code, which does all the computations using the
+% settings specified in the inputData struct. Typically, floris_core.m is
+% called through the FLORIS object, not directly by a user.
+%
 
-% Required to disable timer for optimization calls
+% A secondary input is added to disable the disp() statements for the
+% optimization algorithms, which typically require thousands of calls to
+% the FLORIS model. The following statement still allows one to call the
+% floris_core(..) code without specifying dispTimer explicitly.
 if nargin <= 1
     dispTimer = true; 
 end 
 
-% Turbine operation settings in wind frame
+% 'turbines' is an array of struct() objects, one for each turbine inside 
+% the farm. It includes the operation settings in wind-aligned frame.
 turbines = struct(...
-    'YawWF',        num2cell(inputData.yawAngles), ...   % Yaw misalignment with flow (counterclockwise, wind frame)
-    'Tilt',         num2cell(inputData.tiltAngles), ...  % Tilt misalignment with flow
-    'bladePitch',   num2cell(inputData.pitchAngles), ... % Collective blade pitch angles
-    'axialInd',     num2cell(inputData.axialInd),...     % Axial induction control setting (used only if model.axialIndProvided == true)
-    'hub_height',   num2cell(inputData.hub_height),...
-    'rotorRadius',  num2cell(inputData.rotorRadius),...
-    'rotorArea',    num2cell(inputData.rotorArea),...
-    'eta',          num2cell(inputData.generator_efficiency),...
-    'windSpeed',[],'TI',[],'Cp',[],'Ct',[],'power',[],...
-    'downstream',[],'ThrustAngle',[],'wakeNormal',[]);
+    'YawWF',        num2cell(inputData.yawAngles), ...   % Yaw misalignment with flow (counterclockwise, wind frame) [radians]
+    'Tilt',         num2cell(inputData.tiltAngles), ...  % Tilt misalignment with ground [radians]
+    'bladePitch',   num2cell(inputData.pitchAngles), ... % Collective blade pitch angles [radians]
+    'axialInd',     num2cell(inputData.axialInd),...     % Axial induction control setting [-] (if applicable)
+    'hub_height',   num2cell(inputData.hub_height),...   % Turbine hub height [m]
+    'rotorRadius',  num2cell(inputData.rotorRadius),...  % Rotor radius in [m]
+    'rotorArea',    num2cell(inputData.rotorArea),...    % Rotor swept area in [m2]
+    'eta',          num2cell(inputData.generator_efficiency),... % Turbine generator efficiency [-]
+    'windSpeed',    [],... % Mean windspeed over the turbine rotor [m/s]
+    'TI',           [],... % Turbulence intensity ratio [-] (e.g. 0.10 is 10%)
+    'Cp',           [],... % Power coefficient [-]
+    'Ct',           [],... % Thrust coefficient [-]
+    'power',        [],... % Turbine generated power [W]
+...%     'downstream',   [],... % Closest downstream turbine [ NOT USED? ]
+    'ThrustAngle',  [],... % Angle of the thrust vector, which extends the yaw angle effects to include tilt [radians]. for tilt = 0, ThrustAngle = YawAngle.
+    'wakeNormal',   []);   % Unit vector normal to the mean wake plane (for tilt = 0, this is [0 0 1], e.g. the z-axis)
 
-% Wake properties
-wakes = struct( 'Ke',num2cell(zeros(1,length(turbines))),'mU',{[]}, ...
-    'zetaInit',[],'wakeRadiusInit',[],'centerLine',[], ...
-    'rZones',[],'cZones',[],'cFull',[],'boundary',[],'V',[]);
+
+% 'wakes' is an array of struct() objects, one for each turbine inside 
+% the farm. It includes the wake parameters of interest.
+wakes = struct(...
+    'Ke',           num2cell(zeros(1,length(turbines))),... % Wake expansion coefficient
+    'mU',           {[]}, ...
+    'zetaInit',     [],...
+    'wakeRadiusInit',[],... % Initial wake radius [m]
+    'centerLine',   [], ... % Centerline position [m]
+    'rZones',       [],...  % Radius of wake zones [m] (only if wakeType = 'Zones')
+    'cZones',       [],...  % Center location of wake zones [m] (only if wakeType = 'Zones')
+...     'cFull',        [],... [NOT USED?]
+    'boundary',     [],...  % A boolean telling whether a point (y,z) lies within the wake radius of turbine(i) at distance x
+    'V',            []);    % Cont. function for flow speed [m/s] in the wake
 
 
 %% Internal code of FLORIS

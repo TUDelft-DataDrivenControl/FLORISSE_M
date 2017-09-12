@@ -9,7 +9,7 @@ function [ wake ] = floris_initwake( inputData,turbine,wake )
         wake.wakeRadiusInit = turbine.rotorRadius;
     end
     
-    D = 2*turbine.rotorRadius;
+    D = 2*turbine.rotorRadius; % Rotor diameter
     switch inputData.wakeType
     case 'Zones'
         % Calculate ke, the basic expansion coefficient
@@ -48,6 +48,7 @@ function [ wake ] = floris_initwake( inputData,turbine,wake )
         cFull = @(x,r) (pi*rJens(x).^2).*(normpdf(r,0,varWake(x))./((normcdf(sd,0,1)-normcdf(-sd,0,1))*varWake(x)*sqrt(2*pi))).*cJens(x);
         wake.V = @(U,Ti,a,x,y,z) U.*(1-2*a*cFull(x,hypot(y,z)));
         wake.boundary = @(Ti,x,y,z) hypot(y,z)<( sd*varWake(x));
+        
     case 'Larsen'
         A = pi*turbine.rotorRadius^2;
         H = turbine.hub_height;
@@ -61,6 +62,7 @@ function [ wake ] = floris_initwake( inputData,turbine,wake )
 
         wake.boundary = @(Ti,x,y,z) hypot(y,z)<((35/(2*pi))^(1/5)*(3*(c1Lars)^2)^(1/5)*((x).*turbine.Ct*A).^(1/3));
         wake.V  = @(U,Ti,a,x,y,z) U-U.*((1/9)*(turbine.Ct.*A.*((x0+x).^-2)).^(1/3).*( hypot(y,z).^(3/2).*((3.*c1Lars.^2).*turbine.Ct.*A.*(x0+x)).^(-1/2) - (35/(2.*pi)).^(3/10).*(3.*c1Lars^2).^(-1/5) ).^2);
+        
     case 'PorteAgel'
         Ti = .1;%inputData.TI_0;% TODO: Implement turbulence model
         
