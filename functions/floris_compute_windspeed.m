@@ -1,20 +1,28 @@
 function [ dwTurbs ] = floris_compute_windspeed( turbines,wakes,inputData,wt_rows,turbirow )
 
-    for  dw_turbi = wt_rows{turbirow+1}% for all turbines in dw row
-        % Sum of kinetic energy deficits
-        sumKed  = 0; % outer sum of Eq. 22
-        % Turbulence intensity vector
-        TiVec = inputData.TI_0;
-        for uw_turbrow = 1:turbirow % for all rows upstream of this current row
+
+    % Calculate the effect of all upstream turbines on the current turbine row
+    for  dw_turbi = wt_rows{turbirow+1}
+        % Calculate the effect of all upstream turbines on the current turbine
+        sumKed  = 0; % Sum of kinetic energy deficits (outer sum of Eq. 22)
+        TiVec = inputData.TI_0; % Turbulence intensity vector
+        
+        for uw_turbrow = 1:turbirow % for all turbine rows upstream of this current turbine
             for uw_turbi = wt_rows{uw_turbrow} % for each turbine in that row
+                % displacement in x-direction between uw_turbi and dw_turbi [m]
                 deltax = turbines(dw_turbi).LocWF(1)-turbines(uw_turbi).LocWF(1);
                 [~,turbLocIndex] = min(abs(wakes(uw_turbi).centerLine(1,:)-turbines(dw_turbi).LocWF(1)));
                 
                 % Q is the normalized velocity deficit on the turbine swept area
                 if strcmp(inputData.wakeType,'Zones') && strcmp(inputData.atmoType,'uniform')
-                    Q = FlorisQ();
+                    Q = FlorisQ(); % Herein we calculate overlap areas between 
+                    % different wake zones of uw_turbi and the rotor plane 
+                    % of dw_turbi.
                 else
-                    Q = integralQ();
+                    Q = integralQ(); % Herein we use a numerical integral 
+                    % function to  determine the overlap ratios between a 
+                    % wake shape and the rotor plane. This function works
+                    % best when the velocity function is continuous
                 end
                 
                 % Vni = Wake velocity of upwind turbine at this location
@@ -23,15 +31,23 @@ function [ dwTurbs ] = floris_compute_windspeed( turbines,wakes,inputData,wt_row
                 Vni = Q/turbines(dw_turbi).rotorArea;
                 
                 if strcmp(inputData.deflType,'PorteAgel') || strcmp(inputData.wakeType,'PorteAgel')
+                    % Herein we calculate the overlap area of the wake with
+                    % the rotor area by generating many sample points
+                    % (meshgrid) at a resolution of 1m x 1m, and counting
+                    % the number of points that lie in both the wake and
+                    % the rotor plane.
                     if (Vni < 1)&&(deltax < turbines(uw_turbi).rotorRadius*inputData.TIthresholdMult)
                         R = round(turbines(dw_turbi).rotorRadius+1);
-                        [Y,Z]=meshgrid(-R:R,-R:R);
+                        [Y,Z]=meshgrid(-R:R,-R:R); % Generating grid points
 
+                        % Determine overlap ratio by counting number of
+                        % elements that coincide with both planes.
                         overlapRatio = nnz((hypot(Y,Z)<turbines(dw_turbi).rotorRadius)&...
                             (wakes(uw_turbi).boundary(turbines(uw_turbi).TI,deltax,Y+turbines(dw_turbi).LocWF(2)-wakes(uw_turbi).centerLine(2,turbLocIndex),...
                             Z+turbines(dw_turbi).LocWF(3)-wakes(uw_turbi).centerLine(3,turbLocIndex))))/...
                             nnz(hypot(Y,Z)<turbines(dw_turbi).rotorRadius);
 
+                        % Determine effects of turbulence intensity
                         TI_calc = inputData.TIa*(turbines(uw_turbi).axialInd^inputData.TIb)*...
                             (inputData.TI_0^inputData.TIc)*...
                             ((deltax/(2*turbines(uw_turbi).rotorRadius))^inputData.TId);
@@ -40,10 +56,11 @@ function [ dwTurbs ] = floris_compute_windspeed( turbines,wakes,inputData,wt_row
                     end
                 end
 
+                % Combine the effects of multiple turbines' wakes
                 switch inputData.wakeSum
-                    case 'Katic'
+                    case 'Katic' % Using Katic (traditional FLORIS)
                         sumKed = sumKed+(inputData.Ufun(turbines(dw_turbi).hub_height)*(1-Vni)).^2;
-                    case 'Voutsinas'
+                    case 'Voutsinas' % Using Voutsinas (Porte-Agel)
                         % To compute the energy deficit use the inflow
                         % speed of the upwind turbine instead of Uinf
                         sumKed = sumKed+(turbines(uw_turbi).windSpeed*(1-Vni)).^2;
@@ -58,6 +75,9 @@ function [ dwTurbs ] = floris_compute_windspeed( turbines,wakes,inputData,wt_row
     end
     dwTurbs = turbines(wt_rows{turbirow+1});
 
+    
+    % Function to determine Q (normalized velocity deficit on the turbine
+    % swept area) for the wake model with multiple zones.
     function Q = FlorisQ()
         Q   = turbines(dw_turbi).rotorArea;
         wakeOverlapTurb = [0 0 0];
@@ -73,6 +93,10 @@ function [ dwTurbs ] = floris_compute_windspeed( turbines,wakes,inputData,wt_row
         end
     end
 
+
+    % Function to determine Q (normalized velocity deficit on the turbine
+    % swept area) for any kind of wake model following a numerical
+    % integration approach.
     function Q = integralQ()
         bladeR = turbines(dw_turbi).rotorRadius;
         Q   = turbines(dw_turbi).rotorArea;

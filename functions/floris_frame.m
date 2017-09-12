@@ -1,6 +1,6 @@
 function [ turbines,wtRows ] = floris_frame( inputData,turbines )
 %   This function calculates the (rearranged) wind farm layout in the wind-
-%   aligned frame ('*_wf'). It also groups turbines together in rows to 
+%   aligned frame ('*Wf'). It also groups turbines together in rows to 
 %   avoid unnecessary calculations of the influence of downstream turbines 
 %   on their upwind turbines (which of course is none).
 

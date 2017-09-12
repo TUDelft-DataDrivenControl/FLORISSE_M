@@ -2,6 +2,7 @@ function [ wake ] = floris_wakeCenterLinePosition( inputData,turbine,wake )
 %Compute the wake centerline position using the method explained by Jimenez
 %or PorteAgel.
 
+    % Displacement between location 'x' and current turbine
     deltaxs = wake.centerLine(1,:)-turbine.LocWF(1);
     
     switch inputData.deflType
@@ -15,7 +16,7 @@ function [ wake ] = floris_wakeCenterLinePosition( inputData,turbine,wake )
             rod = @(v,th,k) v*cos(th)+cross(k,v)*sin(th)+k*dot(k,v)*(1-cos(th));
             % Compute initial direction of wake unadjusted
             initDir = rod([1;0;0],wake.zetaInit,turbine.wakeNormal);
-            % Inital wake direction adjust for inital wake angle kd
+            % Initial wake direction adjusted for initial wake angle kd
             wakeVector = rotz(rad2deg(inputData.kd))*initDir;
             wake.zetaInit = acos(dot(wakeVector,[1;0;0]));
 
@@ -45,6 +46,8 @@ function [ wake ] = floris_wakeCenterLinePosition( inputData,turbine,wake )
                         (1-inputData.useWakeAngle) *(inputData.ad + deltaxs * inputData.bd); % bladerotation-induced lateral offset
 
         wake.centerLine(3,:) = turbine.LocWF(3) + wakeDir(3)*displacements;       % initial position + yaw*tilt induced offset
+        
+        
     case 'PorteAgel'
         Ct = turbine.Ct;
         Ti = turbine.TI;

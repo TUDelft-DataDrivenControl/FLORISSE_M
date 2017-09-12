@@ -7,40 +7,34 @@ classdef floris<handle
     end
     methods
         %% Constructor function initializes default inputData
-
         function self = floris(siteType,turbType,atmoType,...
                 controlType,wakeType,wakeSum,deflType)
             
             addpath('functions'); % Model functions
             addpath('NREL5MW');   % Airfoil data
             
-            % Default setup
-            if ~exist('siteType','var');    siteType  = '9turb';   end
-            if ~exist('turbType','var');    turbType  = 'NREL5MW'; end
+            % Default setup settings (see in floris_loadSettings.m for explanations)
+            if ~exist('siteType','var');    siteType  = '9turb';   end % Wind farm topology ('1turb','9turb')
+            if ~exist('turbType','var');    turbType  = 'NREL5MW'; end % Turbine type ('NREL5MW')
+            if ~exist('atmoType','var');    atmoType  = 'uniform'; end % Atmospheric inflow ('uniform','boundary')
+            if ~exist('controlType','var'); controlType = 'pitch'; end % Actuation method ('pitch','greedy','axialInduction')         
+            if ~exist('wakeType','var');    wakeType  = 'PorteAgel'; end % Single wake model ('Zones','Gauss','Larsen','PorteAgel')
+            if ~exist('wakeSum','var');     wakeSum   = 'Katic';   end % Wake addition method ('Katic','Voutsinas')
+            if ~exist('deflType','var');    deflType  = 'PorteAgel'; end % Wake deflection model ('Jimenez','PorteAgel')
             
-            % Choose between 'uniform' 'boundary'
-            if ~exist('atmoType','var');    atmoType  = 'uniform'; end
-            % Choose between 'pitch' 'greedy' 'axialInduction'
-            if ~exist('controlType','var');   controlType = 'pitch'; end
-            % Choose between 'Zones' 'Gauss' 'Larsen' 'PorteAgel'
-            if ~exist('wakeType','var');    wakeType  = 'Zones'; end
-            % Choose between 'Katic' 'Voutsinas'
-            if ~exist('wakeSum','var');     wakeSum   = 'Katic'; end
-            % Choose between 'Jimenez' 'PorteAgel'
-            if ~exist('deflType','var');    deflType  = 'PorteAgel'; end
-            
-            % Call function
+            % Call floris_loadSettings.m from the 'functions' folder
             self.inputData = floris_loadSettings(siteType,turbType,...
                 atmoType,controlType,wakeType,deflType);
             
-            self.inputData.wakeSum  = wakeSum;
+            self.inputData.wakeSum = wakeSum;
         end
         
         
         
         %% FLORIS single execution
         function [self,outputData] = run(self)
-            % Run FLORIS simulation and reset visualization
+            % Run a new FLORIS simulation and additionally reset existing
+            % output data (e.g., old flow field)
             [self.outputData] = floris_core(self.inputData);
             self.outputFlowField = [];
             
@@ -48,15 +42,20 @@ classdef floris<handle
             if nargout > 0; outputData = self.outputData; end
         end
         
-      
+        
+        %% FLORIS control optimization
         function [self] = optimize(self,optimizeYaw,optimizeAxInd)
+            % This function will optimize the turbine yaw angles and/or the
+            % turbine axial induction factors (blade pitch angles) to
+            % maximize the power output of the wind farm. 
+            
             inputData = self.inputData;
             disp(['Performing optimization: optimizeYaw = ' num2str(optimizeYaw) ', optimizeAxInd: ' num2str(optimizeAxInd) '.']);
             
-            % Define initial guess and bounds
+            % Define initial guess x0, lower bounds lb, and upper bounds ub
             x0 = []; lb = []; ub = [];
             if optimizeYaw  
-                x0 = [x0, inputData.yawAngles]; 
+                x0 = [x0, inputData.yawAngles];
                 lb = [lb, deg2rad(-25)*ones(inputData.nTurbs,1)];
                 ub = [ub, deg2rad(+25)*ones(inputData.nTurbs,1)];
             end
@@ -81,10 +80,14 @@ classdef floris<handle
                 end
             end
             
-            % Cost function
+            % Cost function that is to be optimized. Basically, J = -sum(P).
             function J = costFunction(x,inputData,optimizeYaw,optimizeAxInd)
-                % Overwrite settings for yaw and/or axial induction
-                if optimizeYaw;   inputData.yawAngles = x(1:inputData.nTurbs); end
+                % 'x' contains the to-be-optimized control variables. This
+                % can be yaw angles, blade pitch angles, or both. Hence,
+                % depending on these choices, we have to first extract the
+                % yaw angles and/or blade pitch angles back from x, before
+                % we trial them in a FLORIS simulation. That is what we do next:
+                if optimizeYaw; inputData.yawAngles = x(1:inputData.nTurbs); end
                 if optimizeAxInd
                     if inputData.axialControlMethod == 0
                         inputData.pitchAngles = x(end-inputData.nTurbs+1:end);
@@ -93,6 +96,7 @@ classdef floris<handle
                     end
                 end
 
+                % Then, we simulate FLORIS and determine the cost J(x)
                 [outputData] = floris_core(inputData,0);
                 J            = -sum(outputData.power);
             end
@@ -139,10 +143,12 @@ classdef floris<handle
             self.run(); 
         end
 
+        %% Simplified function to call yaw-only optimization
         function [self] = optimizeYaw(self)
             self.optimize(true,false);
         end
         
+        %% Simplified function to call axial-only optimization
         function [self] = optimizeAxInd(self)
             self.optimize(false,true);
         end
@@ -159,33 +165,34 @@ classdef floris<handle
             end
 
             % Default visualization settings, if not specified
-            if ~exist('plotLayout','var');  plotLayout = true;  end
-            if ~exist('plot2D','var');      plot2D     = true;  end
-            if ~exist('plot3D','var');      plot3D     = false; end
+            if ~exist('plotLayout','var');  plotLayout = false; end
+            if ~exist('plot2D','var');      plot2D     = false; end
+            if ~exist('plot3D','var');      plot3D     = true;  end
 
             % Set visualization settings
             self.outputFlowField.plotLayout      = plotLayout;
             self.outputFlowField.plot2DFlowfield = plot2D;
             self.outputFlowField.plot3DFlowfield = plot3D;
 
+            % Call the visualization function
             self.outputFlowField = floris_visualization(self.inputData,self.outputData,self.outputFlowField);
         end
 
-
-        %% Run FLORIS AEP calculations (multiple wind speeds and directions)
-        function [self,outputDataAEP] = AEP(self,windRose)
-            % WindRose is an N x 2 matrix with uIf in 1st column and
-            % vIf in 2nd. The simulation will simulate FLORIS for each row.
-
-            % Simulate over each uIf-vIf set (matrix row)
-            for i = 1:size(windRose,1)
-                self.inputData.uInfIf   = windRose(i,1);
-                self.inputData.vInfIf   = windRose(i,2);
-                [self.outputDataAEP{i}] = self.run();
-            end
-
-            % Results saved internally, but also returns externally if desired.
-            if nargout > 0; outputDataAEP = self.outputDataAEP; end
-        end
+%%         DISABLED FOR NOW: AEP CALCULATIONS
+%         %% Run FLORIS AEP calculations (multiple wind speeds and directions)
+%         function [self,outputDataAEP] = AEP(self,windRose)
+%             % WindRose is an N x 2 matrix with uIf in 1st column and
+%             % vIf in 2nd. The simulation will simulate FLORIS for each row.
+% 
+%             % Simulate over each uIf-vIf set (matrix row)
+%             for i = 1:size(windRose,1)
+%                 self.inputData.uInfIf   = windRose(i,1);
+%                 self.inputData.vInfIf   = windRose(i,2);
+%                 [self.outputDataAEP{i}] = self.run();
+%             end
+% 
+%             % Results saved internally, but also returns externally if desired.
+%             if nargout > 0; outputDataAEP = self.outputDataAEP; end
+%         end
     end
 end
