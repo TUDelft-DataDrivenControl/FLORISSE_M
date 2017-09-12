@@ -34,7 +34,7 @@ classdef floris<handle
         %% FLORIS single execution
         function [self,outputData] = run(self)
             % Run a new FLORIS simulation and additionally reset existing
-            % flow field data (needs to be recalculated).
+            % output data (e.g., old flow field)
             [self.outputData] = floris_core(self.inputData);
             self.outputFlowField = [];
             
@@ -96,7 +96,7 @@ classdef floris<handle
                     end
                 end
 
-                % Then, we simulate FLORIS and determine the cost J
+                % Then, we simulate FLORIS and determine the cost J(x)
                 [outputData] = floris_core(inputData,0);
                 J            = -sum(outputData.power);
             end
@@ -143,12 +143,12 @@ classdef floris<handle
             self.run(); 
         end
 
-        % Simplified function to call yaw-only optimization
+        %% Simplified function to call yaw-only optimization
         function [self] = optimizeYaw(self)
             self.optimize(true,false);
         end
         
-        % Simplified function to call axial-only optimization
+        %% Simplified function to call axial-only optimization
         function [self] = optimizeAxInd(self)
             self.optimize(false,true);
         end
@@ -165,19 +165,20 @@ classdef floris<handle
             end
 
             % Default visualization settings, if not specified
-            if ~exist('plotLayout','var');  plotLayout = true;  end
-            if ~exist('plot2D','var');      plot2D     = true;  end
-            if ~exist('plot3D','var');      plot3D     = false; end
+            if ~exist('plotLayout','var');  plotLayout = false; end
+            if ~exist('plot2D','var');      plot2D     = false; end
+            if ~exist('plot3D','var');      plot3D     = true;  end
 
             % Set visualization settings
             self.outputFlowField.plotLayout      = plotLayout;
             self.outputFlowField.plot2DFlowfield = plot2D;
             self.outputFlowField.plot3DFlowfield = plot3D;
 
+            % Call the visualization function
             self.outputFlowField = floris_visualization(self.inputData,self.outputData,self.outputFlowField);
         end
 
-
+%%         DISABLED FOR NOW: AEP CALCULATIONS
 %         %% Run FLORIS AEP calculations (multiple wind speeds and directions)
 %         function [self,outputDataAEP] = AEP(self,windRose)
 %             % WindRose is an N x 2 matrix with uIf in 1st column and
