@@ -110,7 +110,8 @@ function [ wake ] = floris_initwake( inputData,turbine,wake )
         
         % exp(-((r-rpc)/(2s)).^2 Eq 6.13
         NW_exp = @(Ti,x,y,z) exp(-.5*squeeze(mmat(permute(cat(4,y,z),[3 4 1 2]),...
-            mmat(inv((((eps+0*(x<=0)) + x* (x>0))/x0(Ti)).^2*C*(sigNeutral_x0.^2)),permute(cat(4,y,z),[4 3 1 2])))).*(elipRatio(Ti,x,y,z).^2));
+            mmat(inv((((eps+0*(x<=0)) + x* (x>0))/x0(Ti)).^2*C*(sigNeutral_x0.^2)),...
+            permute(cat(4,y,z),[4 3 1 2])))).*(elipRatio(Ti,x,y,z).^2));
         
         % Eq 6.13
         NW = @(U,Ti,x,y,z) U.*(1-C0*(NW_mask(Ti,x,y,z)+NW_exp(Ti,x,y,z).*~NW_mask(Ti,x,y,z)));

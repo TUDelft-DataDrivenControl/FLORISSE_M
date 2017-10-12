@@ -128,8 +128,9 @@ inputData.TI_0 = .1; % turbulence intensity [-] ex: 0.1 is 10% turbulence intens
 
 switch inputData.wakeType
     case 'Zones'
-        inputData.useaUbU       = true;
-        inputData.aU            = 12.0; % units: degrees
+        inputData.useaUbU       = true; % This flags adjusts wake velocity recovery based on yaw angle:
+        % The equation used is: wake.mU = inputData.MU/cos(inputData.aU+inputData.bU*turbine.YawWF)
+        inputData.aU            = deg2rad(12.0);
         inputData.bU            = 1.3;
         
         inputData.Ke            = 0.05; % wake expansion parameters

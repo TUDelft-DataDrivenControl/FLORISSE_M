@@ -63,7 +63,7 @@ function [ wake ] = floris_wakeCenterLinePosition( inputData,turbine,wake )
 
         % sigNeutralx0 is the wake standard deviation in the case of an
         % alligned turbine. This expression uses: Ur./(Uinf+U0) = approx 1/2
-        sigNeutral_x0 = C*eye(2)*turbine.rotorRadius*sqrt(1/2);
+        sigNeutral_x0 = eye(2)*turbine.rotorRadius*sqrt(1/2);
         varWake = @(x) mmat(zeros(2,2,length(x))+C,...
             (repmat(diag([inputData.ky(Ti) inputData.kz(Ti)]),[1,1,length(x)]).*...
             reshape((x-x0),1,1,length(x))+sigNeutral_x0).^2);
