@@ -30,6 +30,6 @@ function [ turbines,wtRows ] = floris_frame( inputData,turbines )
         turbines(i).LocIF = inputData.LocIF(sortvector(i),:).';
         turbines(i).LocWF = wtLocationsWf(i,:).';
         % Yaw angles (counterclockwise, inertial frame)
-        turbines(i).YawIF = inputData.windDirection+turbines(i).YawWF;
+        turbines(i).YawIF = deg2rad(inputData.windDirection)+turbines(i).YawWF;
     end;
 end
