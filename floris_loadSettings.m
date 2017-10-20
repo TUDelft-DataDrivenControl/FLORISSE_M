@@ -49,7 +49,7 @@ switch siteType
 end
 
 % Compute windDirection in the inertial frame, and the wind-aligned flow speed (uInfWf)
-inputData.windDirection = atand(inputData.vInfIf/inputData.uInfIf); % Wind dir in degrees (inertial frame)
+inputData.windDirection = atan(inputData.vInfIf/inputData.uInfIf); % Wind dir in radians (inertial frame)
 inputData.uInfWf        = hypot(inputData.uInfIf,inputData.vInfIf); % axial flow speed in wind frame
 
 
