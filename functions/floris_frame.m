@@ -8,7 +8,7 @@ function [ turbines,wtRows ] = floris_frame( inputData,turbines )
     Rz = @(a) [cos(a) -sin(a) 0;sin(a) cos(a) 0;0 0 1]; % Rotational matrix
     
     % Wind frame turbine locations in wind frame
-    wtLocationsWf = inputData.LocIF*Rz(deg2rad(-inputData.windDirection)).'; 
+    wtLocationsWf = inputData.LocIF*Rz(-inputData.windDirection).'; 
 
     % Order turbines from front to back, and project them on positive axes
     [LocX,sortvector] = sort(wtLocationsWf(:,1));
