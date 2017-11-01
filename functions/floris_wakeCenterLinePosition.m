@@ -41,13 +41,6 @@ function [ wake ] = floris_wakeCenterLinePosition( inputData,turbine,wake )
                        (wake.zetaInit*turbine.rotorRadius*...
                        (15+(wake.zetaInit^2))/(15*inputData.KdY));
 
-        % Wake centerLine position of this turbine at location x
-        wake.centerLine(2,:) = turbine.LocWF(2) + wakeDir(2)*displacements + ...      % initial position + yaw induced offset
-                        (1-inputData.useWakeAngle) *(inputData.ad + deltaxs * inputData.bd); % bladerotation-induced lateral offset
-
-        wake.centerLine(3,:) = turbine.LocWF(3) + wakeDir(3)*displacements;       % initial position + yaw*tilt induced offset
-        
-        
     case 'PorteAgel'
         Ct = turbine.Ct;
         Ti = turbine.TI;
@@ -87,17 +80,16 @@ function [ wake ] = floris_wakeCenterLinePosition( inputData,turbine,wake )
         
         NW_delta = @(x) delta_x0*x/x0;
         displacements = NW_delta(deltaxs).*(deltaxs<=x0)+FW_delta(deltaxs).*(deltaxs>x0);
-        
         wakeDir = rotx(90)*turbine.wakeNormal;
-        wake.centerLine(2,:) = turbine.LocWF(2) + wakeDir(2)*displacements;
-        wake.centerLine(3,:) = turbine.LocWF(3) + wakeDir(3)*displacements;  
-
     otherwise
         error(['Deflection type with name "' deflType '" not defined']);
     end
-    if strcmp(inputData.wakeType,'PorteAgel')
-        
+    
+    % Wake centerLine position of this turbine at location x
+    wake.centerLine(2,:) = turbine.LocWF(2) + wakeDir(2)*displacements + ...  % initial position + yaw induced offset
+                           (inputData.ad + deltaxs * inputData.bd);           % bladerotation-induced lateral offset
 
-    else
-    end
+    wake.centerLine(3,:) = turbine.LocWF(3) + wakeDir(3)*displacements + ...  % initial position + yaw*tilt induced offset
+                           (inputData.at + deltaxs * inputData.bt);           % bladerotation-induced vertical offset
+        
 end
