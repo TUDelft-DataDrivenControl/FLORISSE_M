@@ -109,6 +109,7 @@ switch inputData.deflType
         % correction recovery coefficients with yaw
         inputData.KdY = 0.17; % Wake deflection recovery factor
         % define initial wake displacement and angle (not determined by yaw angle)
+        inputData.useWakeAngle = true;
         inputData.kd = deg2rad(1.5);  % initialWakeAngle in X-Y plane
     case 'PorteAgel'
         inputData = IPD_PorteAgel(inputData);
