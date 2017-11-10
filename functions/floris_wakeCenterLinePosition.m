@@ -17,7 +17,8 @@ function [ wake ] = floris_wakeCenterLinePosition( inputData,turbine,wake )
             % Compute initial direction of wake unadjusted
             initDir = rod([1;0;0],wake.zetaInit,turbine.wakeNormal);
             % Initial wake direction adjusted for initial wake angle kd
-            wakeVector = rotz(rad2deg(inputData.kd))*initDir;
+            floris_rotz = @(x) [cosd(x) -sind(x) 0; sind(x) cosd(x) 0; 0 0 1];
+            wakeVector = floris_rotz(rad2deg(inputData.kd))*initDir;
             wake.zetaInit = acos(dot(wakeVector,[1;0;0]));
 
             if wakeVector(1)==1
@@ -32,7 +33,9 @@ function [ wake ] = floris_wakeCenterLinePosition( inputData,turbine,wake )
         % displaced. displacement*wakeDir + linearOffset = centerlinePosition
         % A positive angle causes a negative displacement, for that reason
         % -90 is used.
-        wakeDir = rotx(-90)*turbine.wakeNormal;
+        
+        % wakeDir = rotx(-90)*turbine.wakeNormal; % Original equation
+        wakeDir = [1 0 0;0 0 1;0 -1 0]*turbine.wakeNormal; % Evaluated to remove Toolbox dependencies
     
         % Calculate wake displacements as described in Jimenez
         factors       = (inputData.KdY*deltaxs/turbine.rotorRadius)+1;
@@ -44,7 +47,7 @@ function [ wake ] = floris_wakeCenterLinePosition( inputData,turbine,wake )
     case 'PorteAgel'
         Ct = turbine.Ct;
         Ti = turbine.TI;
-        R = eul2rotm(-[turbine.YawWF turbine.Tilt 0],'ZYZ');
+        R = floris_eul2rotm(-[turbine.YawWF turbine.Tilt 0],'ZYZ');
         C = R(2:3,2:3)*(R(2:3,2:3).');
         
         % Eq. 7.3, x0 is the start of the far wake
@@ -80,7 +83,8 @@ function [ wake ] = floris_wakeCenterLinePosition( inputData,turbine,wake )
         
         NW_delta = @(x) delta_x0*x/x0;
         displacements = NW_delta(deltaxs).*(deltaxs<=x0)+FW_delta(deltaxs).*(deltaxs>x0);
-        wakeDir = rotx(90)*turbine.wakeNormal;
+        % wakeDir = rotx(90)*turbine.wakeNormal; % Original equation
+        wakeDir = [1 0 0; 0 0 -1;0 1 0]*turbine.wakeNormal; % Evaluated to remove Toolbox dependencies
     otherwise
         error(['Deflection type with name "' deflType '" not defined']);
     end

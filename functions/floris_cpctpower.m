@@ -5,7 +5,7 @@ function turbine = floris_cpctpower(inputData,turbine)
 
     % ThrustDirection is a unit vector that determines the plane the wake is
     % pushed into by the turbine. See illustration in script 'DisplayTurbine'
-    ThrustDirection = eul2rotm(-[turbine.YawWF turbine.Tilt 0],'ZYZ')*-[1;0;0];
+    ThrustDirection = floris_eul2rotm(-[turbine.YawWF turbine.Tilt 0],'ZYZ')*-[1;0;0];
     turbine.ThrustAngle = acos(dot(ThrustDirection,-[1;0;0]));
     
     normalize = @(v) v./norm(v); % Normalization function

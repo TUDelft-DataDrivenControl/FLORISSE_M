@@ -56,10 +56,16 @@ function [ wake ] = floris_initwake( inputData,turbine,wake )
 
         gv = .65; % Gaussian variable
         sd = 2;   % Number of std. devs to which the gaussian wake extends
+        P_normcdf_lb = 0.022750131948179; % This is the evaluation of normcdf(-sd,0,1) for sd = 2
+        P_normcdf_ub = 0.977249868051821; % This is the evaluation of normcdf(+sd,0,1) for sd = 2
         varWake = @(x) rJens(x).*gv;
         
+        
         % cFull is the wake intensity reduction factor
-        cFull = @(x,r) (pi*rJens(x).^2).*(normpdf(r,0,varWake(x))./((normcdf(sd,0,1)-normcdf(-sd,0,1))*varWake(x)*sqrt(2*pi))).*cJens(x);
+        % cFull = @(x,r) (pi*rJens(x).^2).*(normpdf(r,0,varWake(x))./((normcdf(sd,0,1)-normcdf(-sd,0,1))*varWake(x)*sqrt(2*pi))).*cJens(x);
+        % The above function is the true equation. The lower one is evaluated for std = 2,  to avoid dependencies on the Statistics Toolbox.
+        floris_normpdf = @(x,mu,sigma) (1/(sigma*sqrt(2*pi)))*exp(-(x-mu)^2/(2*sigma^2)); % to avoid dependencies on the Statistics Toolbox
+        cFull = @(x,r) (pi*rJens(x).^2).*(floris_normpdf(r,0,varWake(x))./((P_normcdf_ub-P_normcdf_lb)*varWake(x)*sqrt(2*pi))).*cJens(x);
         
         % wake.V is an analytical function for flow speed [m/s] in a single wake
         wake.V = @(U,Ti,a,x,y,z) U.*(1-2*a*cFull(x,hypot(y,z)));
@@ -93,7 +99,7 @@ function [ wake ] = floris_initwake( inputData,turbine,wake )
         C0 = 1-sqrt(1-turbine.Ct.*cos(turbine.ThrustAngle));
         
         % Rotation matrix R
-        R = eul2rotm(-[turbine.YawWF turbine.Tilt 0],'ZYZ');
+        R = floris_eul2rotm(-[turbine.YawWF turbine.Tilt 0],'ZYZ');
         C = R(2:3,2:3)*(R(2:3,2:3).'); % Ellipse covariance matrix
         ellipseA = inv(C*turbine.rotorRadius.^2);
         ellipse = @(y,z) ellipseA(1)*y.^2+2*ellipseA(2)*y.*z+ellipseA(4)*z.^2;
@@ -131,7 +137,8 @@ function [ wake ] = floris_initwake( inputData,turbine,wake )
         
         % Eq 7.1 and 6.13 form the wake velocity profile
         wake.V  = @(U,Ti,a,x,y,z) NW(U,Ti,x,y,z).*(x<=x0(Ti)) + FW(U,Ti,x,y,z).*(x>x0(Ti));
-        wake.boundary = @(Ti,x,y,z) (NW_mask(Ti,x,y,z)+~NW_mask(Ti,x,y,z).*NW_exp(Ti,x,y,z).*(x<=x0(Ti)) + FW_exp(Ti,x,y,z).*(x>x0(Ti)))>normcdf(-2,0,1);
+        % wake.boundary = @(Ti,x,y,z) (NW_mask(Ti,x,y,z)+~NW_mask(Ti,x,y,z).*NW_exp(Ti,x,y,z).*(x<=x0(Ti)) + FW_exp(Ti,x,y,z).*(x>x0(Ti)))>normcdf(-2,0,1);
+        wake.boundary = @(Ti,x,y,z) (NW_mask(Ti,x,y,z)+~NW_mask(Ti,x,y,z).*NW_exp(Ti,x,y,z).*(x<=x0(Ti)) + FW_exp(Ti,x,y,z).*(x>x0(Ti)))>0.022750131948179; % Evaluated to avoid dependencies on Statistics Toolbox
         
         % wake.V is an analytical function for flow speed [m/s] in a single wake
         % wake.boundary is a boolean function telling whether a point (y,z) 
