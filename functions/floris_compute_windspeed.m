@@ -104,7 +104,7 @@ function [ dwTurbs ] = floris_compute_windspeed( turbines,wakes,inputData,wt_row
         dY_wc = @(y) y+turbines(dw_turbi).LocWF(2)-wakes(uw_turbi).centerLine(2,turbLocIndex);
         dZ_wc = @(z) z+turbines(dw_turbi).LocWF(3)-wakes(uw_turbi).centerLine(3,turbLocIndex);
         
-        if max(wakes(uw_turbi).boundary(turbines(uw_turbi).TI,deltax,dY_wc(bladeR*sin(0:.05:2*pi)),dZ_wc(bladeR*cos(0:.05:2*pi))))
+        if max(wakes(uw_turbi).boundary(turbines(uw_turbi).TI,deltax,dY_wc(bladeR*sin(0:.05:2*pi))',dZ_wc(bladeR*cos(0:.05:2*pi))'))
             
             zabs = @(z) z+(wakes(uw_turbi).centerLine(3,turbLocIndex));
             mask = @(y,z) wakes(uw_turbi).boundary(turbines(uw_turbi).TI,deltax,dY_wc(y),dZ_wc(z));

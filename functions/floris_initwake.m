@@ -137,7 +137,7 @@ function [ wake ] = floris_initwake( inputData,turbine,wake )
         
         % Eq 7.1 and 6.13 form the wake velocity profile
         wake.V  = @(U,Ti,a,x,y,z) NW(U,Ti,x,y,z).*(x<=x0(Ti)) + FW(U,Ti,x,y,z).*(x>x0(Ti));
-        % wake.boundary = @(Ti,x,y,z) (NW_mask(Ti,x,y,z)+~NW_mask(Ti,x,y,z).*NW_exp(Ti,x,y,z).*(x<=x0(Ti)) + FW_exp(Ti,x,y,z).*(x>x0(Ti)))>normcdf(-2,0,1);
+%       wake.boundary = @(Ti,x,y,z) (NW_mask(Ti,x,y,z)+~NW_mask(Ti,x,y,z).*NW_exp(Ti,x,y,z).*(x<=x0(Ti)) + FW_exp(Ti,x,y,z).*(x>x0(Ti)))>normcdf(-2,0,1);
         wake.boundary = @(Ti,x,y,z) (NW_mask(Ti,x,y,z)+~NW_mask(Ti,x,y,z).*NW_exp(Ti,x,y,z).*(x<=x0(Ti)) + FW_exp(Ti,x,y,z).*(x>x0(Ti)))>0.022750131948179; % Evaluated to avoid dependencies on Statistics Toolbox
         
         % wake.V is an analytical function for flow speed [m/s] in a single wake
