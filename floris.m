@@ -10,7 +10,7 @@ classdef floris<handle
         function self = floris(siteType,turbType,atmoType,...
                 controlType,wakeType,wakeSum,deflType)
             
-            addpath('functions'); % Model functions
+            addpath(genpath('functions'))% Model functions
             addpath('NREL5MW');   % Airfoil data
             
             % Default setup settings (see in floris_loadSettings.m for explanations)
