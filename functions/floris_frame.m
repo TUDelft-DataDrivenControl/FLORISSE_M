@@ -27,8 +27,9 @@ function [ turbines,wtRows ] = floris_frame( inputData,turbines )
     % Repopulate the turbine struct ordered by wind direction x-coordinates
     turbines = turbines(sortvector);
     for i = 1:length(sortvector)
-        turbines(i).LocIF = inputData.LocIF(sortvector(i),:).';
-        turbines(i).LocWF = wtLocationsWf(i,:).';
+        turbines(i).turbId = sortvector(i);
+        turbines(i).LocIF  = inputData.LocIF(sortvector(i),:).';
+        turbines(i).LocWF  = wtLocationsWf(i,:).';
         % Yaw angles (counterclockwise, inertial frame)
         turbines(i).YawIF = inputData.windDirection+turbines(i).YawWF;
     end;
