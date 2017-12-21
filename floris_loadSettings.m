@@ -1,4 +1,4 @@
-function [inputData] = floris_loadSettings(siteType,turbType,atmoType,controlType,wakeType,deflType)
+function [inputData] = floris_loadSettings(siteType,turbType,atmoType,controlType,wakeType,wakeSum,deflType)
 inputData.deflType   = deflType; % Write deflection  model choice to inputData
 inputData.wakeType   = wakeType; % Write single wake model choice to inputData
 inputData.atmoType   = atmoType; % Write atmospheric model choice to inputData
@@ -158,6 +158,10 @@ switch inputData.wakeType
     otherwise
         error(['Wake type with name: "' inputData.wakeType '" not defined']);
 end
+
+
+%% Wake summing methodology
+inputData.wakeSum = wakeSum; % Wake addition method ('Katic','Voutsinas')
 
 
 %% Turbine axial control methodology

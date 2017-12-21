@@ -24,9 +24,7 @@ classdef floris<handle
             
             % Call floris_loadSettings.m from the 'functions' folder
             self.inputData = floris_loadSettings(siteType,turbType,...
-                atmoType,controlType,wakeType,deflType);
-            
-            self.inputData.wakeSum = wakeSum;
+                atmoType,controlType,wakeType,wakeSum,deflType);
         end
         
         
