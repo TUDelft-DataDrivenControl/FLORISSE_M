@@ -154,7 +154,7 @@ classdef floris<handle
         
         %% FLORIS model calibration
         function [] = calibrate(self,paramSet,x0,lb,ub,calibrationData)
-            disp(strjoin(['Performing model parameter calibration: paramSet = [' string(paramSet) '].']));
+            disp(['Performing model parameter calibration: paramSet = [' strjoin(paramSet,', ') '].']);
             
             % Set-up cost function and minimize error with calibrationData
             costFun = @(x)calibrationCostFunc(x,paramSet,calibrationData);
