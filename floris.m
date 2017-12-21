@@ -151,7 +151,26 @@ classdef floris<handle
             self.optimize(false,true);
         end
 
-
+        
+        %% FLORIS model calibration
+        function [] = calibrate(self,paramSet,x0,lb,ub,calibrationData)
+            disp(strjoin(['Performing model parameter calibration: paramSet = [' string(paramSet) '].']));
+            
+            % Set-up cost function and minimize error with calibrationData
+            costFun = @(x)calibrationCostFunc(x,paramSet,calibrationData);
+            options = optimset('Display','final','MaxFunEvals',1e4,'PlotFcns',{@optimplotx, @optimplotfval} ); % Display convergence
+            xopt    = fmincon(costFun,x0,[],[],[],[],lb,ub,[],options)
+%             disp(['Optimal calibration values: xopt = ' num2str(xopt) '.']);
+            
+            % Update self.inputData with the optimized model parameters
+            for jj = 1:length(paramSet)
+                self.inputData.(paramSet{jj}) = xopt(jj); % Overwrite model settings
+            end    
+            % Update the derived settings (inflow conditions, model functions, ...)
+            self.inputData = processSettings(self.inputData);
+        end
+        
+        
         %% Visualize single FLORIS simulation results
         function [] = visualize(self,plotLayout,plot2D,plot3D)
 

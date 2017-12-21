@@ -1,15 +1,16 @@
-function [J] = calibrationCostFunc(calibrationData,paramSet,x)
+function [J] = calibrationCostFunc(x,paramSet,calibrationData)
 %CALIBRATIONCOSTFUNC Cost function for comparison with LES/experimental data
+%
 %  Inputs:      
-%    paramSet: a cell array with tuning parameter fieldnames as entries.
-%               e.g., paramSet = {'uInfIf','vInfWf'};
 %    x       : vector with values corresponding to paramSet.
-%               e.g., x = [12.0, 4.0];
+%               e.g., x = [12.0, 0.30];
+%    paramSet: a cell array with tuning parameter fieldnames as entries.
+%               e.g., paramSet = {'uInfWf','windDirection'};
 %    calibrationData: a struct with inputData template and LES/experimental
 %    data which is required for tuning.
 %         e.g.,                         
 %         calibrationData(1).caseName  = '3x3_5MW_WD270_yaw0';
-%         calibrationData(1).inputData = inputData;
+%         calibrationData(1).inputData = floris_loadSettings(...);
 %         calibrationData(1).flow(1)   = struct('x',5.0,'y',5.0,'z',90,...
 %                                               'value',8.0,...
 %                                               'weight',1.0);
@@ -48,7 +49,7 @@ function [J] = calibrationCostFunc(calibrationData,paramSet,x)
         Ji = 0; % Set local error to 0
 
         % Calculate the error in turbine powers
-        outputData = floris_core(calibrationData(i).inputData);
+        outputData = floris_core(calibrationData(i).inputData,false);
         
         % Add squared error of power to the total cost
         for iP = 1:length(calibrationData(i).power)
