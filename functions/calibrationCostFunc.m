@@ -57,26 +57,29 @@ function [J] = calibrationCostFunc(x,paramSet,calibrationData)
                 (calibrationData(i).power(iP).value - ...
                 outputData.power(calibrationData(i).power(iP).turbId))^2;
         end
+%         disp(['Cost due to power: ' num2str(Ji) '.']);
+        
+        if length(calibrationData(i).flow) > 0
+            % Calculate the error in flow fields
+            flowField.X = [calibrationData(i).flow.x];
+            flowField.Y = [calibrationData(i).flow.y];
+            flowField.Z = [calibrationData(i).flow.z];
+            flowField.U = calibrationData(i).inputData.Ufun(flowField.Z) .* ...
+                           ones(size(flowField.X));
+            flowField.V = zeros(size(flowField.X));
+            flowField.W = zeros(size(flowField.X));
+            flowField.fixYaw = false;
 
-        % Calculate the error in flow fields
-        flowField.X = [calibrationData(i).flow.x];
-        flowField.Y = [calibrationData(i).flow.y];
-        flowField.Z = [calibrationData(i).flow.z];
-        flowField.U = calibrationData(i).inputData.Ufun(flowField.Z) .* ...
-                       ones(size(flowField.X));
-        flowField.V = zeros(size(flowField.X));
-        flowField.W = zeros(size(flowField.X));
-        flowField.fixYaw = false;
+            % Compute the flowfield velocity predicted by FLORIS
+            [flowField] = floris_compute_flowfield(calibrationData(i).inputData,...
+                                                   flowField,outputData.turbines,...
+                                                   outputData.wakes);
 
-        % Compute the flowfield velocity predicted by FLORIS
-        [flowField] = floris_compute_flowfield(calibrationData(i).inputData,...
-                                               flowField,outputData.turbines,...
-                                               outputData.wakes);
-
-        % Add squared error of flow to the total cost
-        for iF = 1:length(calibrationData(i).flow)
-            Ji = Ji + calibrationData(i).flow(iF).weight * ...
-                (calibrationData(i).flow(iF).value - flowField.U(iF))^2;
+            % Add squared error of flow to the total cost
+            for iF = 1:length(calibrationData(i).flow)
+                Ji = Ji + calibrationData(i).flow(iF).weight * ...
+                    (calibrationData(i).flow(iF).value - flowField.U(iF))^2;
+            end
         end
 
         J = J + Ji; % Add local squared error to global squared error

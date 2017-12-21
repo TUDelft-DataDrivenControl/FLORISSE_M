@@ -90,7 +90,9 @@ end
 if dispTimer; disp(['TIMER: core operations: ' num2str(toc(timer.core)) ' s.']); end
 
 % Prepare output data
+powerWF = [turbines.power];  % Turbine powers according to wind frame
+powerIF = powerWF([turbines.turbId]); % Turbine powers according to inertial frame
 outputData = struct('turbines',turbines,...
                     'wakes',wakes,...
-                    'power',[turbines.power]);
+                    'power',powerIF);
 end

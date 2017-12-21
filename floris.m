@@ -160,6 +160,8 @@ classdef floris<handle
             costFun = @(x)calibrationCostFunc(x,paramSet,calibrationData);
             options = optimset('Display','final','MaxFunEvals',1e4,'PlotFcns',{@optimplotx, @optimplotfval} ); % Display convergence
             xopt    = fmincon(costFun,x0,[],[],[],[],lb,ub,[],options)
+            
+%             J       = calibrationCostFunc(xopt,paramSet,calibrationData)
 %             disp(['Optimal calibration values: xopt = ' num2str(xopt) '.']);
             
             % Update self.inputData with the optimized model parameters
@@ -168,6 +170,8 @@ classdef floris<handle
             end    
             % Update the derived settings (inflow conditions, model functions, ...)
             self.inputData = processSettings(self.inputData);
+
+            
         end
         
         
