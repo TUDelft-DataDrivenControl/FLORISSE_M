@@ -28,8 +28,9 @@ switch siteType
         inputData.tiltAngles  = deg2rad([0 0 0 0 0 0 0 0 0]); % Turbine tilt angles (radians, w.r.t. ground)
    
         % Atmospheric settings
-        inputData.uInfIf   = 12; % x-direction flow speed inertial frame (m/s)
-        inputData.vInfIf   = 4;  % y-direction flow speed inertial frame (m/s)
+        % Compute windDirection in the inertial frame, and the wind-aligned flow speed (uInfWf)
+        inputData.windDirection = 0.30; % Wind dir in radians (inertial frame)
+        inputData.uInfWf        = 12.0; % axial flow speed in wind frame        
         inputData.airDensity = 1.1716; % Atmospheric air density (kg/m3)
     case '1turb'
         % Wind turbine locations in inertial frame 
@@ -41,8 +42,8 @@ switch siteType
         inputData.tiltAngles  = deg2rad([ 0 ]); % Turbine tilt angles (radians, w.r.t. ground)
         
         % Atmospheric settings
-        inputData.uInfIf   = 12; % x-direction flow speed inertial frame (m/s)
-        inputData.vInfIf   = 4;  % y-direction flow speed inertial frame (m/s)
+        inputData.windDirection = 0.30; % Wind dir in radians (inertial frame)
+        inputData.uInfWf        = 12.0; % axial flow speed in wind frame       
         inputData.airDensity = 1.1716; % Atmospheric air density (kg/m3)
     otherwise
         error(['Site type with name "' siteType '" not defined']);
