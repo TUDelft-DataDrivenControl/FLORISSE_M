@@ -10,7 +10,7 @@ if nargin <= 1
     % the FLORIS model, and would pollute the cmd window. The following 
     % statement still allows someone to call the floris_core(..) code 
     % without specifying dispTimer explicitly, maintaining compatibility.
-    dispTimer = true; 
+    dispTimer = true;
 end 
 
 % 'turbines' is an array of struct() objects, one for each turbine inside 
@@ -44,6 +44,7 @@ wakes = struct(...
     'rZones',        [],...   % Radius of wake zones [m] (only if wakeType = 'Zones')
     'cZones',        [],...   % Center location of wake zones [m] (only if wakeType = 'Zones')
     'boundary',      [],...   % A boolean function telling whether a point (y,z) lies within the wake radius of turbine(i) at distance x
+    'FW_int',        [],...
     'V',             []);     % Analytical function for flow speed [m/s] in a single wake
 
 

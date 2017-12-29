@@ -20,7 +20,7 @@ for atmoType = {'uniform','boundary'}
                     if generateData
                         powerData(key) = sum(FLORIS.outputData.power);
                     else
-                        assert(powerData(key) == sum(FLORIS.outputData.power),...
+                        assert(abs(powerData(key) - sum(FLORIS.outputData.power))<1e-5,...
                                sprintf('power data incorrect at %s', join(key, ', ')));
                     end
                     clear FLORIS

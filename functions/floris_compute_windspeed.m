@@ -49,7 +49,6 @@ function [ dwTurbs ] = floris_compute_windspeed( turbines,wakes,inputData,wt_row
                             (wakes(uw_turbi).boundary(deltax,Y+turbines(dw_turbi).LocWF(2)-wakes(uw_turbi).centerLine(2,turbLocIndex),...
                             Z+turbines(dw_turbi).LocWF(3)-wakes(uw_turbi).centerLine(3,turbLocIndex))))/...
                             nnz(hypot(Y,Z)<turbines(dw_turbi).rotorRadius);
-
                         % Determine effects of turbulence intensity
                         TI_calc = inputData.TIa*(turbines(uw_turbi).axialInd^inputData.TIb)*...
                             (inputData.TI_0^inputData.TIc)*...
@@ -97,7 +96,20 @@ function [ dwTurbs ] = floris_compute_windspeed( turbines,wakes,inputData,wt_row
     end
 
     function Q = PorteAgelQ()
-        Q = integralQ(0);
+        Q = turbines(dw_turbi).rotorArea;
+        bladeR = turbines(dw_turbi).rotorRadius;
+
+        dY_wc = @(y) y+turbines(dw_turbi).LocWF(2)-wakes(uw_turbi).centerLine(2,turbLocIndex);
+        dZ_wc = @(z) z+turbines(dw_turbi).LocWF(3)-wakes(uw_turbi).centerLine(3,turbLocIndex);
+        if max(wakes(uw_turbi).boundary(deltax,dY_wc(bladeR*sin(0:.05:2*pi))',dZ_wc(bladeR*cos(0:.05:2*pi))'))
+            Q = turbines(dw_turbi).rotorArea-wakes(uw_turbi).FW_int(deltax, dY_wc(0), dZ_wc(0), bladeR);
+            % Compare the power series approximation to a numerical method
+%             Qacc = integralQ(0);
+%             display(dw_turbi)
+%             display([Q, Qacc])
+%             display(100*(Q/Qacc)-100)
+%             display(Q/Qacc)
+        end
     end
 
     % Function to determine Q (normalized velocity deficit on the turbine
@@ -109,7 +121,6 @@ function [ dwTurbs ] = floris_compute_windspeed( turbines,wakes,inputData,wt_row
 
         dY_wc = @(y) y+turbines(dw_turbi).LocWF(2)-wakes(uw_turbi).centerLine(2,turbLocIndex);
         dZ_wc = @(z) z+turbines(dw_turbi).LocWF(3)-wakes(uw_turbi).centerLine(3,turbLocIndex);
-        
         if max(wakes(uw_turbi).boundary(deltax,dY_wc(bladeR*sin(0:.05:2*pi))',dZ_wc(bladeR*cos(0:.05:2*pi))'))
             
             zabs = @(z) z+(wakes(uw_turbi).centerLine(3,turbLocIndex));
@@ -122,9 +133,9 @@ function [ dwTurbs ] = floris_compute_windspeed( turbines,wakes,inputData,wt_row
             Q = quad2d(polarfun,0,2*pi,0,turbines(dw_turbi).rotorRadius,'Abstol',15,...
                 'Singular',false,'FailurePlot',true,'MaxFunEvals',3500);
 
-            if p == 1
-                [PHI,R] = meshgrid([0:.1:2*pi 2*pi],0:bladeR);
-                figure;surf(R.*cos(PHI), R.*sin(PHI), polarfun(PHI,R)./R);
+            if p == 1% || dw_turbi == 5
+                [PHI,Rmesh] = meshgrid([0:.1:2*pi 2*pi],0:bladeR);
+                figure;surf(Rmesh.*cos(PHI), Rmesh.*sin(PHI), polarfun(PHI,Rmesh)./Rmesh);
                 title(Q/turbines(dw_turbi).rotorArea); daspect([1 1 .001]);
                 keyboard
             end
