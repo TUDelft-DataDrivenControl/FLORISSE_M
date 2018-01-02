@@ -1,8 +1,14 @@
 function [] = verify_powers(generateData)
-% Set generateData to zero for testing
+% Set generateData to 'false' if nothing specified
+if nargin == 0
+    generateData = false;
+end
+
 if generateData
+    % Generate an empty powerData container
     powerData = containers.Map;
 else
+    % Load existing power data .mat file
     sr = strsplit(mfilename('fullpath'), filesep);
     sr(end) = {'testingData'}; sr(end+1) = {'powDat'};
     load(strjoin(sr, filesep))
@@ -20,8 +26,10 @@ for atmoType = {'uniform','boundary'}
                     if generateData
                         powerData(key) = sum(FLORIS.outputData.power);
                     else
+                        % Throw an error message if the difference between
+                        % new and old power values is too large.
                         assert(abs(powerData(key) - sum(FLORIS.outputData.power))<1e-5,...
-                               sprintf('power data incorrect at %s', join(key, ', ')));
+                               sprintf('power data differs at %s', join(key, ', ')));
                     end
                     clear FLORIS
                 end
@@ -31,4 +39,6 @@ for atmoType = {'uniform','boundary'}
 end
 if generateData
     save('newPowData', 'powerData')
+else
+    disp('Test passed succesfully.')
 end
