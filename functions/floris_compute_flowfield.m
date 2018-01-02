@@ -13,7 +13,7 @@ function [ flowField ] = floris_compute_flowfield( inputData,flowField,turbines,
         % Clear the current x and y coordinates which correspond to turbine locations.
         wakes(turb_num).centerLine = [];
         % Replace the centerline positions with an array of x-coordinates
-        wakes(turb_num).centerLine(1,:) = flowField.X(1,flowField.X(1,:,1)>=turbines(turb_num).LocWF(1)-tpr,1);
+        wakes(turb_num).centerLine(1,:) = flowField.X(1,flowField.X(1,:,1)>=(turbines(turb_num).LocWF(1)-tpr),1);
         % Compute the Y and Z coordinates of the wake
         [wakes(turb_num)] = floris_wakeCenterLinePosition(inputData, turbines(turb_num), wakes(turb_num));
     end

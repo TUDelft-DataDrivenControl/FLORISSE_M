@@ -101,7 +101,7 @@ function [ dwTurbs ] = floris_compute_windspeed( turbines,wakes,inputData,wt_row
 
         dY_wc = @(y) y+turbines(dw_turbi).LocWF(2)-wakes(uw_turbi).centerLine(2,turbLocIndex);
         dZ_wc = @(z) z+turbines(dw_turbi).LocWF(3)-wakes(uw_turbi).centerLine(3,turbLocIndex);
-        if max(wakes(uw_turbi).boundary(deltax,dY_wc(bladeR*sin(0:.05:2*pi))',dZ_wc(bladeR*cos(0:.05:2*pi))'))
+        if any(wakes(uw_turbi).boundary(deltax,dY_wc(bladeR*sin(0:.05:2*pi))',dZ_wc(bladeR*cos(0:.05:2*pi))'))
             Q = turbines(dw_turbi).rotorArea-wakes(uw_turbi).FW_int(deltax, dY_wc(0), dZ_wc(0), bladeR);
             % Compare the power series approximation to a numerical method
 %             Qacc = integralQ(0);
@@ -121,7 +121,7 @@ function [ dwTurbs ] = floris_compute_windspeed( turbines,wakes,inputData,wt_row
 
         dY_wc = @(y) y+turbines(dw_turbi).LocWF(2)-wakes(uw_turbi).centerLine(2,turbLocIndex);
         dZ_wc = @(z) z+turbines(dw_turbi).LocWF(3)-wakes(uw_turbi).centerLine(3,turbLocIndex);
-        if max(wakes(uw_turbi).boundary(deltax,dY_wc(bladeR*sin(0:.05:2*pi))',dZ_wc(bladeR*cos(0:.05:2*pi))'))
+        if any(wakes(uw_turbi).boundary(deltax,dY_wc(bladeR*sin(0:.05:2*pi))',dZ_wc(bladeR*cos(0:.05:2*pi))'))
             
             zabs = @(z) z+(wakes(uw_turbi).centerLine(3,turbLocIndex));
             mask = @(y,z) wakes(uw_turbi).boundary(deltax,dY_wc(y),dZ_wc(z));

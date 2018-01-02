@@ -1,5 +1,5 @@
-function series0 = bvcdf(r, lab, u, nMax)
-% function [series0] = bvcdf(r, lab, u, nMax)
+function series0 = bvcdf(Sigma_norm, R_norm, dS_norm, nMax)
+% function [series0] = bvcdf(Sigma_norm, R_norm, dS_norm, nMax)
 %BVCDF computes the bivariate cumulative distribution function over a
 %circular region
 %   The document:
@@ -10,11 +10,17 @@ function series0 = bvcdf(r, lab, u, nMax)
 %   by expanding the integral to a power series. The exact solution uses
 %   nMax = infty but the series converges so a few terms are enough to
 %   accurately approximate the integral
+%
+%   Inputs:
+%   Sigma_norm = Sigma of second dimension normalized by sigma in first
+%   R_norm = normalized radius of the circle by Sigma(1)
+%   dS_norm = normalized distance between circle and mean Gaus by Sigma(1)
+%
     
-    t = .5*u^2;
-    a = 4*r*r*t;
-    b = r*r-1;
-    s = .5*lab*lab/(r*r);
+    t = .5*dS_norm^2;
+    a = 4*Sigma_norm*Sigma_norm*t;
+    b = Sigma_norm*Sigma_norm-1;
+    s = .5*R_norm*R_norm/(Sigma_norm*Sigma_norm);
     
     series0 = 0;
     for n=0:nMax
@@ -27,6 +33,6 @@ function series0 = bvcdf(r, lab, u, nMax)
         series0=series0+(factorial(2*n)/(2^(2*n)*factorial(n)))*...
         (1-exp(-s)*series1)*(a^n)*series2;
     end
-    series0 = r*exp(-t)*series0;
+    series0 = Sigma_norm*exp(-t)*series0;
 end
 
