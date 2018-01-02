@@ -168,10 +168,10 @@ classdef floris<handle
             for jj = 1:length(paramSet)
                 self.inputData.(paramSet{jj}) = xopt(jj); % Overwrite model settings
             end    
+            
             % Update the derived settings (inflow conditions, model functions, ...)
             self.inputData = processSettings(self.inputData);
 
-            
         end
         
         

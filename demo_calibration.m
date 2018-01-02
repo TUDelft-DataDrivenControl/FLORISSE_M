@@ -44,13 +44,13 @@ calibrationData(1).power(2)  = struct('turbId',2,...       % Turbine nr. corresp
 
 
 %% Manual cost function evaluations
-disp('Testing random calls to the cost function...');
-J=calibrationCostFunc([],{},calibrationData) % default values
-J=calibrationCostFunc([0.40,0.0040],{'ka','kb'},calibrationData) % overwrite ka, kb
-J=calibrationCostFunc([8.0,deg2rad(0.0)],{'uInfWf','windDirection'},calibrationData) % overwrite WS, WD
-J=calibrationCostFunc([8.0,deg2rad(90.)],{'uInfWf','windDirection'},calibrationData) % overwrite WS, WD
-J=calibrationCostFunc([8.0,deg2rad(180)],{'uInfWf','windDirection'},calibrationData) % overwrite WS, WD
-J=calibrationCostFunc([8.0,deg2rad(270)],{'uInfWf','windDirection'},calibrationData) % overwrite WS, WD
+% disp('Testing random calls to the cost function...');
+% J=calibrationCostFunc([],{},calibrationData) % default values
+% J=calibrationCostFunc([0.40,0.0040],{'ka','kb'},calibrationData) % overwrite ka, kb
+% J=calibrationCostFunc([8.0,deg2rad(0.0)],{'uInfWf','windDirection'},calibrationData) % overwrite WS, WD
+% J=calibrationCostFunc([8.0,deg2rad(90.)],{'uInfWf','windDirection'},calibrationData) % overwrite WS, WD
+% J=calibrationCostFunc([8.0,deg2rad(180)],{'uInfWf','windDirection'},calibrationData) % overwrite WS, WD
+% J=calibrationCostFunc([8.0,deg2rad(270)],{'uInfWf','windDirection'},calibrationData) % overwrite WS, WD
 
 % %% Parameter optimization
 % paramSet = {'ka','kb'}; % Parameters to be tuned
@@ -59,9 +59,16 @@ J=calibrationCostFunc([8.0,deg2rad(270)],{'uInfWf','windDirection'},calibrationD
 % ub = [0.80,0.0080]; % Upper bound
 % FLORIS.calibrate(paramSet,x0,lb,ub,calibrationData);
 
-%% Wind speed estimation
-paramSet = {'uInfWf','windDirection'}; % Parameters to be tuned
-x0 = [12.0,0.30]; % Initial guess for parameters
-lb = [04.0,-pi/2]; % Lower bound
-ub = [15.0,+pi/2]; % Upper bound
+% %% Wind speed estimation
+% paramSet = {'uInfWf','windDirection'}; % Parameters to be tuned
+% x0 = [12.0,0.30]; % Initial guess for parameters
+% lb = [04.0,-pi/2]; % Lower bound
+% ub = [15.0,+pi/2]; % Upper bound
+% FLORIS.calibrate(paramSet,x0,lb,ub,calibrationData);
+
+%% TI estimation
+paramSet = {'TI_0'}; % Parameters to be tuned
+x0 = [0.05]; % Initial guess for parameters
+lb = [0.00]; % Lower bound
+ub = [0.25]; % Upper bound
 FLORIS.calibrate(paramSet,x0,lb,ub,calibrationData);
