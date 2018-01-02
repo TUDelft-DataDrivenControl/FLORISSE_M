@@ -12,5 +12,5 @@ function [] = test_dependencies(functionsPath)
 
     % Make a compatibility report (only for newest MATLAB 2017b)
     if exist('codeCompatibilityReport') ~= 0
-        codeCompatibilityReport(pwd);
+        codeCompatibilityReport(functionsPath);
     end
