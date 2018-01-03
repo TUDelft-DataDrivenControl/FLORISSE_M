@@ -13,7 +13,7 @@ function [ flowField ] = floris_compute_flowfield( inputData,flowField,turbines,
         % Clear the current x and y coordinates which correspond to turbine locations.
         wakes(turb_num).centerLine = [];
         % Replace the centerline positions with an array of x-coordinates
-        wakes(turb_num).centerLine(1,:) = flowField.X(1,flowField.X(1,:,1)>=turbines(turb_num).LocWF(1)-tpr,1);
+        wakes(turb_num).centerLine(1,:) = flowField.X(1,flowField.X(1,:,1)>=(turbines(turb_num).LocWF(1)-tpr),1);
         % Compute the Y and Z coordinates of the wake
         [wakes(turb_num)] = floris_wakeCenterLinePosition(inputData, turbines(turb_num), wakes(turb_num));
     end
@@ -44,20 +44,20 @@ function [ flowField ] = floris_compute_flowfield( inputData,flowField,turbines,
                 if flowField.fixYaw
                     % The mask determines if the free stream applies or the
                     % wake velocity needs to be computed
-                    mask = (wakes(turb_num).boundary(turbines(turb_num).TI,deltaXs(turb_num),dY_wc(:,:,turb_num),dZ_wc(:,:,turb_num))).*...
+                    mask = (wakes(turb_num).boundary(deltaXs(turb_num),dY_wc(:,:,turb_num),dZ_wc(:,:,turb_num))).*...
                         (((squeeze(flowField.Y(:,1,:))-turbines(turb_num).LocWF(2))*tan(-turbines(turb_num).YawWF))<deltaXs(turb_num));
                 else
-                    mask = wakes(turb_num).boundary(turbines(turb_num).TI,deltaXs(turb_num),dY_wc(:,:,turb_num),dZ_wc(:,:,turb_num));
+                    mask = wakes(turb_num).boundary(deltaXs(turb_num),dY_wc(:,:,turb_num),dZ_wc(:,:,turb_num));
                 end
                 switch inputData.wakeSum
                     case 'Katic'
                         sumKed = sumKed+(mask.*(squeeze(flowField.U(:,1,:))-wakes(turb_num).V(squeeze(flowField.U(:,1,:)),...
-                            turbines(turb_num).TI,turbines(turb_num).axialInd,deltaXs(turb_num),dY_wc(:,:,turb_num),dZ_wc(:,:,turb_num))).^2);
+                                         deltaXs(turb_num),dY_wc(:,:,turb_num),dZ_wc(:,:,turb_num))).^2);
                     case 'Voutsinas'
                         % To compute the energy deficit use the inflow
                         % speed of the upwind turbine instead of Uinf
                         sumKed = sumKed+(mask.*(turbines(turb_num).windSpeed-wakes(turb_num).V(turbines(turb_num).windSpeed,...
-                            turbines(turb_num).TI,turbines(turb_num).axialInd,deltaXs(turb_num),dY_wc(:,:,turb_num),dZ_wc(:,:,turb_num))).^2);
+                                         deltaXs(turb_num),dY_wc(:,:,turb_num),dZ_wc(:,:,turb_num))).^2);
                 end
             end
             flowField.U(:,flowField.X(1,:,1)==xSample,:) = squeeze(flowField.U(:,1,:))-sqrt(sumKed);
