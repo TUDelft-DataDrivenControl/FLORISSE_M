@@ -18,8 +18,8 @@ ub = [0.25]; % Upper bound for the tuning parameters
 
 % Estimator settings
 N_step = 300; % Perform estimation every [x] discrete timesteps
-N_tavg = 10;  % Time-averaging horizon for LES data
-N_init = 200; % Time of first estimation (cond.: N_init > N_tavg)
+N_tavg = 60;  % Time-averaging horizon for LES data
+N_init = 300; % Time of first estimation (cond.: N_init > N_tavg)
 N_end  = 1500; % Stop after discrete time [x]
 
 % Other settings
@@ -89,9 +89,22 @@ for k = N_init:N_step:N_end
     % Plot flow fields
     if plotFlowFields
         set(0,'CurrentFigure',hFig); clf
+        
         subplot(1,2,1);
+        FLORIS.run();
+        tLcsWF = [FLORIS.outputData.turbines.LocWF]; % Turbine locs in WF
+        [flowField.X,flowField.Y,flowField.Z] = meshgrid(-200:5:max(tLcsWF(:,1))+1000,-200:5:max(tLcsWF(:,1))+200,90.0);
+        flowField.U  = FLORIS.inputData.Ufun(flowField.Z).*ones(size(flowField.X));
+        [flowField.V,flowField.W]  = deal(zeros(size(flowField.X)));
+        flowField.fixYaw = false;
+        [flowField] = floris_compute_flowfield(FLORIS.inputData,flowField,...
+                       FLORIS.outputData.turbines,FLORIS.outputData.wakes);
+        contourf(flowField.X(1,:),flowField.Y(:,1),flowField.U.'.','Linecolor','none');
+        axis equal tight; box on
+        
+        subplot(1,2,2);
         trisurf(tri, cellCenters(:,1), cellCenters(:,2), flowSpeedAverage); % Raw SOWFA data
-        lighting none; shading flat; colorbar; axis equal;
+        lighting none; shading flat; colorbar; axis equal tight;
         light('Position',[-50 -15 29]); view(0,90); hold on;
         plot3(FLORIS.inputData.LocIF(:,1),FLORIS.inputData.LocIF(:,2),...
         FLORIS.inputData.LocIF(:,3),'k.','markerSize',10);
