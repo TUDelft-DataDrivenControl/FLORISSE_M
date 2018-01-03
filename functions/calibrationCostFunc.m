@@ -52,14 +52,16 @@ function [J] = calibrationCostFunc(x,paramSet,calibrationData)
         outputData = floris_core(calibrationData(i).inputData,false);
         
         % Add squared error of power to the total cost
-        for iP = 1:length(calibrationData(i).power)
-            Ji = Ji + calibrationData(i).power(iP).weight * ...
-                (calibrationData(i).power(iP).value - ...
-                outputData.power(calibrationData(i).power(iP).turbId))^2;
+        if any(strcmp('power',fieldnames(calibrationData(i))))
+            for iP = 1:length(calibrationData(i).power)
+                Ji = Ji + calibrationData(i).power(iP).weight * ...
+                    (calibrationData(i).power(iP).value - ...
+                    outputData.power(calibrationData(i).power(iP).turbId))^2;
+            end
+    %         disp(['Cost due to power: ' num2str(Ji) '.']);
         end
-%         disp(['Cost due to power: ' num2str(Ji) '.']);
         
-        if length(calibrationData(i).flow) > 0
+        if any(strcmp('flow',fieldnames(calibrationData(i))))
             % Calculate the error in flow fields
             flowField.X = [calibrationData(i).flow.x];
             flowField.Y = [calibrationData(i).flow.y];
