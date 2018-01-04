@@ -73,6 +73,11 @@ function [ dwTurbs ] = floris_compute_windspeed( turbines,wakes,inputData,wt_row
         turbines(dw_turbi).TI = norm(TiVec);
         if imag(turbines(dw_turbi).windSpeed)>0
             keyboard
+            % If you end up here, please check the turbine spacing. Are any
+            % turbines located in the near wake of another one? Is the
+            % windspeed abnormally high or low? Have you made any changes
+            % to C_T? Somewhere, the wind speed at a rotor plane is smaller
+            % than 0, prompting this error.
         end
     end
     dwTurbs = turbines(wt_rows{turbirow+1});
