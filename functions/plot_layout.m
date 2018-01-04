@@ -6,6 +6,9 @@ function [ ] = plot_layout( inputData,turbines,wakeCenterLines )
     YawWfs = [turbines.YawWF];
     Nt     = size(turbWF,2);
     
+    inputData.uInfIf = cos(inputData.windDirection)*inputData.uInfWf;
+    inputData.vInfIf = sin(inputData.windDirection)*inputData.uInfWf;
+    
     % Plot the turbines in the inertial frame
     subplot(1,2,1);
     
