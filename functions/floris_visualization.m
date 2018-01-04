@@ -25,7 +25,7 @@ function [flowField] = floris_visualization(inputData,outputData,flowField)
     
     computeField = false;
     % Setup flowField visualisation grid if necessary
-    if (~isfield(flowField,'U') && (flowField.plot2DFlowfield || flowField.plotLayout))
+    if ((~isfield(flowField,'U') || flowField.plotLayout) && (flowField.plot2DFlowfield || flowField.plotLayout))
         [flowGrid.X,flowGrid.Y,flowGrid.Z] = meshgrid(...
             xMin : flowField.resx : xMax,...
             yMin : flowField.resy : yMax,...
@@ -33,7 +33,7 @@ function [flowField] = floris_visualization(inputData,outputData,flowField)
         computeField = true;
     end
     if ((isfield(flowField,'U') && ismatrix(flowField.U) && flowField.plot3DFlowfield)...
-            ||(~isfield(flowField,'U') && flowField.plot3DFlowfield))
+            ||((~isfield(flowField,'U') || flowField.plotLayout) && flowField.plot3DFlowfield))
         [flowGrid.X,flowGrid.Y,flowGrid.Z] = meshgrid(...
             xMin : flowField.resx : xMax,...
             yMin : flowField.resy : yMax,...
@@ -41,26 +41,28 @@ function [flowField] = floris_visualization(inputData,outputData,flowField)
         computeField = true;
     end
 
-    if strcmp(lower(flowField.frame),'if')
-        % Coordinate change in flowField from IF -> WF necessary
-        targetGrid_WF = frame_IF2WF(inputData.windDirection,inputData.LocIF,'if',...
-                              [flowGrid.X(:), flowGrid.Y(:),flowGrid.Z(:)]);
-        flowField.X = flowGrid.X;
-        flowField.Y = flowGrid.Y;
-        flowField.Z = flowGrid.Z;
-        
-        % Draw rectangle (WF) around rotated rectangle (IF)
-        flowField_WF = flowField; % make a copy and generate outer rectangular mesh
-        [flowField_WF.X,flowField_WF.Y,flowField_WF.Z] = meshgrid(...
-            min(targetGrid_WF(:,1)) : flowField.resx : max(targetGrid_WF(:,1)),...
-            min(targetGrid_WF(:,2)) : flowField.resy : max(targetGrid_WF(:,2)),...
-            inputData.hub_height(1));
-    else
-        % No need to change coordinate system
-        flowField_WF   = flowField;
-        flowField_WF.X = flowGrid.X;
-        flowField_WF.Y = flowGrid.Y;
-        flowField_WF.Z = flowGrid.Z;
+    if (~isfield(flowField,'U') || flowField.plotLayout)
+        if strcmp(lower(flowField.frame),'if')
+            % Coordinate change in flowField from IF -> WF necessary
+            targetGrid_WF = frame_IF2WF(inputData.windDirection,inputData.LocIF,'if',...
+                                  [flowGrid.X(:), flowGrid.Y(:),flowGrid.Z(:)]);
+            flowField.X = flowGrid.X;
+            flowField.Y = flowGrid.Y;
+            flowField.Z = flowGrid.Z;
+
+            % Draw rectangle (WF) around rotated rectangle (IF)
+            flowField_WF = flowField; % make a copy and generate outer rectangular mesh
+            [flowField_WF.X,flowField_WF.Y,flowField_WF.Z] = meshgrid(...
+                min(targetGrid_WF(:,1)) : flowField.resx : max(targetGrid_WF(:,1)),...
+                min(targetGrid_WF(:,2)) : flowField.resy : max(targetGrid_WF(:,2)),...
+                inputData.hub_height(1));
+        else
+            % No need to change coordinate system
+            flowField_WF   = flowField;
+            flowField_WF.X = flowGrid.X;
+            flowField_WF.Y = flowGrid.Y;
+            flowField_WF.Z = flowGrid.Z;
+        end
     end
     
     if computeField

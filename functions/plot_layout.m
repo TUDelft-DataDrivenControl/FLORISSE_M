@@ -12,12 +12,14 @@ function [ ] = plot_layout( inputData,turbines,wakeCenterLines )
     % Plot the turbines in the inertial frame
     subplot(1,2,1);
     
-    % Plot the turbines
+    % Plot the turbines (inertial frame)
     for j = 1:Nt
         plot(turbIF(1,j)+ [-1, 1]*turbines(j).rotorRadius*sin(YawIfs(j)),...
              turbIF(2,j)+ [1, -1]*turbines(j).rotorRadius*cos(YawIfs(j)),'LineWidth',3); hold on;
-        text(turbIF(1,j)+30,turbIF(2,(j))+20,['T' num2str(j)]);
+        text(turbIF(1,j)+30,turbIF(2,(j))+20,['T' num2str(turbines(j).turbId_IF)]);
     end
+    disp('NOTE: Turbines have a different numbering in IF and WF.');
+    disp(' Inspect the variables turbines(i).turbId_IF and .turbId_WF, respectively.');
 
     % Set labels and image size
     ylabel('Internal y-axis [m]');
@@ -37,7 +39,7 @@ function [ ] = plot_layout( inputData,turbines,wakeCenterLines )
         p = plot(turbWF(1,j) + [-1, 1]*turbines(j).rotorRadius*sin(YawWfs(j)),...
             turbWF(2,j) + [1, -1]*turbines(j).rotorRadius*cos(YawWfs(j)),'LineWidth',3);
         plot([turbWF(1,j) wakeCenterLines{j}(1,:)],[turbWF(2,j) wakeCenterLines{j}(2,:)],'--','DisplayName','Wake Centerline','Color',get(p,'Color'));
-        text(turbWF(1,j) +30,turbWF(2,j) +20,['T' num2str(j)]);
+        text(turbWF(1,j) +30,turbWF(2,j) +20,['T' num2str(turbines(j).turbId_WF)]);
     end
     
     ylabel('Aligned y-axis [m]');
