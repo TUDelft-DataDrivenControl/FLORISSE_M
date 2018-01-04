@@ -91,11 +91,11 @@ end
 if dispTimer; disp(['TIMER: core operations: ' num2str(toc(timer.core)) ' s.']); end
 
 % Prepare output data
-powerWF = [turbines.power];  % Turbine powers according to wind frame
+% powerWF = [turbines.power];  % Turbine powers according to wind frame
 sortVector = [turbines.turbId_IF]; 
 turbines(sortVector) = turbines; % Sort entries into IF
 wakes(sortVector) = wakes; % Sort entries into IF
-powerIF = [turbines.power]; % Turbine powers according to inertial frame
+powerIF = [turbines.power]; % Turbine powers according to inertial frame numbering
 outputData = struct('turbines',turbines,...
                     'wakes',wakes,...
                     'power',powerIF);

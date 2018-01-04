@@ -39,7 +39,7 @@ function [ ] = plot_layout( inputData,turbines,wakeCenterLines )
         p = plot(turbWF(1,j) + [-1, 1]*turbines(j).rotorRadius*sin(YawWfs(j)),...
             turbWF(2,j) + [1, -1]*turbines(j).rotorRadius*cos(YawWfs(j)),'LineWidth',3);
         plot([turbWF(1,j) wakeCenterLines{j}(1,:)],[turbWF(2,j) wakeCenterLines{j}(2,:)],'--','DisplayName','Wake Centerline','Color',get(p,'Color'));
-        text(turbWF(1,j) +30,turbWF(2,j) +20,['T' num2str(turbines(j).turbId_WF)]);
+        text(turbWF(1,j) +30,turbWF(2,j) +20,['T' num2str(turbines(j).turbId_IF)]);
     end
     
     ylabel('Aligned y-axis [m]');
