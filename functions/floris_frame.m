@@ -4,18 +4,13 @@ function [ turbines,wtRows ] = floris_frame( inputData,turbines )
 %   avoid unnecessary calculations of the influence of downstream turbines 
 %   on their upwind turbines (which of course is none).
 
-    % Calculate incoming flow direction
-    Rz = @(a) [cos(a) -sin(a) 0;sin(a) cos(a) 0;0 0 1]; % Rotational matrix
-    
-    % Wind frame turbine locations in wind frame
-    wtLocationsWf = inputData.LocIF*Rz(-inputData.windDirection).'; 
+    % Rotate and translate wind turbine locations to align with wind dir.
+    wtLocationsWf = frame_IF2WF(inputData.windDirection,inputData.LocIF);
 
     % Order turbines from front to back, and project them on positive axes
     [LocX,sortvector] = sort(wtLocationsWf(:,1));
     wtLocationsWf = wtLocationsWf(sortvector,:);
-    wtLocationsWf(:,2) = wtLocationsWf(:,2)-min(wtLocationsWf(:,2)); % shift vertically (up-down)
-    wtLocationsWf(:,1) = wtLocationsWf(:,1)-min(wtLocationsWf(:,1)); % shift horizontally (sideways)
-
+    
     % Group turbines together in rows (depending on wind direction)
     rowi = 1; j = 1;
     while j <= size(wtLocationsWf,1)
