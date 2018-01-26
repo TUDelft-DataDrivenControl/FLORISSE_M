@@ -8,29 +8,93 @@ classdef floris<handle
     methods
         %% Constructor function initializes default inputData
         function self = floris(siteType,turbType,atmoType,...
-                controlType,wakeType,wakeSum,deflType)
+                controlType,wakeModelType,wakeSum)
             
             addpath(genpath('functions'))% Model functions
-            addpath('NREL5MW');   % Airfoil data
+            addpath('singleWakeModels');   % Airfoil data
             
             % Default setup settings (see in floris_loadSettings.m for explanations)
-            if ~exist('siteType','var');    siteType  = '9turb';   end % Wind farm topology ('1turb','9turb')
-            if ~exist('turbType','var');    turbType  = 'NREL5MW'; end % Turbine type ('NREL5MW')
-            if ~exist('atmoType','var');    atmoType  = 'uniform'; end % Atmospheric inflow ('uniform','boundary')
-            if ~exist('controlType','var'); controlType = 'pitch'; end % Actuation method ('pitch','greedy','axialInduction')         
-            if ~exist('wakeType','var');    wakeType  = 'PorteAgel'; end % Single wake model ('Zones','Gauss','Larsen','PorteAgel')
-            if ~exist('wakeSum','var');     wakeSum   = 'Katic';   end % Wake addition method ('Katic','Voutsinas')
-            if ~exist('deflType','var');    deflType  = 'PorteAgel'; end % Wake deflection model ('Jimenez','PorteAgel')
+            if ~exist('siteType','var');    siteType    = 'generic_9turb';   end % Wind farm topology ('1turb','9turb')
+            if ~exist('turbType','var');    turbType    = 'nrel5mw';    end % Turbine type ('NREL5MW')
+            if ~exist('atmoType','var');    atmoType    = 'uniform';    end % Atmospheric inflow ('uniform','boundary')
+            if ~exist('controlType','var'); controlType = 'pitch';      end % Actuation method ('pitch','greedy','axialInduction')         
+            if ~exist('wakeType','var');    wakeModelType = 'PorteAgel';  end % Single wake model ('Zones','Gauss','Larsen','PorteAgel')
+            if ~exist('wakeSum','var');     wakeSum     = 'Katic';      end % Wake addition method ('Katic','Voutsinas')
+%             if ~exist('deflType','var');    deflType  = 'PorteAgel'; end % Wake deflection model ('Jimenez','PorteAgel')
             
-            % Call floris_loadSettings.m from the 'functions' folder
-            self.inputData = floris_loadSettings(siteType,turbType,...
-                atmoType,controlType,wakeType,wakeSum,deflType);
+            % Site definition
+            run(['siteDefinitions/' siteType]); 
+            
+            % Turbine specifications
+            run(['turbineModels/' turbType '/specifications.m']); 
+            inputData.rotorRadius           = turbine.rotorRadius   * ones(1,nTurbs);
+            inputData.generator_efficiency  = turbine.genEfficiency * ones(1,nTurbs);
+            inputData.hub_height            = turbine.hubHeight     * ones(1,nTurbs);
+            inputData.pP                    = turbine.pP; % yaw power correction parameter
+            inputData.LocIF(:,3)            = inputData.hub_height;
+            inputData.rotorArea             = pi*inputData.rotorRadius.^2;
+            
+            % Single wake model
+            wakeModelFunc                   = str2func(wakeModelType);
+            inputData.wakeModel             = wakeModelFunc();
+            
+            %% Turbine axial control methodology
+            % Herein we define how the turbine are controlled. In the traditional
+            % FLORIS model, we directly control the axial induction factor of each
+            % turbine. However, to apply this in practise, we still need a mapping to
+            % the turbine generator torque and the blade pitch angles. Therefore, we
+            % have implemented the option to directly control and optimize the blade
+            % pitch angles 'pitch', under the assumption of optimal generator torque
+            % control. Additionally, we can also assume fully greedy control, where we
+            % cannot adjust the generator torque nor the blade pitch angles ('greedy').
+            
+            switch controlType
+                case {'pitch'}
+                    % Choice of how a turbine's axial control setting is determined
+                    % 0: use pitch angles and Cp-Ct LUTs for pitch and WS,
+                    % 1: greedy control   and Cp-Ct LUT for WS,
+                    % 2: specify axial induction directly.
+                    inputData.axialControlMethod = 0;
+                    inputData.pitchAngles = zeros(1,nTurbs); % Blade pitch angles, by default set to greedy
+                    inputData.axialInd    = nan*ones(1,nTurbs); % Axial inductions  are set to NaN to find any potential errors
+                    
+                    % Determine Cp and Ct interpolation functions as a function of WS and blade pitch
+                    for airfoilDataType = {'cp','ct'}
+                        lut       = csvread(['turbineModels/' turbType '/' airfoilDataType{1} 'Pitch.csv']); % Load file
+                        lut_ws    = lut(1,2:end);          % Wind speed in LUT in m/s
+                        lut_pitch = deg2rad(lut(2:end,1)); % Blade pitch angle in LUT in radians
+                        lut_value = lut(2:end,2:end);      % Values of Cp/Ct [dimensionless]
+                        inputData.([airfoilDataType{1} '_interp']) = @(ws,pitch) interp2(lut_ws,lut_pitch,lut_value,ws,pitch);
+                    end
+                    
+                    % Greedy control: we cannot adjust gen torque nor blade pitch
+                case {'greedy'}
+                    inputData.axialControlMethod = 1;
+                    inputData.pitchAngles = nan*ones(1,nTurbs); % Blade pitch angles are set to NaN to find any potential errors
+                    inputData.axialInd    = nan*ones(1,nTurbs); % Axial inductions  are set to NaN to find any potential errors
+                    
+                    % Determine Cp and Ct interpolation functions as a function of WS
+                    lut                 = load(['turbineModels/' turbType '/cpctgreedy.mat']);
+                    inputData.cp_interp = @(ws) interp1(lut.wind_speed,lut.cp,ws);
+                    inputData.ct_interp = @(ws) interp1(lut.wind_speed,lut.ct,ws);
+                    
+                    % Directly adjust the axial induction value of each turbine.
+                case {'axialInduction'}
+                    inputData.axialControlMethod = 2;
+                    inputData.pitchAngles = nan*ones(1,nTurbs); % Blade pitch angles are set to NaN to find any potential errors
+                    inputData.axialInd    = 1/3*ones(1,nTurbs); % Axial induction factors, by default set to greedy
+                    
+                otherwise
+                    error(['Model type with name: "' controlType '" not defined']);
+            end
+            
+            self.inputData = inputData;
         end
         
         
         
         %% FLORIS single execution
-        function [self,outputData] = run(self)
+        function [outputData] = run(self)
             % Run a new FLORIS simulation and additionally reset existing
             % output data (e.g., old flow field)
             [self.outputData] = floris_core(self.inputData);
@@ -42,7 +106,7 @@ classdef floris<handle
         
         
         %% FLORIS control optimization
-        function [self] = optimize(self,optimizeYaw,optimizeAxInd)
+        function [] = optimize(self,optimizeYaw,optimizeAxInd)
             % This function will optimize the turbine yaw angles and/or the
             % turbine axial induction factors (blade pitch angles) to
             % maximize the power output of the wind farm. 
@@ -142,18 +206,18 @@ classdef floris<handle
         end
 
         %% Simplified function to call yaw-only optimization
-        function [self] = optimizeYaw(self)
+        function [] = optimizeYaw(self)
             self.optimize(true,false);
         end
         
         %% Simplified function to call axial-only optimization
-        function [self] = optimizeAxInd(self)
+        function [] = optimizeAxInd(self)
             self.optimize(false,true);
         end
 
         
         %% FLORIS model calibration
-        function [] = calibrate(self,paramSet,x0,lb,ub,calibrationData)
+        function [xopt] = calibrate(self,paramSet,x0,lb,ub,calibrationData)
             disp(['Performing model parameter calibration: paramSet = [' strjoin(paramSet,', ') '].']);
             
             % Set-up cost function and minimize error with calibrationData
@@ -199,22 +263,5 @@ classdef floris<handle
             % Call the visualization function
             self.outputFlowField = floris_visualization(self.inputData,self.outputData,self.outputFlowField);
         end
-
-%%         DISABLED FOR NOW: AEP CALCULATIONS
-%         %% Run FLORIS AEP calculations (multiple wind speeds and directions)
-%         function [self,outputDataAEP] = AEP(self,windRose)
-%             % WindRose is an N x 2 matrix with uIf in 1st column and
-%             % vIf in 2nd. The simulation will simulate FLORIS for each row.
-% 
-%             % Simulate over each uIf-vIf set (matrix row)
-%             for i = 1:size(windRose,1)
-%                 self.inputData.uInfIf   = windRose(i,1);
-%                 self.inputData.vInfIf   = windRose(i,2);
-%                 [self.outputDataAEP{i}] = self.run();
-%             end
-% 
-%             % Results saved internally, but also returns externally if desired.
-%             if nargout > 0; outputDataAEP = self.outputDataAEP; end
-%         end
     end
 end

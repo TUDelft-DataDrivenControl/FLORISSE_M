@@ -20,10 +20,10 @@ calibrationData(1).flow(3)   = struct('x',921.83,'y',400.05,'z',90,... % Flow me
                                       'weight',0.7);                 % Weight in the cost function
 calibrationData(1).flow(4)   = struct('x',1305.92,'y',400.05,'z',90,... % Flow measurement at (x,y,z)
                                       'value',3.51,...               % Flow measurement value (U)
-                                      'weight',0.3);                 % Weight in the cost function      
+                                      'weight',0.3);                 % Weight in the cost function
 calibrationData(1).flow(5)   = struct('x',1690.02,'y',400.05,'z',90,... % Flow measurement at (x,y,z)
                                       'value',5.22,...               % Flow measurement value (U)
-                                      'weight',0.7);                 % Weight in the cost function     
+                                      'weight',0.7);                 % Weight in the cost function
                                   
   
 % Power measurements from LES/Experimental                                                           

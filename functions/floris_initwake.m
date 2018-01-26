@@ -14,16 +14,16 @@ function [ wake ] = floris_initwake( inputData,turbine,wake )
     % FLORIS model with 3 discrete wake zones. Also a Gaussian wake shape
     % can be assumed, among others.
     switch inputData.wakeType
-    case 'Zones' % FLORIS wake zones model with 3 discrete deficit profiles
+    case 'floris_zones' % FLORIS wake zones model with 3 discrete deficit profiles
         wake = zonedWake( inputData,turbine,wake );
 
-    case 'Gauss' % Gaussian wake profile shape
+    case 'jensen_gauss' % Gaussian wake profile shape
         wake = naiveGaussianWake( inputData,turbine,wake );
 
-    case 'Larsen' % Larsen (2006) wake profile
+    case 'larsen' % Larsen (2006) wake profile
         wake = larsenWake( inputData,turbine,wake );
 
-    case 'PorteAgel' % Wake shape from Porte-Agel
+    case 'porteagel' % Wake shape from Porte-Agel
         wake = porteAgelWake( inputData,turbine,wake );
 
     otherwise

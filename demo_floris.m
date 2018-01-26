@@ -1,8 +1,8 @@
 clear all; clc; close all;
 %% Run a single simulation without optimization
 disp('Running a single simulation...');
-FLORIS_sim = floris('9turb','NREL5MW','boundary','pitch','PorteAgel',...
-                    'Katic','PorteAgel');  % Initialize FLORIS class with specific settings
+FLORIS_sim = floris('generic_1turb','nrel5mw','uniform','pitch','porteagel',...
+                    'katic','porteagel');  % Initialize FLORIS class with specific settings
 FLORIS_sim.run();            % Run a single simulation with the settings 'FLORIS.inputData'
 FLORIS_sim.visualize(0,1,0); % Generate a 2D visualization and a 3D visualization
 disp(' '); disp(' ');
