@@ -15,6 +15,6 @@ inputData.uInfWf        = 8.0;    % Axial flow speed in wind frame
 inputData.TI_0          = .1;     % turbulence intensity [-] ex: 0.1 is 10% turbulence intensity
 inputData.airDensity    = 1.1716; % Atmospheric air density (kg/m3)
 
-% Inflow
-inputData.atmoType = 'boundary'; % Boundary layer
+% Inflow (vertical profile)
 inputData.shear = .12; % shear exponent (0.14 -> neutral)
+inputData.Ufun = @(z) inputData.uInfWf.*(z./inputData.hub_height(1)).^inputData.shear; % Boundary layer

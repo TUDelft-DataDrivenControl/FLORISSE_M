@@ -1,12 +1,23 @@
 classdef PorteAgel<handle
     properties
+        adjustInitialWakeDiamToYaw % Adjust initial wake to wake diameter to yaw conditions (boolean)
+        ad,bd % Yaw-induced  static wake deflection and angle
+        at,bt % Tilt-induced static wake deflection and angle
         params
     end
     methods
         %% Parameter settings
         function self = PorteAgel()
-            self.params.adjustInitialWakeDiamToYaw = false; % Adjust the intial swept surface overlap
+            % General parameters
+            self.adjustInitialWakeDiamToYaw = false; % Adjust the intial swept surface overlap
 
+            % Blade-rotation-induced wake deflection
+            self.params.ad = -4.5;   % lateral wake displacement bias parameter (a + bx)
+            self.params.bd = -0.01;  % lateral wake displacement bias parameter (a + bx)
+            self.params.at = 0.0;    % vertical wake displacement bias parameter (a + bx)
+            self.params.bt = 0.0;    % vertical wake displacement bias parameter (a + bx)
+            
+            % Model-specific parameters
             self.params.alpha = 2.32;     % near wake parameter
             self.params.beta  = .154;     % near wake parameter
             self.params.veer  = 0;        % veer of atmosphere
@@ -19,15 +30,10 @@ classdef PorteAgel<handle
             self.params.TIc   = .0325;    % contribution of ambient turbulence intensity
             self.params.TId   = -.32;     % contribution of downstream distance from turbine
 
-            self.params.ka	= .3837;    % wake expansion parameter (ka*TI + kb)
-            self.params.kb 	= .0037;    % wake expansion parameter (ka*TI + kb)
-            %     inputData.ky    = @(I) inputData.ka*I + inputData.kb;
-            %     inputData.kz    = @(I) inputData.ka*I + inputData.kb;
-
-            self.params.ad = -4.5;   % lateral wake displacement bias parameter (a + bx)
-            self.params.bd = -0.01;  % lateral wake displacement bias parameter (a + bx)
-            self.params.at = 0.0;    % vertical wake displacement bias parameter (a + bx)
-            self.params.bt = 0.0;    % vertical wake displacement bias parameter (a + bx)
+            ka	= .3837;    % wake expansion parameter (ka*TI + kb)
+            kb 	= .0037;    % wake expansion parameter (ka*TI + kb)
+            self.params.ky    = @(I) ka*I + kb;
+            self.params.kz    = @(I) ka*I + kb;
 
             % For more information, see the publication from Bastankah and
             % Porte-Agel (2016) with doi:10.1017/jfm.2016.595.
@@ -36,7 +42,7 @@ classdef PorteAgel<handle
         
         
         %% Wake centerline position
-        function [wakeDir,displacements] = centerline(deltaxs,turbine,inputData)
+        function [wake] = centerline(self,deltaxs,turbine,inputData)
         Ct = turbine.Ct;
         Ti = turbine.TI;
         R = floris_eul2rotm(-[turbine.YawWF turbine.Tilt 0],'ZYZ');
@@ -53,7 +59,7 @@ classdef PorteAgel<handle
         % alligned turbine. This expression uses: Ur./(Uinf+U0) = approx 1/2
         sigNeutral_x0 = eye(2)*turbine.rotorRadius*sqrt(1/2);
        varWake = @(x) mmat(repmat(C,1,1,length(x)),...
-            (  repmat(diag([inputData.ky(Ti) inputData.kz(Ti)]),[1,1,length(x)])...
+            (  repmat(diag([self.params.ky(Ti) self.params.kz(Ti)]),[1,1,length(x)])...
             .* repmat(reshape((x-x0),1,1,length(x)),2,2,1)...
             +  repmat(sigNeutral_x0,1,1,length(x))   ).^2);
         % varWake updated matrix definitions for backwards compatibility. Previously: 
@@ -70,7 +76,7 @@ classdef PorteAgel<handle
         
         % Eq. 7.4
         FW_delta = @(x) delta_x0+theta_C0*(turbine.rotorRadius/7.35)*...
-            sqrt(sqrt(det(C/((diag([inputData.ky(Ti) inputData.kz(Ti)])*Ct)^2))))*...
+            sqrt(sqrt(det(C/((diag([self.params.ky(Ti) self.params.kz(Ti)])*Ct)^2))))*...
             (2.9+1.3*sqrt(1-Ct)-Ct)*lnTerm(x).';
         
 %         FW_delta = @(x) delta_x0+theta_C0*(turbine.rotorRadius/7.35)*...
@@ -81,13 +87,21 @@ classdef PorteAgel<handle
         displacements = NW_delta(deltaxs).*(deltaxs<=x0)+FW_delta(deltaxs).*(deltaxs>x0);
         % wakeDir = rotx(90)*turbine.wakeNormal; % Original equation
         wakeDir = [1 0 0; 0 0 -1;0 1 0]*turbine.wakeNormal; % Evaluated to remove Toolbox dependencies
+
+        % Determine wake centerline position of this turbine at location x
+        wake.centerLine(2,:) = turbine.LocWF(2) + wakeDir(2)*displacements + ...  % initial position + yaw induced offset
+            (inputData.wakeModel.params.ad + deltaxs * inputData.wakeModel.params.bd); % bladerotation-induced lateral offset
+
+        wake.centerLine(3,:) = turbine.LocWF(3) + wakeDir(3)*displacements + ...  % initial position + yaw*tilt induced offset
+            (inputData.wakeModel.params.at + deltaxs * inputData.wakeModel.params.bt); % bladerotation-induced vertical offset
+
         end
         
         
         %% Wake deficit
-        function [wakeOut] = deficit(self,inputData,turbine,wakeIn)
-            %PORTEAGELWAKE Summary of this function goes here
-            %   Detailed explanation goes here
+        function [wake] = deficit(self,inputData,turbine,wake)            
+            % Wake deficit for the Porte-Agel model
+            
             D = 2*turbine.rotorRadius;
             Ti = turbine.TI;
             % NEAR WAKE CALCULATIONS
@@ -123,7 +137,7 @@ classdef PorteAgel<handle
             NW = @(x,y,z) 1-C0*(NW_mask(x,y,z)+NW_exp(x,y,z).*~NW_mask(x,y,z));
             
             % Eq 7.2
-            varWake = @(x) C*((diag([inputData.ky(Ti) inputData.kz(Ti)])*(x-x0))+sigNeutral_x0).^2;
+            varWake = @(x) C*((diag([self.params.ky(Ti) self.params.kz(Ti)])*(x-x0))+sigNeutral_x0).^2;
             
             % FAR WAKE CALCULATIONS
             % exp(-.5*[y z]*inv(SIGMA(x))*[y;z]) Eq 7.1
@@ -158,5 +172,24 @@ classdef PorteAgel<handle
             %     volvisApp(X,Y,Z,U)
         end
         
+        
+        %% Volumetric flow rate calculation
+        function [Q] = flowrate(inputData,uw_wake,dw_turbine,deltax,turbLocIndex)
+            % Q is the volumetric flowrate relative divided by freestream velocity
+            Q = dw_turbine.rotorArea;
+            bladeR = dw_turbine.rotorRadius;
+
+            dY_wc = @(y) y+dw_turbine.LocWF(2)-uw_wake.centerLine(2,turbLocIndex);
+            dZ_wc = @(z) z+dw_turbine.LocWF(3)-uw_wake.centerLine(3,turbLocIndex);
+            if any(uw_wake.boundary(deltax,dY_wc(bladeR*sin(0:.05:2*pi))',dZ_wc(bladeR*cos(0:.05:2*pi))'))
+                Q = dw_turbine.rotorArea-uw_wake.FW_int(deltax, dY_wc(0), dZ_wc(0), bladeR);
+                % Compare the power series approximation to a numerical method
+    %             Qacc = integralQ(0);
+    %             display(dw_turbi)
+    %             display([Q, Qacc])
+    %             display(100*(Q/Qacc)-100)
+    %             display(Q/Qacc)
+            end          
+        end
     end
 end

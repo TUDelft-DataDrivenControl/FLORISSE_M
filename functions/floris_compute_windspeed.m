@@ -13,20 +13,27 @@ function [ dwTurbs ] = floris_compute_windspeed( turbines,wakes,inputData,wt_row
                 deltax = turbines(dw_turbi).LocWF(1)-turbines(uw_turbi).LocWF(1);
                 [~,turbLocIndex] = min(abs(wakes(uw_turbi).centerLine(1,:)-turbines(dw_turbi).LocWF(1)));
                 
-                % Q is the volumetric flowrate relative divided by
-                % freestream velocity
-                if strcmp(inputData.wakeType,'Zones')
-                    Q = FlorisQ(); % Herein we calculate overlap areas between 
-                    % different wake zones of uw_turbi and the rotor plane 
-                    % of dw_turbi.
-                elseif strcmp(inputData.wakeType,'PorteAgel')
-                    Q = PorteAgelQ();
-                else
-                    Q = integralQ(0); % Herein we use a numerical integral 
-                    % function to  determine the overlap ratios between a 
-                    % wake shape and the rotor plane. This function works
-                    % best when the velocity function is continuous
+                % Q is the volumetric flowrate relative divided by freestream velocity
+                try
+                    Q = inputData.wakeModel.flowrate(inputData,wakes(uw_turbi),...
+                                    turbines(dw_turbi),deltax,turbLocIndex);
+                catch
+                    disp('Could not evaluate volumetric flow rate efficiently. Falling back on numerical integration.');
+                    Q = integralQ(0,inputData,wakes(uw_turbi),...
+                                    turbines(dw_turbi),deltax,turbLocIndex);
                 end
+%                 if strcmp(inputData.wakeType,'Zones')
+%                     Q = FlorisQ(); % Herein we calculate overlap areas between 
+%                     % different wake zones of uw_turbi and the rotor plane 
+%                     % of dw_turbi.
+%                 elseif strcmp(inputData.wakeType,'PorteAgel')
+%                     Q = PorteAgelQ();
+%                 else
+%                     Q = integralQ(0); % Herein we use a numerical integral 
+%                     % function to  determine the overlap ratios between a 
+%                     % wake shape and the rotor plane. This function works
+%                     % best when the velocity function is continuous
+%                 end
 
                 % Vni = Relative volumetric flow rate divided by freestream
                 % velocity and swept rotor area
@@ -83,65 +90,65 @@ function [ dwTurbs ] = floris_compute_windspeed( turbines,wakes,inputData,wt_row
     dwTurbs = turbines(wt_rows{turbirow+1});
 
     
-    % Function to determine Q (normalized velocity deficit on the turbine
-    % swept area) for the wake model with multiple zones.
-    function Q = FlorisQ()
-        Q   = turbines(dw_turbi).rotorArea;
-        wakeOverlapTurb = [0 0 0];
-        for zone = 1:3
-           wakeOverlapTurb(zone) = floris_intersect(wakes(uw_turbi).rZones(deltax,zone),turbines(dw_turbi).rotorRadius,...
-             hypot(turbines(dw_turbi).LocWF(2)-(wakes(uw_turbi).centerLine(2,turbLocIndex)),...
-                   turbines(dw_turbi).LocWF(3)-(wakes(uw_turbi).centerLine(3,turbLocIndex))));
-
-           for zonej = 1:(zone-1) % minus overlap areas of lower zones
-               wakeOverlapTurb(zone) = wakeOverlapTurb(zone)-wakeOverlapTurb(zonej);
-           end
-           Q = Q - 2*turbines(uw_turbi).axialInd*wakes(uw_turbi).cZones(deltax,zone)*wakeOverlapTurb(zone);
-        end
-    end
-
-    function Q = PorteAgelQ()
-        Q = turbines(dw_turbi).rotorArea;
-        bladeR = turbines(dw_turbi).rotorRadius;
-
-        dY_wc = @(y) y+turbines(dw_turbi).LocWF(2)-wakes(uw_turbi).centerLine(2,turbLocIndex);
-        dZ_wc = @(z) z+turbines(dw_turbi).LocWF(3)-wakes(uw_turbi).centerLine(3,turbLocIndex);
-        if any(wakes(uw_turbi).boundary(deltax,dY_wc(bladeR*sin(0:.05:2*pi))',dZ_wc(bladeR*cos(0:.05:2*pi))'))
-            Q = turbines(dw_turbi).rotorArea-wakes(uw_turbi).FW_int(deltax, dY_wc(0), dZ_wc(0), bladeR);
-            % Compare the power series approximation to a numerical method
-%             Qacc = integralQ(0);
-%             display(dw_turbi)
-%             display([Q, Qacc])
-%             display(100*(Q/Qacc)-100)
-%             display(Q/Qacc)
-        end
-    end
+%     % Function to determine Q (normalized velocity deficit on the turbine
+%     % swept area) for the wake model with multiple zones.
+%     function Q = FlorisQ()
+%         Q   = turbines(dw_turbi).rotorArea;
+%         wakeOverlapTurb = [0 0 0];
+%         for zone = 1:3
+%            wakeOverlapTurb(zone) = floris_intersect(wakes(uw_turbi).rZones(deltax,zone),turbines(dw_turbi).rotorRadius,...
+%              hypot(turbines(dw_turbi).LocWF(2)-(wakes(uw_turbi).centerLine(2,turbLocIndex)),...
+%                    turbines(dw_turbi).LocWF(3)-(wakes(uw_turbi).centerLine(3,turbLocIndex))));
+% 
+%            for zonej = 1:(zone-1) % minus overlap areas of lower zones
+%                wakeOverlapTurb(zone) = wakeOverlapTurb(zone)-wakeOverlapTurb(zonej);
+%            end
+%            Q = Q - 2*turbines(uw_turbi).axialInd*wakes(uw_turbi).cZones(deltax,zone)*wakeOverlapTurb(zone);
+%         end
+%     end
+% 
+%     function Q = PorteAgelQ()
+%         Q = turbines(dw_turbi).rotorArea;
+%         bladeR = turbines(dw_turbi).rotorRadius;
+% 
+%         dY_wc = @(y) y+turbines(dw_turbi).LocWF(2)-wakes(uw_turbi).centerLine(2,turbLocIndex);
+%         dZ_wc = @(z) z+turbines(dw_turbi).LocWF(3)-wakes(uw_turbi).centerLine(3,turbLocIndex);
+%         if any(wakes(uw_turbi).boundary(deltax,dY_wc(bladeR*sin(0:.05:2*pi))',dZ_wc(bladeR*cos(0:.05:2*pi))'))
+%             Q = turbines(dw_turbi).rotorArea-wakes(uw_turbi).FW_int(deltax, dY_wc(0), dZ_wc(0), bladeR);
+%             % Compare the power series approximation to a numerical method
+% %             Qacc = integralQ(0);
+% %             display(dw_turbi)
+% %             display([Q, Qacc])
+% %             display(100*(Q/Qacc)-100)
+% %             display(Q/Qacc)
+%         end
+%     end
 
     % Function to determine Q (normalized velocity deficit on the turbine
     % swept area) for any kind of wake model following a numerical
     % integration approach.
-    function Q = integralQ(p)
-        bladeR = turbines(dw_turbi).rotorRadius;
-        Q   = turbines(dw_turbi).rotorArea;
+    function Q = integralQ(p,inputData,uw_wake,dw_turbine,deltax,turbLocIndex)
+        bladeR = dw_turbine.rotorRadius;
+        Q   = dw_turbine.rotorArea;
 
-        dY_wc = @(y) y+turbines(dw_turbi).LocWF(2)-wakes(uw_turbi).centerLine(2,turbLocIndex);
-        dZ_wc = @(z) z+turbines(dw_turbi).LocWF(3)-wakes(uw_turbi).centerLine(3,turbLocIndex);
-        if any(wakes(uw_turbi).boundary(deltax,dY_wc(bladeR*sin(0:.05:2*pi))',dZ_wc(bladeR*cos(0:.05:2*pi))'))
+        dY_wc = @(y) y+dw_turbine.LocWF(2)-uw_wake.centerLine(2,turbLocIndex);
+        dZ_wc = @(z) z+dw_turbine.LocWF(3)-uw_wake.centerLine(3,turbLocIndex);
+        if any(uw_wake.boundary(deltax,dY_wc(bladeR*sin(0:.05:2*pi))',dZ_wc(bladeR*cos(0:.05:2*pi))'))
             
-            zabs = @(z) z+(wakes(uw_turbi).centerLine(3,turbLocIndex));
-            mask = @(y,z) wakes(uw_turbi).boundary(deltax,dY_wc(y),dZ_wc(z));
+            zabs = @(z) z+(uw_wake.centerLine(3,turbLocIndex));
+            mask = @(y,z) uw_wake.boundary(deltax,dY_wc(y),dZ_wc(z));
 
             VelocityFun =@(y,z) (~mask(y,z).*inputData.Ufun(zabs(z))+...
-                mask(y,z).*wakes(uw_turbi).V(inputData.Ufun(zabs(z)),deltax,dY_wc(y),dZ_wc(z)))./inputData.Ufun(zabs(z));
+                mask(y,z).*uw_wake.V(inputData.Ufun(zabs(z)),deltax,dY_wc(y),dZ_wc(z)))./inputData.Ufun(zabs(z));
             polarfun = @(theta,r) VelocityFun(r.*cos(theta),r.*sin(theta)).*r;
             
-            Q = quad2d(polarfun,0,2*pi,0,turbines(dw_turbi).rotorRadius,'Abstol',15,...
+            Q = quad2d(polarfun,0,2*pi,0,dw_turbine.rotorRadius,'Abstol',15,...
                 'Singular',false,'FailurePlot',true,'MaxFunEvals',3500);
 
             if p == 1% || dw_turbi == 5
                 [PHI,Rmesh] = meshgrid([0:.1:2*pi 2*pi],0:bladeR);
                 figure;surf(Rmesh.*cos(PHI), Rmesh.*sin(PHI), polarfun(PHI,Rmesh)./Rmesh);
-                title(Q/turbines(dw_turbi).rotorArea); daspect([1 1 .001]);
+                title(Q/dw_turbine.rotorArea); daspect([1 1 .001]);
                 keyboard
             end
         end

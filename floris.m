@@ -20,8 +20,7 @@ classdef floris<handle
             if ~exist('controlType','var'); controlType = 'pitch';      end % Actuation method ('pitch','greedy','axialInduction')         
             if ~exist('wakeType','var');    wakeModelType = 'PorteAgel';  end % Single wake model ('Zones','Gauss','Larsen','PorteAgel')
             if ~exist('wakeSum','var');     wakeSum     = 'Katic';      end % Wake addition method ('Katic','Voutsinas')
-%             if ~exist('deflType','var');    deflType  = 'PorteAgel'; end % Wake deflection model ('Jimenez','PorteAgel')
-            
+
             % Site definition
             run(['siteDefinitions/' siteType]); 
             

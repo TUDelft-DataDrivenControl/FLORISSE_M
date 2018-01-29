@@ -24,5 +24,5 @@ inputData.uInfWf        = 12.0; % axial flow speed in wind frame
 inputData.TI_0          = .1; % turbulence intensity [-] ex: 0.1 is 10% turbulence intensity
 inputData.airDensity    = 1.1716; % Atmospheric air density (kg/m3)
 
-% Inflow
-inputData.atmoType = 'uniform'; % Uniform inflow
+% Inflow (vertical profile)
+inputData.Ufun = @(z) inputData.uInfWf; % Uniform inflow
