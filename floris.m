@@ -12,8 +12,8 @@ classdef floris<handle
                         wakeTurbulenceModel,modelDataFile)
             
             addpath(genpath('inputFiles'))  % Input functions
-            addpath('functions')            % Model functions
-            addpath('florisCoreFunctions'); % Airfoil data
+            addpath(genpath('functions'))   % Model functions
+%             addpath('florisCoreFunctions'); % Airfoil data
             
             % Default setup settings (see in floris_loadSettings.m for explanations)
             if ~exist('siteType','var');            siteType            = 'generic_9turb'; end % Wind farm topology ('1turb','9turb')
@@ -247,7 +247,7 @@ classdef floris<handle
         
         
         %% Visualize single FLORIS simulation results
-        function [] = visualize(self,plotLayout,plot2D,plot3D)
+        function [] = visualize(self,plotLayout,plot2D,plot3D,frame)
 
             % Check if there is output data available for plotting
             if ~isstruct(self.outputData)
@@ -260,12 +260,12 @@ classdef floris<handle
             if ~exist('plotLayout','var');  plotLayout = false; end
             if ~exist('plot2D','var');      plot2D     = false; end
             if ~exist('plot3D','var');      plot3D     = true;  end
-
+            if ~exist('frame','var');       frame      = 'IF';  end
             % Set visualization settings
             self.outputFlowField.plotLayout      = plotLayout;
             self.outputFlowField.plot2DFlowfield = plot2D;
             self.outputFlowField.plot3DFlowfield = plot3D;
-            self.outputFlowField.frame = 'IF'; % Plot in inertial (IF) or wind-aligned (WF) frame
+            self.outputFlowField.frame           = frame; % Plot in inertial (IF) or wind-aligned (WF) frame
             
             % Call the visualization function
             self.outputFlowField = floris_visualization(self.inputData,self.outputData,self.outputFlowField);
