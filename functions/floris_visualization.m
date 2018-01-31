@@ -25,27 +25,32 @@ function [flowField] = floris_visualization(inputData,outputData,flowField)
     
     computeField = false;
     % Setup flowField visualisation grid if necessary
-    if ((~isfield(flowField,'U') || flowField.plotLayout) && (flowField.plot2DFlowfield || flowField.plotLayout))
+    if (~isfield(flowField,'U') && (flowField.plot2DFlowfield || flowField.plotLayout))
+        zvec = inputData.hub_height(1);
         [flowGrid.X,flowGrid.Y,flowGrid.Z] = meshgrid(...
             xMin : flowField.resx : xMax,...
             yMin : flowField.resy : yMax,...
-            inputData.hub_height(1));
+            zvec);
         computeField = true;
     end
     if ((isfield(flowField,'U') && ismatrix(flowField.U) && flowField.plot3DFlowfield)...
-            ||((~isfield(flowField,'U') || flowField.plotLayout) && flowField.plot3DFlowfield))
+            ||(~isfield(flowField,'U') && flowField.plot3DFlowfield))
+        zvec = 0 : flowField.resz : 200;
         [flowGrid.X,flowGrid.Y,flowGrid.Z] = meshgrid(...
             xMin : flowField.resx : xMax,...
             yMin : flowField.resy : yMax,...
-            0    : flowField.resz : 200);
+            zvec);
         computeField = true;
     end
 
     if (~isfield(flowField,'U') || flowField.plotLayout)
         if strcmp(lower(flowField.frame),'if')
             % Coordinate change in flowField from IF -> WF necessary
+            grid_2D.X = flowGrid.X(:,:,1);
+            grid_2D.Y = flowGrid.Y(:,:,1);
+            grid_2D.Z = flowGrid.Z(:,:,1);
             targetGrid_WF = frame_IF2WF(inputData.windDirection,inputData.LocIF,'if',...
-                                  [flowGrid.X(:), flowGrid.Y(:),flowGrid.Z(:)]);
+                                  [grid_2D.X(:), grid_2D.Y(:),grid_2D.Z(:)]);
             flowField.X = flowGrid.X;
             flowField.Y = flowGrid.Y;
             flowField.Z = flowGrid.Z;
@@ -55,7 +60,7 @@ function [flowField] = floris_visualization(inputData,outputData,flowField)
             [flowField_WF.X,flowField_WF.Y,flowField_WF.Z] = meshgrid(...
                 min(targetGrid_WF(:,1)) : flowField.resx : max(targetGrid_WF(:,1)),...
                 min(targetGrid_WF(:,2)) : flowField.resy : max(targetGrid_WF(:,2)),...
-                inputData.hub_height(1));
+                zvec);
         else
             % No need to change coordinate system
             flowField_WF   = flowField;
@@ -75,10 +80,18 @@ function [flowField] = floris_visualization(inputData,outputData,flowField)
         [flowField_WF] = floris_compute_flowfield(inputData,flowField_WF,outputData.turbines,outputData.wakes);
         
         if strcmp(lower(flowField.frame),'if') 
-            % Linear interpolation from rotated mesh to desired grid
-            flowField.U = reshape(interp2(flowField_WF.X,flowField_WF.Y,...
-                                flowField_WF.U,targetGrid_WF(:,1),...
-                                targetGrid_WF(:,2)),size(flowField.X));
+            % Linear grid interpolation from rotated mesh to desired grid
+            F_interp = griddedInterpolant(flowField_WF.X(:,:,1)',flowField_WF.Y(:,:,1)',flowField_WF.U(:,:,1)');
+            for j = 1:length(zvec)
+                F_interp.Values = flowField_WF.U(:,:,j)';
+                flowField.U(:,:,j) = reshape(...
+                                        F_interp(targetGrid_WF(:,1),...
+                                                 targetGrid_WF(:,2)),...
+                                                   size(grid_2D.X));
+%                 flowField.U(:,:,j) = reshape(interp2(,,...
+%                                 flowField_WF.U,targetGrid_WF(:,1),...
+%                                 targetGrid_WF(:,2)),size(flowField.X));
+            end
         else % For wind-aligned frame, the grid is already the desired one
             flowField = flowField_WF;
         end

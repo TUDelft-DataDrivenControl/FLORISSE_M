@@ -3,7 +3,7 @@ function [ flowField ] = floris_compute_flowfield( inputData,flowField,turbines,
     % Sort turbine and wake structs by WF
     sortVector = [turbines.turbId_WF];
     turbines(sortVector) = turbines;
-    wakes(sortVector) = wakes;
+    wakes(sortVector)    = wakes;
     
     if flowField.fixYaw
         % tpr stands for TurbinePreRegion. It is the amount of meters in front

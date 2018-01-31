@@ -56,9 +56,9 @@ function [ dwTurbs ] = floris_compute_windspeed( turbines,wakes,inputData,wt_row
                 U_inf = inputData.Ufun(turbines(dw_turbi).hub_height);
                 U_uw  = turbines(uw_turbi).windSpeed;
                 sumKed = sumKed+inputData.wakeModel.sum(U_inf,U_uw,Vni);
-                if dw_turbi == 8
-                    disp('debug');
-                end                
+%                 if dw_turbi == 8
+%                     disp('debug');
+%                 end                
 %                 switch inputData.wakeSum
 %                     case 'Katic' % Using Katic (traditional FLORIS)
 %                         sumKed = sumKed+(inputData.Ufun(turbines(dw_turbi).hub_height)*(1-Vni)).^2;
