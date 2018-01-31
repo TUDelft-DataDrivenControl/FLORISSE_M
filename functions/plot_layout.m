@@ -18,8 +18,8 @@ function [ ] = plot_layout( inputData,turbines,wakeCenterLines )
              turbIF(2,j)+ [1, -1]*turbines(j).rotorRadius*cos(YawIfs(j)),'LineWidth',3); hold on;
         text(turbIF(1,j)+30,turbIF(2,(j))+20,['T' num2str(turbines(j).turbId_IF)]);
     end
-    disp('NOTE: Turbines have a different numbering in IF and WF.');
-    disp(' Inspect the variables turbines(i).turbId_IF and .turbId_WF, respectively.');
+    disp('NOTE: Turbines may have a different numbering in IF and WF.');
+    disp(' Inspect the variables turbines(i).turbId_IF and turbines(i).turbId_WF, respectively.');
 
     % Set labels and image size
     ylabel('Internal y-axis [m]');

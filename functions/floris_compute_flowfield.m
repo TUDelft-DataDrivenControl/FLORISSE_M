@@ -20,7 +20,7 @@ function [ flowField ] = floris_compute_flowfield( inputData,flowField,turbines,
         % Replace the centerline positions with an array of x-coordinates
         wakes(turb_num).centerLine(1,:) = flowField.X(1,flowField.X(1,:,1)>=(turbines(turb_num).LocWF(1)-tpr),1);
         % Compute the Y and Z coordinates of the wake
-        [wakes(turb_num)] = floris_wakeCenterLinePosition(inputData, turbines(turb_num), wakes(turb_num));
+        wakes(turb_num).centerLine = floris_wakeCenterLinePosition(inputData.wakeModel, turbines(turb_num), wakes(turb_num).centerLine(1,:));
     end
     
     % Compute the windspeed at a cutthrough of the wind farm at every x-coordinate
@@ -54,7 +54,14 @@ function [ flowField ] = floris_compute_flowfield( inputData,flowField,turbines,
                 else
                     mask = wakes(turb_num).boundary(deltaXs(turb_num),dY_wc(:,:,turb_num),dZ_wc(:,:,turb_num));
                 end
-                switch inputData.wakeSum
+                
+%                 U_inf = squeeze(flowField.U(:,1,:));
+%                 U_uw  = turbines(turb_num).windSpeed;
+%                 Vni   = (wakes(turb_num).V(squeeze(flowField.U(:,1,:)),...
+%                         deltaXs(turb_num),dY_wc(:,:,turb_num),dZ_wc(:,:,turb_num)));
+%                 sumKed = sumKed+mask.*inputData.wakeModel.sum(U_uw,U_inf,Vni,2);
+                
+                switch inputData.wakeModel.modelData.sumModel
                     case 'Katic'
                         sumKed = sumKed+(mask.*(squeeze(flowField.U(:,1,:))-wakes(turb_num).V(squeeze(flowField.U(:,1,:)),...
                                          deltaXs(turb_num),dY_wc(:,:,turb_num),dZ_wc(:,:,turb_num))).^2);

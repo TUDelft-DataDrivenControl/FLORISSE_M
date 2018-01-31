@@ -19,7 +19,7 @@ inputData.tiltAngles  = deg2rad([0 0 0 0 0 0 0 0 0]); % Turbine tilt angles (rad
 
 % Atmospheric settings
 % Compute windDirection in the inertial frame, and the wind-aligned flow speed (uInfWf)
-inputData.windDirection = 0.30; % Wind dir in radians (inertial frame)
+inputData.windDirection = 0.0; % Wind dir in radians (inertial frame)
 inputData.uInfWf        = 12.0; % axial flow speed in wind frame
 inputData.TI_0          = .1; % turbulence intensity [-] ex: 0.1 is 10% turbulence intensity
 inputData.airDensity    = 1.1716; % Atmospheric air density (kg/m3)

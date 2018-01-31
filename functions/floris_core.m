@@ -69,13 +69,13 @@ for turbirow = 1:length(wtRows) % for first to last row of turbines
         turbines(turbNum) = floris_cpctpower(inputData,turbines(turbNum));
         
         % Initialize the single wake model (location, deficit)
-        wakes(turbNum) = floris_initwake( inputData,turbines(turbNum),wakes(turbNum) );
+        wakes(turbNum) = floris_initwake( inputData.wakeModel,turbines(turbNum),wakes(turbNum) );
         
-        % Extract the x-locations of the remaining downstream turbines
-        wakes(turbNum).centerLine(1,:) = arrayfun(@(x) x.LocWF(1), turbines(cellfun(@(x) x(1),wtRows(turbirow+1:end)))).';
-        
-        % Compute the wake centerLines position at the downstream turbine x-coordinates
-        wakes(turbNum) = floris_wakeCenterLinePosition(inputData,turbines(turbNum), wakes(turbNum));
+        % Determine the wake centerline for this turbine 
+        % (the last input to this func are the x-locations of the dw turbs)
+        wakes(turbNum).centerLine = floris_wakeCenterLinePosition(inputData.wakeModel,...
+                                    turbines(turbNum),arrayfun(@(x) x.LocWF(1),...
+                                    turbines(cellfun(@(x) x(1),wtRows(turbirow+1:end)))));
     end
     
     % If this is not the last turbine row, compute the windspeeds at the 

@@ -7,25 +7,30 @@ classdef floris<handle
     end
     methods
         %% Constructor function initializes default inputData
-        function self = floris(siteType,turbType,atmoType,...
-                controlType,wakeModelType,wakeSum)
+        function self = floris(siteType,turbType,atmoType,controlType,...
+                        wakeDeficitModel,wakeDeflectionModel,wakeSumModel,...
+                        wakeTurbulenceModel,modelDataFile)
             
-            addpath(genpath('functions'))% Model functions
-            addpath('singleWakeModels');   % Airfoil data
+            addpath(genpath('inputFiles'))  % Input functions
+            addpath('functions')            % Model functions
+            addpath('florisCoreFunctions'); % Airfoil data
             
             % Default setup settings (see in floris_loadSettings.m for explanations)
-            if ~exist('siteType','var');    siteType    = 'generic_9turb';   end % Wind farm topology ('1turb','9turb')
-            if ~exist('turbType','var');    turbType    = 'nrel5mw';    end % Turbine type ('NREL5MW')
-            if ~exist('atmoType','var');    atmoType    = 'uniform';    end % Atmospheric inflow ('uniform','boundary')
-            if ~exist('controlType','var'); controlType = 'pitch';      end % Actuation method ('pitch','greedy','axialInduction')         
-            if ~exist('wakeType','var');    wakeModelType = 'PorteAgel';  end % Single wake model ('Zones','Gauss','Larsen','PorteAgel')
-            if ~exist('wakeSum','var');     wakeSum     = 'Katic';      end % Wake addition method ('Katic','Voutsinas')
+            if ~exist('siteType','var');            siteType            = 'generic_9turb'; end % Wind farm topology ('1turb','9turb')
+            if ~exist('turbType','var');            turbType            = 'nrel5mw';    end % Turbine type ('NREL5MW')
+            if ~exist('atmoType','var');            atmoType            = 'uniform';    end % Atmospheric inflow ('uniform','boundary')
+            if ~exist('controlType','var');         controlType         = 'pitch';      end % Actuation method ('pitch','greedy','axialInduction')         
+            if ~exist('wakeDeficitModel','var');    wakeDeficitModel    = 'PorteAgel';  end % Single wake model ('Zones','Gauss','Larsen','PorteAgel')
+            if ~exist('wakeDeflectionModel','var'); wakeDeflectionModel = 'PorteAgel';  end % Single wake model ('Zones','Gauss','Larsen','PorteAgel')
+            if ~exist('wakeSumModel','var');        wakeSumModel        = 'Katic';      end % Wake addition method ('Katic','Voutsinas')
+            if ~exist('wakeTurbulenceModel','var'); wakeTurbulenceModel = 'PorteAgel';  end % Turbine-induced turbulence ('PorteAgel','nothing')
+            if ~exist('modelDataFile','var');       modelDataFile       = 'PorteAgel_default';  end % Single wake model ('Zones','Gauss','Larsen','PorteAgel')
 
             % Site definition
-            run(['siteDefinitions/' siteType]); 
+            run([siteType]); 
             
             % Turbine specifications
-            run(['turbineModels/' turbType '/specifications.m']); 
+            run(['turbineDefinitions/' turbType '/specifications.m']); 
             inputData.rotorRadius           = turbine.rotorRadius   * ones(1,nTurbs);
             inputData.generator_efficiency  = turbine.genEfficiency * ones(1,nTurbs);
             inputData.hub_height            = turbine.hubHeight     * ones(1,nTurbs);
@@ -33,9 +38,12 @@ classdef floris<handle
             inputData.LocIF(:,3)            = inputData.hub_height;
             inputData.rotorArea             = pi*inputData.rotorRadius.^2;
             
-            % Single wake model
-            wakeModelFunc                   = str2func(wakeModelType);
-            inputData.wakeModel             = wakeModelFunc();
+            % Create single wake model object
+            inputData.wakeModel = createWakeObject(wakeDeflectionModel,...
+                                                   wakeDeficitModel,...
+                                                   wakeSumModel,...
+                                                   wakeTurbulenceModel,...
+                                                   modelDataFile);
             
             %% Turbine axial control methodology
             % Herein we define how the turbine are controlled. In the traditional
@@ -59,7 +67,7 @@ classdef floris<handle
                     
                     % Determine Cp and Ct interpolation functions as a function of WS and blade pitch
                     for airfoilDataType = {'cp','ct'}
-                        lut       = csvread(['turbineModels/' turbType '/' airfoilDataType{1} 'Pitch.csv']); % Load file
+                        lut       = csvread(['turbineDefinitions/' turbType '/' airfoilDataType{1} 'Pitch.csv']); % Load file
                         lut_ws    = lut(1,2:end);          % Wind speed in LUT in m/s
                         lut_pitch = deg2rad(lut(2:end,1)); % Blade pitch angle in LUT in radians
                         lut_value = lut(2:end,2:end);      % Values of Cp/Ct [dimensionless]
@@ -84,7 +92,7 @@ classdef floris<handle
                     inputData.axialInd    = 1/3*ones(1,nTurbs); % Axial induction factors, by default set to greedy
                     
                 otherwise
-                    error(['Model type with name: "' controlType '" not defined']);
+                    error(['Control methodology with name: "' controlType '" not defined']);
             end
             
             self.inputData = inputData;

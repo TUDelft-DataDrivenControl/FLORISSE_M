@@ -1,8 +1,11 @@
-function [ wake ] = floris_wakeCenterLinePosition( inputData,turbine,wake )
-%Compute the wake centerline position using the method explained by Jimenez
-%or PorteAgel.
+function [ centerLine ] = floris_wakeCenterLinePosition( wakeModel,turbine,x )
+% Calculate wake locations at downstream turbines
+deltaxs           = x-turbine.LocWF(1);
+[displ_y,displ_z] = wakeModel.deflection(deltaxs,turbine);
 
-    % Displacement between location 'x' and current turbine
-    deltaxs = wake.centerLine(1,:)-turbine.LocWF(1);
-    [wake] = inputData.wakeModel.centerline(deltaxs,turbine,inputData);
+% Write the results to the wake struct
+centerLine      = zeros(3,length(x));
+centerLine(1,:) = x;
+centerLine(2,:) = displ_y;
+centerLine(3,:) = displ_z;
 end
