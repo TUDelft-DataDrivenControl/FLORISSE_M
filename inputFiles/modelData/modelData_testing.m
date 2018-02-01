@@ -1,7 +1,8 @@
 function [modelData] = modelData_testing()
-%% PORTEAGEL_DEFAULT
-%  loads the default set of model parameters for the Porte-Agel deficit and
-%  wake deflection model.
+%% modelData_testing
+%  This file includes the model parameters for all available submodels in
+%  the FLORIS code. DO NOT CHANGE PARAMETER VALUES. This file is used for
+%  validation during development.
 %
 
 %% General parameters
