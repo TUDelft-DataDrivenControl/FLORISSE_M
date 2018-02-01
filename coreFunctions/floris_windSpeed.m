@@ -1,4 +1,4 @@
-function [ dwTurbs ] = floris_compute_windspeed( turbines,wakes,inputData,wt_rows,turbirow )
+function [ dwTurbs ] = floris_windSpeed( turbines,wakes,inputData,wt_rows,turbirow )
 
 
     % Calculate the effect of all upstream turbines on the current turbine row

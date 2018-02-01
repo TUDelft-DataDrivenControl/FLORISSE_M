@@ -1,4 +1,4 @@
-function [ wake ] = floris_initwake( wakeModel,turbine,wake )
+function [ wake ] = floris_wakeInitialize( wakeModel,turbine,wake )
 % This function computes the coefficients that determine wake behaviour.
 % The initial deflection and diameter of the wake are also computed.
 

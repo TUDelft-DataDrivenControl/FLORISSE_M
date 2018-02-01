@@ -13,6 +13,7 @@ classdef floris<handle
             
             addpath(genpath('inputFiles'))    % Input functions
             addpath(genpath('coreFunctions')) % Model functions
+            addpath('submodelDefinitions')    % Model functions
 %             addpath('florisCoreFunctions'); % Airfoil data
             
             % Default setup settings (see in floris_loadSettings.m for explanations)

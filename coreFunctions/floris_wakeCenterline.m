@@ -1,4 +1,4 @@
-function [ centerLine ] = floris_wakeCenterLinePosition( wakeModel,turbine,x )
+function [ centerLine ] = floris_wakeCenterline( wakeModel,turbine,x )
 % Calculate wake locations at downstream turbines
 deltaxs           = x-turbine.LocWF(1);
 [displ_y,displ_z] = wakeModel.deflection(deltaxs,turbine);
