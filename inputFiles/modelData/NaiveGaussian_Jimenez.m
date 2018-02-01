@@ -1,4 +1,4 @@
-function [modelData] = NaiveGaussian_Jimenez()
+function [modelData] = JensenGaussian_Jimenez()
 %% PORTEAGEL_DEFAULT
 %  loads the default set of model parameters for the Porte-Agel deficit and
 %  wake deflection model.

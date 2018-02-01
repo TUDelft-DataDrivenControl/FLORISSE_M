@@ -122,7 +122,7 @@ switch modelData.deficitModel
         wake.V  = @(U,x,y,z) U-U.*((1/9)*(turbine.Ct.*A.*((x0+x).^-2)).^(1/3).*( hypot(y,z).^(3/2).*((3.*c1Lars.^2).*turbine.Ct.*A.*(x0+x)).^(-1/2) - (35/(2.*pi)).^(3/10).*(3.*c1Lars^2).^(-1/5) ).^2);
 
 
-    case 'NaiveGaussian'
+    case 'JensenGaussian'
         a = turbine.axialInd;
         
         % Calculate ke, the basic expansion coefficient

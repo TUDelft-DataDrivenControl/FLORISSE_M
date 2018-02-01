@@ -18,7 +18,7 @@ end
 % Test all possible combinations of options
 for atmoType = {'uniform','boundary'}
     for controlType = {'pitch','greedy','axialInduction'}
-        for wakeType = {'Zones','NaiveGaussian','Larsen','PorteAgel'}
+        for wakeType = {'Zones','JensenGaussian','Larsen','PorteAgel'}
             for wakeSum = {'Katic','Voutsinas'}
                 for deflType = {'Jimenez','PorteAgel'}
                     
@@ -35,7 +35,7 @@ for atmoType = {'uniform','boundary'}
                     FLORIS.run();
                     
                     % Correct naming
-                    if strcmp(wakeType{1},'NaiveGaussian')
+                    if strcmp(wakeType{1},'JensenGaussian')
                         wakeTypeName = {'Gauss'}; % Fix formatting
                     else
                         wakeTypeName = wakeType;
