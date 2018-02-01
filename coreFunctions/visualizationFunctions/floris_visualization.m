@@ -77,7 +77,7 @@ function [flowField] = floris_visualization(inputData,outputData,flowField)
         flowField_WF.W  = zeros(size(flowField_WF.X));
 
         % Compute the flowfield velocity at every voxel(3D) or pixel(2D)
-        [flowField_WF] = floris_compute_flowfield(inputData,flowField_WF,outputData.turbines,outputData.wakes);
+        [flowField_WF] = floris_flowField(inputData,flowField_WF,outputData.turbines,outputData.wakes);
         
         if strcmp(lower(flowField.frame),'if') 
             % Linear grid interpolation from rotated mesh to desired grid

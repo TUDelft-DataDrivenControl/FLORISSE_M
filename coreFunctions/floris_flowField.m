@@ -1,4 +1,4 @@
-function [ flowField ] = floris_compute_flowfield( inputData,flowField,turbines,wakes )
+function [ flowField ] = floris_flowField( inputData,flowField,turbines,wakes )
     
     % Sort turbine and wake structs by WF
     sortVector = [turbines.turbId_WF];
