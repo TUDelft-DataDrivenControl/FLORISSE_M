@@ -24,24 +24,17 @@ for atmoType = {'uniform','boundary'}
                     
                     % Turbine-induced turbulence model
                     if strcmp(wakeType{1},'PorteAgel') || strcmp(deflType{1},'PorteAgel')
-                        turbType = {'PorteAgel'};
+                        turbulType = {'PorteAgel'};
                     else
-                        turbType = wakeType;
+                        turbulType = wakeType;
                     end
                     
                     % Run simulation
                     FLORIS = floris('generic_9turb','nrel5mw',atmoType{1},controlType{1},wakeType{1},deflType{1},wakeSum{1},...
-                        turbType{1},'modelData_testing');
+                        turbulType{1},'modelData_testing');
                     FLORIS.run();
-                    
-                    % Correct naming
-                    if strcmp(wakeType{1},'JensenGaussian')
-                        wakeTypeName = {'Gauss'}; % Fix formatting
-                    else
-                        wakeTypeName = wakeType;
-                    end
-                    
-                    key = [atmoType{1} controlType{1} wakeTypeName{1} wakeSum{1} deflType{1}];
+                                        
+                    key = [atmoType{1} controlType{1} wakeType{1} wakeSum{1} deflType{1}];
                     if generateData
                         powerData(key) = sum(FLORIS.outputData.power);
                     else
