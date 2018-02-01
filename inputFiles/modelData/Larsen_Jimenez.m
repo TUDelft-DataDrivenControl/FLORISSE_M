@@ -20,5 +20,5 @@ modelData.useWakeAngle = true; % define initial wake displacement and angle (not
 modelData.kd = deg2rad(1.5);   % initialWakeAngle in X-Y plane
 
 %% Parameters specific for the Larsen model
-inputData.IaLars = 0.1; % ambient turbulence
+modelData.IaLars = 0.1; % ambient turbulence
 end

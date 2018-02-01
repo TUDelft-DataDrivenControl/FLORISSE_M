@@ -107,7 +107,7 @@ switch modelData.deficitModel
 
         
     case 'Larsen'
-        D = 2*turbine.rotorRadius; % Rotor diameter
+        D = 2*turbine.rotorRadius;    % Rotor diameter
         A = pi*turbine.rotorRadius^2; % Rotor swept area [m]
         H = turbine.hub_height;       % Turbine hub height [m]
 

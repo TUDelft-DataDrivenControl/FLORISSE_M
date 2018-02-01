@@ -11,8 +11,8 @@ classdef floris<handle
                         wakeDeficitModel,wakeDeflectionModel,wakeSumModel,...
                         wakeTurbulenceModel,modelDataFile)
             
-            addpath(genpath('inputFiles'))  % Input functions
-            addpath(genpath('functions'))   % Model functions
+            addpath(genpath('inputFiles'))    % Input functions
+            addpath(genpath('coreFunctions')) % Model functions
 %             addpath('florisCoreFunctions'); % Airfoil data
             
             % Default setup settings (see in floris_loadSettings.m for explanations)
@@ -81,7 +81,7 @@ classdef floris<handle
                     inputData.axialInd    = nan*ones(1,nTurbs); % Axial inductions  are set to NaN to find any potential errors
                     
                     % Determine Cp and Ct interpolation functions as a function of WS
-                    lut                 = load(['turbineModels/' turbType '/cpctgreedy.mat']);
+                    lut                 = load(['turbineDefinitions/' turbType '/cpctgreedy.mat']);
                     inputData.cp_interp = @(ws) interp1(lut.wind_speed,lut.cp,ws);
                     inputData.ct_interp = @(ws) interp1(lut.wind_speed,lut.ct,ws);
                     

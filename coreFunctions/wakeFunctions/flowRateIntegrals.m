@@ -1,4 +1,4 @@
-function [Q] = flowRateIntegrals(modelData,uw_wake,dw_turbine,deltax,turbLocIndex)
+function [Q] = flowRateIntegrals(modelData,uw_wake,dw_turbine,uw_turbine,U_inf,deltax,turbLocIndex)
 
 %% Volumetric flow rate calculation
 switch modelData.deficitModel
@@ -27,7 +27,7 @@ switch modelData.deficitModel
             for zonej = 1:(zone-1) % minus overlap areas of lower zones
                 wakeOverlapTurb(zone) = wakeOverlapTurb(zone)-wakeOverlapTurb(zonej);
             end
-            Q = Q - 2*turbines(uw_turbi).axialInd*uw_wake.cZones(deltax,zone)*wakeOverlapTurb(zone);
+            Q = Q - 2*uw_turbine.axialInd*uw_wake.cZones(deltax,zone)*wakeOverlapTurb(zone);
         end
         
     %% General numerical integration       
@@ -47,19 +47,19 @@ switch modelData.deficitModel
             zabs = @(z) z+(uw_wake.centerLine(3,turbLocIndex));
             mask = @(y,z) uw_wake.boundary(deltax,dY_wc(y),dZ_wc(z));
             
-            VelocityFun =@(y,z) (~mask(y,z).*inputData.Ufun(zabs(z))+...
-                mask(y,z).*uw_wake.V(inputData.Ufun(zabs(z)),deltax,dY_wc(y),dZ_wc(z)))./inputData.Ufun(zabs(z));
+            VelocityFun =@(y,z) (~mask(y,z).*U_inf(zabs(z))+...
+                mask(y,z).*uw_wake.V(U_inf(zabs(z)),deltax,dY_wc(y),dZ_wc(z)))./U_inf(zabs(z));
             polarfun = @(theta,r) VelocityFun(r.*cos(theta),r.*sin(theta)).*r;
             
             Q = quad2d(polarfun,0,2*pi,0,dw_turbine.rotorRadius,'Abstol',15,...
                 'Singular',false,'FailurePlot',true,'MaxFunEvals',3500);
             
-            if p == 1% || dw_turbi == 5
-                [PHI,Rmesh] = meshgrid([0:.1:2*pi 2*pi],0:bladeR);
-                figure;surf(Rmesh.*cos(PHI), Rmesh.*sin(PHI), polarfun(PHI,Rmesh)./Rmesh);
-                title(Q/dw_turbine.rotorArea); daspect([1 1 .001]);
-                keyboard
-            end
+%             if p == 1% || dw_turbi == 5
+%                 [PHI,Rmesh] = meshgrid([0:.1:2*pi 2*pi],0:bladeR);
+%                 figure;surf(Rmesh.*cos(PHI), Rmesh.*sin(PHI), polarfun(PHI,Rmesh)./Rmesh);
+%                 title(Q/dw_turbine.rotorArea); daspect([1 1 .001]);
+%                 keyboard
+%             end
         end
 end
 end

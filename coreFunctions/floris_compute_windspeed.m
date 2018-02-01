@@ -15,7 +15,8 @@ function [ dwTurbs ] = floris_compute_windspeed( turbines,wakes,inputData,wt_row
                 
                 % Q is the volumetric flowrate relative divided by freestream velocity
                 Q = inputData.wakeModel.volFlowRate(wakes(uw_turbi),...
-                    turbines(dw_turbi),deltax,turbLocIndex);
+                    turbines(dw_turbi),turbines(uw_turbi),inputData.Ufun,...
+                    deltax,turbLocIndex);
 
                 % Vni = Relative volumetric flow rate divided by freestream
                 % velocity and swept rotor area
