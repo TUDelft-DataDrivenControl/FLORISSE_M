@@ -11,7 +11,7 @@ function [ ] = plot_2d_field( flowField,turbines )
         error('flowField.frame can only be ''if'' (inert. frame) or ''wf'' (wind-aligned frame).');
     end
     
-    % Select the flowfield at hub heigth and accompinying x and y index
+    % Select the flowfield at hub height and accompanying x and y index
     if ndims(flowField.U) == 3
         UatHub = squeeze(flowField.U(:,:,round(mean([turbines.hub_height])/flowField.resz)));
         xVec = squeeze(flowField.X(:,:,1));
