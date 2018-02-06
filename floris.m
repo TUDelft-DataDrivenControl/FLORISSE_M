@@ -266,10 +266,9 @@ classdef floris<handle
             self.outputFlowField.plotLayout      = plotLayout;
             self.outputFlowField.plot2DFlowfield = plot2D;
             self.outputFlowField.plot3DFlowfield = plot3D;
-            self.outputFlowField.frame           = frame; % Plot in inertial (IF) or wind-aligned (WF) frame
             
             % Call the visualization function
-            self.outputFlowField = floris_visualization(self.inputData,self.outputData,self.outputFlowField);
+            self.outputFlowField = floris_visualization(self.inputData,self.outputData,self.outputFlowField,frame);
         end
     end
 end
