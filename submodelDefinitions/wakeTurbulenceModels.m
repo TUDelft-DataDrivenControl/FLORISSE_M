@@ -25,6 +25,8 @@ switch modelData.turbulenceModel
                 (TI_0^modelData.TIc)*((deltax/(2*turbineUw.rotorRadius))^modelData.TId);
             
             TI_out = overlapRatio*TI_calc;
+        else
+            TI_out = 0;
         end
         
     otherwise
