@@ -30,7 +30,7 @@ for atmoType = {'uniform','boundary'}
                     end
                     
                     % Run simulation
-                    FLORIS = floris('generic_9turb','nrel5mw',atmoType{1},controlType{1},wakeType{1},deflType{1},wakeSum{1},...
+                    FLORIS = floris('verifyPowers_9turb','nrel5mw',atmoType{1},controlType{1},wakeType{1},deflType{1},wakeSum{1},...
                         turbulType{1},'modelData_testing');
                     FLORIS.run();
                                         
