@@ -1,8 +1,7 @@
 function [TI_out] = wakeTurbulenceModels(modelData,TI_0,turbineDw,turbineUw,wakeUw,turbLocIndex,deltax)
 %% Turbine-induced added turbulence models
 
-% Wake addition method ('Katic','Voutsinas')
-% Combine the effects of multiple turbines' wakes
+% Turbine-induced turbulence method
 switch modelData.turbulenceModel
     case 'PorteAgel'
         % Herein we calculate the overlap area of the wake with
