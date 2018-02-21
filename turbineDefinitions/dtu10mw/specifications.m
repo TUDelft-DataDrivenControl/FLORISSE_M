@@ -4,5 +4,5 @@ turbine = struct(...
     'hubHeight',     119.0,      ...
     'pP',            1.88 ); % yaw power correction parameter
 
-% See https://www.nrel.gov/docs/fy09osti/38060.pdf for a more
-% detailed explanation of the NREL 5MW reference wind turbine.
+% See http://orbit.dtu.dk/files/55645274/The_DTU_10MW_Reference_Turbine_Christian_Bak.pdf 
+% for a more detailed explanation of the DTU 5MW reference wind turbine.
