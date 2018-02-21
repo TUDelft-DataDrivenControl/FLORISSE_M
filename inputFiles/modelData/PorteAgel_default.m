@@ -18,8 +18,6 @@ modelData.bt = 0.0;        % vertical wake displacement bias parameter (a*Drotor
 modelData.alpha = 2.32;     % near wake parameter
 modelData.beta  = .154;     % near wake parameter
 modelData.veer  = 0;        % veer of atmosphere
-modelData.ad    = -4.5;     % lateral wake displacement bias parameter (a + bx)
-modelData.bd    = -.01;     % lateral wake displacement bias parameter (a + bx)
 
 modelData.TIthresholdMult = 30; % threshold distance of turbines to include in \"added turbulence\"
 modelData.TIa   = .73;      % magnitude of turbulence added
