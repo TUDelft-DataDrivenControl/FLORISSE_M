@@ -14,7 +14,7 @@ function [ turbines,wtRows ] = floris_frame( inputData,turbines )
     % Group turbines together in rows (depending on wind direction)
     rowi = 1; j = 1;
     while j <= size(wtLocationsWf,1)
-        wtRows{rowi} = [j j+find(abs(LocX(j)-LocX(j+1:end))<1e0)']; % Within 1 meter of each other
+        wtRows{rowi} = [j j+find(abs(LocX(j)-LocX(j+1:end))< (0.02*turbines(1).rotorRadius))']; % Within 0.02 R of each other
         j       = j + length(wtRows{rowi});
         rowi    = rowi + 1;
     end;
