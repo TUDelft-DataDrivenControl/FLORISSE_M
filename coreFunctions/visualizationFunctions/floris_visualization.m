@@ -7,16 +7,16 @@ function [flowField] = floris_visualization(inputData,outputData,flowField,frame
     flowField.WF.frame = 'WF'; % Wind-aligned frame
     
     % Setup mesh resolution
-    flowField.resx = 5;   % resolution in x-axis in meters
-    flowField.resy = 5;   % resolution in y-axis in meters
-    flowField.resz = 10;  % resolution in z-axis in meters
+    flowField.resx = 0.20*inputData.rotorRadius(1); % resolution in x-axis in meters
+    flowField.resy = 0.20*inputData.rotorRadius(1); % resolution in y-axis in meters
+    flowField.resz = 0.10*inputData.hub_height(1);  % resolution in z-axis in meters
     flowField.WF.fixYaw = true;% Account for yaw in near-turbine region in 2Dplot
 
     % Specify dimensions of to-be-extracted flow field
-    flowField.IF.xMin = min(inputData.LocIF(:,1))-1000;
-    flowField.IF.xMax = max(inputData.LocIF(:,1))+1000;
-    flowField.IF.yMin = min(inputData.LocIF(:,2))-1000;
-    flowField.IF.yMax = max(inputData.LocIF(:,2))+1000;
+    flowField.IF.xMin = min(inputData.LocIF(:,1))-14*inputData.rotorRadius(1);
+    flowField.IF.xMax = max(inputData.LocIF(:,1))+14*inputData.rotorRadius(1);
+    flowField.IF.yMin = min(inputData.LocIF(:,2))-14*inputData.rotorRadius(1);
+    flowField.IF.yMax = max(inputData.LocIF(:,2))+14*inputData.rotorRadius(1);
     
 %     if strcmp(frame,'IF')
 %         xMin = min(inputData.LocIF(:,1))-1000;
@@ -48,7 +48,7 @@ function [flowField] = floris_visualization(inputData,outputData,flowField,frame
     end
     if ((isfield(flowField.WF,'U') && ismatrix(flowField.WF.U) && flowField.plot3DFlowfield)...
             ||(~isfield(flowField.WF,'U') && flowField.plot3DFlowfield))
-        flowField.zvec = 0 : flowField.resz : 200;
+        flowField.zvec = 0 : flowField.resz : 2*inputData.hub_height(1);
         [flowField.IF.X,flowField.IF.Y,flowField.IF.Z] = meshgrid(...
             flowField.IF.xMin : flowField.resx : flowField.IF.xMax,...
             flowField.IF.yMin : flowField.resy : flowField.IF.yMax,...
