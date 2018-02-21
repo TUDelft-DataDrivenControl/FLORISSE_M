@@ -9,10 +9,10 @@ function [modelData] = modelData_testing()
 modelData.adjustInitialWakeDiamToYaw = false; % Adjust the intial swept surface overlap
 
 % Blade-rotation-induced wake deflection
-modelData.ad = -4.5;   % lateral wake displacement bias parameter (a + bx)
-modelData.bd = -0.01;  % lateral wake displacement bias parameter (a + bx)
-modelData.at = 0.0;    % vertical wake displacement bias parameter (a + bx)
-modelData.bt = 0.0;    % vertical wake displacement bias parameter (a + bx)
+modelData.ad = -4.5/126.4; % lateral wake displacement bias parameter (a*Drotor + bx)
+modelData.bd = -0.01;      % lateral wake displacement bias parameter (a*Drotor + bx)
+modelData.at = 0.0;        % vertical wake displacement bias parameter (a*Drotor + bx)
+modelData.bt = 0.0;        % vertical wake displacement bias parameter (a*Drotor + bx)
 
 
 %% Parameters specific for the Jimenez model
@@ -44,8 +44,6 @@ modelData.IaLars = 0.06; % ambient turbulence
 modelData.alpha = 2.32;     % near wake parameter
 modelData.beta  = .154;     % near wake parameter
 modelData.veer  = 0;        % veer of atmosphere
-modelData.ad    = -4.5;     % lateral wake displacement bias parameter (a + bx)
-modelData.bd    = -.01;     % lateral wake displacement bias parameter (a + bx)
 
 modelData.TIthresholdMult = 30; % threshold distance of turbines to include in \"added turbulence\"
 modelData.TIa   = .73;      % magnitude of turbulence added

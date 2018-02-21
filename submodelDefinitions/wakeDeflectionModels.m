@@ -60,10 +60,10 @@ switch modelData.deflectionModel
         
         % Determine wake centerline position of this turbine at location x
         displ_y = turbine.LocWF(2) + wakeDir(2)*displacements + ...  % initial position + yaw induced offset
-            (modelData.ad + deltaxs * modelData.bd); % bladerotation-induced lateral offset
+            (modelData.ad*(2*turbine.rotorRadius) + deltaxs * modelData.bd); % bladerotation-induced lateral offset
         
         displ_z = turbine.LocWF(3) + wakeDir(3)*displacements + ...  % initial position + yaw*tilt induced offset
-            (modelData.at + deltaxs * modelData.bt); % bladerotation-induced vertical offset
+            (modelData.at*(2*turbine.rotorRadius) + deltaxs * modelData.bt); % bladerotation-induced vertical offset
         
         
         
@@ -108,10 +108,10 @@ switch modelData.deflectionModel
         
         % Determine wake centerline position of this turbine at location x
         displ_y = turbine.LocWF(2) + wakeDir(2)*displacements + ...  % initial position + yaw induced offset
-            (modelData.ad + deltaxs * modelData.bd); % bladerotation-induced lateral offset
+            (modelData.ad*(2*turbine.rotorRadius) + deltaxs * modelData.bd); % bladerotation-induced lateral offset
         
         displ_z = turbine.LocWF(3) + wakeDir(3)*displacements + ...  % initial position + yaw*tilt induced offset
-            (modelData.at + deltaxs * modelData.bt); % bladerotation-induced vertical offset
+            (modelData.at*(2*turbine.rotorRadius) + deltaxs * modelData.bt); % bladerotation-induced vertical offset
         
         
         
