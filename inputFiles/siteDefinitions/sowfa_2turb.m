@@ -17,4 +17,5 @@ inputData.airDensity    = 1.1716; % Atmospheric air density (kg/m3)
 
 % Inflow (vertical profile)
 inputData.shear = .12; % shear exponent (0.14 -> neutral)
-inputData.Ufun = @(z) inputData.uInfWf.*(z./inputData.hub_height(1)).^inputData.shear; % Boundary layer
+hubHeight = 90.0;
+inputData.Ufun = @(z) inputData.uInfWf.*(z./hubHeight).^inputData.shear; % Boundary layer
