@@ -1,7 +1,7 @@
 % Wind turbine locations in inertial frame [x, y]
-inputData.LocIF = 178.3*[14,    10.0;
-                         14,    5.0;
-                         13.5,  0.0];
+inputData.LocIF = 178.3*[0.5,    10.0;
+                         0.5,    5.0;
+                         0,      0.0];
 nTurbs = size(inputData.LocIF,1); % Number of turbines
 inputData.nTurbs = nTurbs; % Save to inputData for usage outside of this function
 

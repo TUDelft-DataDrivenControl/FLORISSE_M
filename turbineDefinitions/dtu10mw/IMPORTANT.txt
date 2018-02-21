@@ -1,0 +1,3 @@
+The aerofoil tables for Cp and Ct have not yet been generated for the DTU 10MW turbine, and hence
+the tables found here are simply the ones from the NREL 5MW turbine. Work is ongoing to update
+these tables.
