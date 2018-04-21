@@ -14,8 +14,11 @@ inputData.nTurbs = nTurbs; % Save to inputData for usage outside of this functio
 % Control settings
 %         inputData.yawAngles   = zeros(1,nTurbs);     % Set default as greedy
 %         inputData.tiltAngles  = zeros(1,nTurbs);     % Set default as greedy
-inputData.yawAngles   = deg2rad([-30 10 -10 -30 -20 -15 0 10 0]); % Turbine yaw angles (radians, w.r.t. freestream wind)
-inputData.tiltAngles  = deg2rad([0 0 0 0 0 0 0 0 0]); % Turbine tilt angles (radians, w.r.t. ground)
+
+% Turbine yaw angles (radians, w.r.t. freestream wind)
+inputData.yawAngles   = deg2rad([-30 10 -10 -30 -20 -15 0 10 0]);
+% Turbine tilt angles (radians, w.r.t. ground)
+inputData.tiltAngles  = deg2rad([0 0 0 0 0 0 0 0 0]);
 
 % Atmospheric settings
 % Compute windDirection in the inertial frame, and the wind-aligned flow speed (uInfWf)

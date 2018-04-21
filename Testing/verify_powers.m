@@ -1,5 +1,5 @@
 function [] = verify_powers(generateData)
-cd('../..') % Return by: cd('developmentTools/testing')
+cd('../FLORIS') % Return by: cd('../Testing')
 % Set generateData to 'false' if nothing specified
 if nargin == 0
     generateData = false;
@@ -33,15 +33,16 @@ for atmoType = {'uniform','boundary'}
                     FLORIS = floris('verifyPowers_9turb','nrel5mw',atmoType{1},controlType{1},wakeType{1},deflType{1},wakeSum{1},...
                         turbulType{1},'modelData_testing');
                     FLORIS.run();
-                                        
                     key = [atmoType{1} controlType{1} wakeType{1} wakeSum{1} deflType{1}];
+                    %  display(sprintf('power difference is %d between %d and %d',abs(powerData(key) - sum(FLORIS.outputData.power)),powerData(key) , sum(FLORIS.outputData.power)));
+                    
                     if generateData
                         powerData(key) = sum(FLORIS.outputData.power);
                     else
                         % Throw an error message if the difference between
                         % new and old power values is too large.
                         assert(abs(powerData(key) - sum(FLORIS.outputData.power))<1e-5,...
-                               sprintf('power data differs at %s', join(key, ', ')));
+                               sprintf('power data differs at %s \n power difference is %d between %d and %d', join(key, ', '),abs(powerData(key) - sum(FLORIS.outputData.power)), powerData(key) , sum(FLORIS.outputData.power)));
                     end
                     clear FLORIS
                 end
@@ -49,7 +50,7 @@ for atmoType = {'uniform','boundary'}
         end
     end
 end
-cd('developmentTools/testing')
+cd('../Testing')
 if generateData
     save('newPowData', 'powerData')
 else

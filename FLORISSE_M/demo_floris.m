@@ -1,6 +1,9 @@
 clear all; clc; close all;
 %% Run a single simulation without optimization
 disp('Running a single simulation...');
+
+Site = 
+
 FLORIS_sim = floris('generic_9turb','nrel5mw','uniform','pitch',...
                     'PorteAgel','PorteAgel','Katic',...
                     'PorteAgel','PorteAgel_default'); % Initialize FLORIS class with specific settings
