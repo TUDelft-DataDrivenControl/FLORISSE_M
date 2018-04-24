@@ -13,10 +13,10 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 import os
-import sys  
+# import sys  
 
-reload(sys)  
-sys.setdefaultencoding('utf8')
+# reload(sys)  
+# sys.setdefaultencoding('utf8')
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
@@ -52,6 +52,7 @@ extensions = [
     'sphinxcontrib.matlab'
 ]
 
+mathjax_path="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
 matlab_src_dir = os.path.abspath(os.path.join('..', '..'))
 # matlab_src_dir = os.path.abspath('..')
 # matlab_src_dir = 'C:\\Users\\roald\\Dropbox\\TUwork\\MatlabCode\\FLORISSE_M'

@@ -6,13 +6,13 @@ function [out_newFrame] = frame_IF2WF(windDirection_IF,Turb_LocIF,oldFrame,xyz_o
 %   xyz_oldFrame, mapped from the old frame (specified by oldFrame, where
 %   oldFrame == 'if' means a mapping from IF -> WF. Similarly, oldFrame ==
 %   'wf' means a mapping from WF -> IF.
-%
+
 
     if nargin == 3
         error(['The variable ''oldFrame'' only applies when xyz_oldFrame is '
                'also specified. Please specify both or neither.']);
     end
-
+    
     % Rotational matrix
     Rz = @(a) [cos(a) -sin(a) 0;sin(a) cos(a) 0;0 0 1]; 
     

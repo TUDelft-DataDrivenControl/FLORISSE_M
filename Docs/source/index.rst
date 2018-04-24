@@ -13,10 +13,14 @@ This is the documentation for (FLORIS) which stands for FLOw Redirection and Ind
 
    Background
    Architecture
+   Classes
+   Turbines
+   ForDevelopers
+   IntroductionToTools
 
-.. Indices and tables
-.. ==================
+Indices and tables
+==================
 
-.. * :ref:`genindex`
-.. * :ref:`modindex`
-.. * :ref:`search`
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`

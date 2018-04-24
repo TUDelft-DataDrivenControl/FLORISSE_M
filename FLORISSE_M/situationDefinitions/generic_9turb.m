@@ -1,4 +1,9 @@
 % Wind turbine locations in inertial frame [x, y]
+
+addpath(genpath('turbineDefinitions'))
+NREL5MWpitch = NREL5MW('pitch')
+controlSetPitch = controlSet(NREL5MWpitch)
+
 inputData.LocIF = [300,    100.0;
     300,    300.0;
     300,    500.0;
@@ -20,12 +25,3 @@ inputData.yawAngles   = deg2rad([-30 10 -10 -30 -20 -15 0 10 0]);
 % Turbine tilt angles (radians, w.r.t. ground)
 inputData.tiltAngles  = deg2rad([0 0 0 0 0 0 0 0 0]);
 
-% Atmospheric settings
-% Compute windDirection in the inertial frame, and the wind-aligned flow speed (uInfWf)
-inputData.windDirection = 0.30; % Wind dir in radians (inertial frame)
-inputData.uInfWf        = 12.0; % axial flow speed in wind frame
-inputData.TI_0          = .1; % turbulence intensity [-] ex: 0.1 is 10% turbulence intensity
-inputData.airDensity    = 1.1716; % Atmospheric air density (kg/m3)
-
-% Inflow (vertical profile)
-inputData.Ufun = @(z) inputData.uInfWf; % Uniform inflow
