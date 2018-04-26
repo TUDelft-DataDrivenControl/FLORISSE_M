@@ -1,5 +1,5 @@
 classdef turbine
-    %TURBINE Summary of this class goes here
+    %TURBINE Specific turbine in a wind farm
     %   Detailed explanation goes here
     
     properties

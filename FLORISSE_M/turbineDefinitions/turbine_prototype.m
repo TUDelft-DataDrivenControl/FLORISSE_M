@@ -5,34 +5,31 @@ classdef turbine_prototype < handle
     %   time variable functions of the turbine should not be stored here.
     
     properties
+        controlMethod
+    end
+    properties (Abstract)
         rotorRadius
         genEfficiency
         hubHeight
         pP
-        controlMethod
+    end
+    properties (Access = private)
+        allowableControlMethods
         dataPath
         cpInterp
         ctInterp
     end
     
     methods
-        function obj = turbine_prototype(rotorRadius, genEfficiency, hubHeight,...
-                                        pP, path, controlMethod, allowableControlMethods)
+        function obj = turbine_prototype(path, allowableControlMethods)
             %turbine_prototype Construct an instance of this class
             %   The turbine characters are saved as properties
-            obj.rotorRadius = rotorRadius;
-            obj.genEfficiency = genEfficiency;
-            obj.hubHeight = hubHeight;
-            obj.pP = pP;
-            
+            obj.controlMethod = nan;
             obj.dataPath = path;
-            if ~any(strcmp(allowableControlMethods,controlMethod))
-                error(['This turbine does not support control method: "' controlMethod '"']);
-            end
-            obj.set_cp_and_ct_functions(controlMethod)
+            obj.allowableControlMethods = allowableControlMethods;
         end
         
-        function set_cp_and_ct_functions(obj, controlMethod)
+        function set.controlMethod(obj, controlMethod)
             %set_cp_and_ct_functions Create cp and ct functions
             % Herein we define how the turbine are controlled. In the traditional
             % FLORIS model, we directly control the axial induction factor of each
@@ -47,6 +44,13 @@ classdef turbine_prototype < handle
             % pitch:          use pitch angles and Cp-Ct LUTs for pitch and WS,
             % greedy:         greedy control   and Cp-Ct LUT for WS,
             % axialInduction: specify axial induction directly.
+            
+            if isnan(controlMethod)
+                return
+            end
+            if ~any(strcmp(obj.allowableControlMethods, controlMethod))
+                error(['This turbine does not support control method: "' controlMethod '"']);
+            end
             obj.controlMethod = controlMethod;
             switch controlMethod
                 % use pitch angles and Cp-Ct LUTs for pitch and WS,

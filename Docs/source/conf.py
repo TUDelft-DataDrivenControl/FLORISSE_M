@@ -57,7 +57,7 @@ matlab_src_dir = os.path.abspath(os.path.join('..', '..'))
 # matlab_src_dir = os.path.abspath('..')
 # matlab_src_dir = 'C:\\Users\\roald\\Dropbox\\TUwork\\MatlabCode\\FLORISSE_M'
 primary_domain = 'mat'
-
+autodoc_member_order = 'bysource'
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 

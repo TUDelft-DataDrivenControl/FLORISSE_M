@@ -12,7 +12,7 @@ FLORIS is based on several papers. Below is an image showing a draft of the curr
 
 Every top level block in this diagram corresponds to a folder in the FLORIS source code. Each arrow denotes the flow of data. This diagram is not rigorous but it does give an accurate overview.
 
-The diagram below shows the `class diagram <https://en.wikipedia.org/wiki/Class_diagram>`_ which shows all classes and their relationship. The notation language in this diagram is called Unified Modeling Language (UML).
+The diagram below shows the `class diagram <https://en.wikipedia.org/wiki/Class_diagram>`_ which shows all classes and their relationship. The notation language in this diagram is called Unified Modeling Language (UML). A more thorough write up of the class diagram can be found on the `IBM website <https://www.ibm.com/developerworks/rational/library/content/RationalEdge/sep04/bell/>`_.
 
 .. image:: Images/DrawIODiagrams/FLORIS_classes.png
    :width: 100 %

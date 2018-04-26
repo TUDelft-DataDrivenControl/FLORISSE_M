@@ -2,10 +2,9 @@ clear all; clc; close all;
 %% Run a single simulation without optimization
 disp('Running a single simulation...');
 
-Layout = 
-Situation = 
-Models = 
+Situation = strong_wind_6_turb
 ControlSet = 
+Models = 
 
 FLORIS_sim = floris('generic_9turb','nrel5mw','uniform','pitch',...
                     'PorteAgel','PorteAgel','Katic',...

@@ -9,7 +9,7 @@ classdef strong_wind_6_turb < generic_6_turb & situation_prototype
         airDensity
     end
     methods
-        function obj = strong_wind_6_turb()
+        function obj = strong_wind_6_turb
             %strong_wind_6_turb Construct an instance of this class
             %   Detailed explanation goes here
 
