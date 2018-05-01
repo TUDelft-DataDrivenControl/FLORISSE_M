@@ -15,7 +15,7 @@ Ctfun = @(ws) interp1(wind_speed, ct, ws);
 
 % Wake centerline is at y=40, z=10
 mu = [40, 10];
-% Compute Velocity profile at x0 (see Porté-Agel/Bastankhah)
+% Compute Velocity profile at x0 (see Porte-Agel/Bastankhah)
 coVarMat = [cos(yaw)*R/sqrt(2) 0; 0 R/sqrt(2)].^2;
 
 % Compute the velocity deficit at a downwind rotor for multiple gridSizes
