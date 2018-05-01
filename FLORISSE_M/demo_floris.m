@@ -2,6 +2,7 @@ clear all; clc; close all;
 %% Run a single simulation without optimization
 disp('Running a single simulation...');
 
+addpath(genpath(pwd))
 Situation = strong_wind_6_turb
 ControlSet = 
 Models = 

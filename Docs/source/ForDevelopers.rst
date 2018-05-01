@@ -8,6 +8,5 @@ https://blogs.mathworks.com/loren/2012/03/26/considering-performance-in-object-o
 Naming conventions
 ------------------
 
-- Folders -> camelCase
-- Function/Objects -> snake_case
-- Variable names -> camelCase
+- Function, Classes -> snake_case
+- Folders, Variable names, Objects -> camelCase

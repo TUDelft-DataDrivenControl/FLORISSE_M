@@ -21,11 +21,11 @@ classdef two_heigths_6_turb < layout_prototype
             % Form the turbine struct array with the first turbineType on the
             % first three positions and the second turbineType on the last
             % positions
-            
             obj.turbines = struct('turbineType', NREL5MWTurb , ...
-                                  'locIf',         locIf(1:3));
-            obj.turbines(4:6) = struct('turbineType', NREL5MWPole2 , ...
-                                  'locIf',         locIf(4:6));
+                                  'locIf',         locIf);
+            for i = [4 5 6]
+                obj.turbines(i).turbineType = NREL5MWPole2;
+            end
         end
     end
 end
