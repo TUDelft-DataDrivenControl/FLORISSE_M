@@ -3,12 +3,11 @@ classdef scaled_2_turb < layout_prototype
     %   Detailed explanation goes here
     properties
         turbines
-        uniqueTurbineTypes
     end
     
     methods
         function obj = scaled_2_turb
-            %GENERIC_6_TURB Construct an instance of this class
+            %scaled_2_turb Construct an instance of this class
             %   Detailed explanation goes here
             TUMG1TurbType = tum_g1;
             D = 2*TUMG1TurbType.rotorRadius;
@@ -17,10 +16,10 @@ classdef scaled_2_turb < layout_prototype
             locIf = {D*[0,    .5];
                      D*[0,    5]};
 
-            % Put all the turbines in a struct array
+            % Put all the turbines in a struct array with their type and
+            % location specified
             obj.turbines = struct('turbineType', TUMG1TurbType, ...
                                   'locIf',         locIf);
-            obj.uniqueTurbineTypes = {TUMG1TurbType};
         end
     end
 end

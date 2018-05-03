@@ -3,7 +3,6 @@ classdef generic_6_turb < layout_prototype
     %   Detailed explanation goes here
     properties
         turbines
-        uniqueTurbineTypes
     end
     
     methods
@@ -21,7 +20,6 @@ classdef generic_6_turb < layout_prototype
             % Put all the turbines in a struct array
             obj.turbines = struct('turbineType', NREL5MWTurbType , ...
                                   'locIf',         locIf);
-            obj.uniqueTurbineTypes = {NREL5MWTurbType};
         end
     end
 end

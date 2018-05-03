@@ -1,4 +1,4 @@
-classdef situation_prototype
+classdef situation_prototype < handle
     %SITUATIONPROTOTYPE Summary of this class goes here
     %   Detailed explanation goes here
     

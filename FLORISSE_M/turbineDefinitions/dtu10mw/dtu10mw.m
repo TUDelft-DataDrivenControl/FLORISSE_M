@@ -4,7 +4,7 @@ function turbineType = dtu10mw()
 
 filepath = getFileLocation();
 % Available control methods
-availableControl = {'pitch', 'greedy', 'axialInduction'};
+availableControl = {'axialInduction'};
 % Instantiate turbine with
 % obj = turbine_type(rotorRadius, genEfficiency, hubHeight, pP, path, allowableControlMethods)
 turbineType = turbine_type(178.3/2., 0.944, 119.0, 1.88, filepath, availableControl);

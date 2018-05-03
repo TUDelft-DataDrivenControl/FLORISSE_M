@@ -1,14 +1,13 @@
 classdef two_heigths_6_turb < layout_prototype
-    %GENERIC_6_TURB Summary of this class goes here
+    %two_heigths_6_turb Summary of this class goes here
     %   Detailed explanation goes here
     properties
         turbines
-        uniqueTurbineTypes
     end
     
     methods
         function obj = two_heigths_6_turb
-            %GENERIC_6_TURB Construct an instance of this class
+            %two_heigths_6_turb Construct an instance of this class
             %   Detailed explanation goes here
             NREL5MWTurbType = nrel5mw;
             NREL5MWPole2 = nrel5mw;
@@ -27,7 +26,6 @@ classdef two_heigths_6_turb < layout_prototype
             for i = [4 5 6]
                 obj.turbines(i).turbineType = NREL5MWPole2;
             end
-            obj.uniqueTurbineTypes = {NREL5MWTurbType, NREL5MWPole2};
         end
     end
 end

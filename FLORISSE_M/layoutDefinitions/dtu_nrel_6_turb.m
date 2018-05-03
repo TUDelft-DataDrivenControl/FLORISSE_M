@@ -3,7 +3,6 @@ classdef dtu_nrel_6_turb < layout_prototype
     %   Detailed explanation goes here
     properties
         turbines
-        uniqueTurbineTypes
     end
     
     methods
@@ -23,10 +22,9 @@ classdef dtu_nrel_6_turb < layout_prototype
             % positions
             obj.turbines = struct('turbineType', NREL5MWTurbType, ...
                                   'locIf',         locIf);
-            for i = [4 5 6]
+            for i = [3 4 6]
                 obj.turbines(i).turbineType = DTU10mwTurbType;
             end
-            obj.uniqueTurbineTypes = {NREL5MWTurbType, DTU10mwTurbType};
         end
     end
 end
