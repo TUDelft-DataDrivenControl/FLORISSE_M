@@ -1,9 +1,4 @@
 % Wind turbine locations in inertial frame [x, y]
-
-addpath(genpath('turbineDefinitions'))
-NREL5MWpitch = NREL5MW('pitch')
-controlSetPitch = controlSet(NREL5MWpitch)
-
 inputData.LocIF = [300,    100.0;
     300,    300.0;
     300,    500.0;

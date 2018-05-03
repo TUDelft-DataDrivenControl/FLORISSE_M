@@ -1,4 +1,4 @@
-classdef inspectLayoutsTest < matlab.unittest.TestCase
+classdef inspect_layouts_test < matlab.unittest.TestCase
     %INSPECTLAYOUTSTEST Summary of this class goes here
     %   Detailed explanation goes here
     

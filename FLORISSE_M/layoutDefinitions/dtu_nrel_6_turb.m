@@ -1,5 +1,5 @@
-classdef two_heigths_6_turb < layout_prototype
-    %GENERIC_6_TURB Summary of this class goes here
+classdef dtu_nrel_6_turb < layout_prototype
+    %dtu_nrel_6_turb Summary of this class goes here
     %   Detailed explanation goes here
     properties
         turbines
@@ -7,12 +7,11 @@ classdef two_heigths_6_turb < layout_prototype
     end
     
     methods
-        function obj = two_heigths_6_turb
-            %GENERIC_6_TURB Construct an instance of this class
+        function obj = dtu_nrel_6_turb
+            %dtu_nrel_6_turb Construct an instance of this class
             %   Detailed explanation goes here
             NREL5MWTurbType = nrel5mw;
-            NREL5MWPole2 = nrel5mw;
-            NREL5MWPole2.hubHeight = 100;
+            DTU10mwTurbType = dtu10mw;
             locIf = {[300,    100.0];
                      [300,    300.0];
                      [300,    500.0];
@@ -25,9 +24,9 @@ classdef two_heigths_6_turb < layout_prototype
             obj.turbines = struct('turbineType', NREL5MWTurbType, ...
                                   'locIf',         locIf);
             for i = [4 5 6]
-                obj.turbines(i).turbineType = NREL5MWPole2;
+                obj.turbines(i).turbineType = DTU10mwTurbType;
             end
-            obj.uniqueTurbineTypes = {NREL5MWTurbType, NREL5MWPole2};
+            obj.uniqueTurbineTypes = {NREL5MWTurbType, DTU10mwTurbType};
         end
     end
 end

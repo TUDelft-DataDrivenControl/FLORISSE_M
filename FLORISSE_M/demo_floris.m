@@ -4,7 +4,7 @@ disp('Running a single simulation...');
 
 addpath(genpath(pwd))
 Situation = strong_wind_6_turb
-ControlSet = 
+ControlSet = greedyControl(Situation)
 Models = 
 
 FLORIS_sim = floris('generic_9turb','nrel5mw','uniform','pitch',...

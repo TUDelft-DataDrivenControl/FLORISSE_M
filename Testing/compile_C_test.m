@@ -1,4 +1,4 @@
-classdef compileCTest < matlab.unittest.TestCase
+classdef compile_C_test < matlab.unittest.TestCase
     %COMPILECTEST This class tests the compilation of the code to C
     %   This class uses function from the matlab coder, in this case
     %   codegen is used to compile a function to C that instantiates
@@ -16,6 +16,7 @@ classdef compileCTest < matlab.unittest.TestCase
             
             addFolder = '../FLORISSE_M';
             testCase.applyFixture(PathFixture(addFolder,'IncludeSubfolders',true));
+%             coder.screener('instantiateClasses')
             codegen instantiateClasses
         end
     end
