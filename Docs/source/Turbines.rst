@@ -13,7 +13,5 @@ The nrel5mw is a specific implementation.
 
 .. automodule:: FLORISSE_M.turbineDefinitions.nrel5mw
 
-.. autoclass:: nrel5mw
-	:show-inheritance:
-	:members:
+.. autofunction:: funcname()
 

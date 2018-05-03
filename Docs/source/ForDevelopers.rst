@@ -16,5 +16,7 @@ C Code generation limitations
 -----------------------------
 
 `Class limitations <https://uk.mathworks.com/help/simulink/ug/how-working-with-matlab-classes-is-different-for-code-generation.html#btsyar3-1>`_
+
 `Cell array limitations <https://uk.mathworks.com/help/simulink/ug/cell-array-restrictions-for-code-generation.html#bu6ihbl>`_
+
 `function handle limitations <https://uk.mathworks.com/help/simulink/ug/function-handle-limitations-for-code-generation.html>`_
