@@ -3,8 +3,34 @@
 % %   Try to generate c-code from this function to see if the current code is
 % %   compatible with the matlab coder, use: > codegen instantiateClasses
 
+% Instantiate a layout without ambietInflow conditions
+clwindcon9Turb = clwindcon_9_turb(nan);
+% Use the heigth us the first turbine type as reference heigth for the
+% inflow profile
+refHeigth = clwindcon9Turb.uniqueTurbineTypes(1).hubHeight;
+% Define an inflow struct and use it in the layout, clwindcon9Turb
+ambientInflow = struct('PowerLawRefSpeed',8,'PowerLawRefHeight',refHeigth,...
+                       'PowerLawExp',0.3,'windDirection',205,'TI_0',.01);
+clwindcon9Turb.ambientInflow = ambientInflow;
+
+% Make a controlObject for this layout
+controlSet = control_set(clwindcon9Turb, 'axialInduction');
+
+% Define subModels
+subModels = model_definition('deflection', 'jimenez',...
+                             'velocityProfile', 'Jensen',...
+                             'wakeCombining', 'quadratic',...
+                             'other1', 'otherDef');
+florisRunner = floris(clwindcon9Turb, controlSet, subModels);
+
+
+                         
+
+
+con0 = control_set(clwindcon9Turb, 'axialInduction');
+
 sit = strong_wind_6_turb;
-con0 = control_set(sit, 'pitch');
+con0 = control_set(clwindcon9Turb, 'pitch');
 lay = scaled_2_turb;
 con1 = control_set(lay, 'pitch');
 lay2 = generic_6_turb;
