@@ -1,4 +1,4 @@
-function layout_obj = dtu_nrel_6_turb(ambientFlow)
+function layout_obj = dtu_nrel_6_turb()
 %dtu_nrel_6_turb Summary of this class goes here
 %   Detailed explanation goes here
 
@@ -18,6 +18,6 @@ turbines = struct('turbineType', NREL5MWTurbType, ...
 for i = [3 4 6]
     turbines(i).turbineType = DTU10mwTurbType;
 end
-layout_obj = layout_class(turbines, ambientFlow);
+layout_obj = layout_class(turbines, 'dtu_nrel_6_turb');
 end
 

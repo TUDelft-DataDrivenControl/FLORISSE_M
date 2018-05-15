@@ -27,12 +27,11 @@ function [ dwTurbs ] = floris_windSpeed( turbines,wakes,inputData,wt_rows,turbir
                 TiVec = [TiVec inputData.wakeModel.turbul(inputData.TI_0,...
                                turbines(dw_turbi),turbines(uw_turbi),...
                                wakes(uw_turbi),turbLocIndex,deltax)];
-                           
+                
                 % Combine the effects of multiple turbines' wakes
                 U_inf = inputData.Ufun(turbines(dw_turbi).hub_height);
                 U_uw  = turbines(uw_turbi).windSpeed;
                 sumKed = sumKed+inputData.wakeModel.sum(U_inf,U_uw,Vni);
-
             end
         end
         turbines(dw_turbi).windSpeed = inputData.Ufun(turbines(dw_turbi).hub_height)-sqrt(sumKed);

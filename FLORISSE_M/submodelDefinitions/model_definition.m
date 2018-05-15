@@ -3,24 +3,82 @@ classdef model_definition
     %   Detailed explanation goes here
     
     properties
-        Property1
+        modelData
+        deflectionModel
+        velocityDeficitModel
+        wakeCombinationModel
+        addedTurbulenceModel
     end
     
     methods
-        function obj = model_definition(~,deflModel,~,velModel,~,combinModel,~,otherModel)
+        % TODO: Use inputParser to check name-calue pairs
+        function obj = model_definition(~, deflectionModel, ...
+                                        ~, velocityDeficitModel, ...
+                                        ~, wakeCombinationModel, ...
+                                        ~, addedTurbulenceModel)
             %MODEL_DEFINITION Construct an instance of this class
             %   Detailed explanation goes here
-            display(deflModel)
-            display(velModel)
-            display(combinModel)
-            display(otherModel)
-            obj.Property1 = otherModel ;
+            
+            % Make an empty modelData struct
+            obj.modelData = struct();
+            obj.modelData = linear_wake_deflection(obj.modelData);
+            % Put the relevant deflection parameters into the modelData
+            % struct and store a function handle to the chosen model
+            switch deflectionModel
+                case 'jimenez'
+                    obj.modelData = jimenez_params(obj.modelData);
+                    obj.deflectionModel = @jimenez_deflection;
+                case 'rans'
+                    obj.modelData = self_similar_gaussian_rans_params(obj.modelData);
+                    obj.deflectionModel = @rans_deficit_deflection;
+                otherwise
+                    error('Deflection model with name: "%s" is not defined', deflectionModel);
+            end
+            
+            % Put the relevant velocity deficit parameters into the modelData
+            % struct and store a function handle to the chosen model
+            switch velocityDeficitModel
+                case 'Jensen'
+                    obj.modelData = jensen_params(obj.modelData);
+                    obj.velocityDeficitModel = @jensen_gaussian_velocity;
+                case 'zonedVelocity'
+                    obj.modelData = zoned_params(obj.modelData);
+                    obj.velocityDeficitModel = @zoned_velocity;
+                otherwise
+                    error('Velocity model with name: "%s" is not defined', velocityDeficitModel);
+            end
+            
+            % Store a function handle to the wake combination model
+            switch wakeCombinationModel
+                case 'quadratic'
+                    obj.wakeCombinationModel = @quadratic_rotor_velocity;
+                otherwise
+                    error('Wake combination model with name: "%s" is not defined', wakeCombinationModel);
+            end
+            
+            % Store a function handle to the added turbulence model
+            switch addedTurbulenceModel
+                case 'crespoHernandez'
+                    obj.modelData = crespo_hernandez_params(obj.modelData);
+                    obj.addedTurbulenceModel = @crespo_hernandez;
+                otherwise
+                    error('Added turbulence model with name: "%s" is not defined', addedTurbulenceModel);
+            end
         end
         
-        function outputArg = method1(obj,inputArg)
-            %METHOD1 Summary of this method goes here
+        function wake = create_wake(obj, turbine, turbineCondition, turbineControl, turbineResult)
+            %CREATE_WAKE Pass the selected deflectionModel and
+            %wakeDeficitModel to a wake object and return that wake to FLORIS
             %   Detailed explanation goes here
-            outputArg = obj.Property1 + inputArg;
+            wakeVelDefObj = obj.velocityDeficitModel(obj.modelData, turbine, turbineCondition, turbineControl, turbineResult);
+            wakeDeflObj = obj.deflectionModel(obj.modelData, turbine, turbineCondition, turbineControl, turbineResult);
+            wakeTurbulenceObj = obj.addedTurbulenceModel(obj.modelData, turbine, turbineCondition, turbineControl, turbineResult);
+            
+            % Pass all the created functions to the wake struct
+            wake.deficit = @(x, y, z) wakeVelDefObj.deficit(x, y, z);
+            wake.boundary = @(x, y, z) wakeVelDefObj.boundary(x, y, z);
+            wake.deflection = @(x) wakeDeflObj.deflection(x);
+            wake.added_TI = @(x, ti0) wakeTurbulenceObj.added_TI(x, ti0);
         end
     end
 end

@@ -1,4 +1,4 @@
-function layout_obj = two_heigths_6_turb(ambientFlow)
+function layout_obj = two_heigths_6_turb()
 %two_heigths_6_turb Summary of this class goes here
 %   Detailed explanation goes here
 
@@ -19,6 +19,6 @@ turbines = struct('turbineType', NREL5MWTurbType, ...
 for i = [4 5 6]
     turbines(i).turbineType = NREL5MWPole2;
 end
-layout_obj = layout_class(turbines, ambientFlow);
+layout_obj = layout_class(turbines, 'two_heigths_6_turb');
 end
 

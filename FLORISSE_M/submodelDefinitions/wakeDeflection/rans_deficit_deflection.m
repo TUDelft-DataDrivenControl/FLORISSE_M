@@ -2,26 +2,6 @@ function [displ_y,displ_z] = rans_deficit_deflection(turbineResults,turbineCondi
 %PORTE_AGEL_DEFLECTION Summary of this function goes here
 %   Detailed explanation goes here
 
-% Blade-rotation-induced wake deflection
-modelData.ad = -4.5/126.4; % lateral wake displacement bias parameter (a*Drotor + bx)
-modelData.bd = -0.01;      % lateral wake displacement bias parameter (a*Drotor + bx)
-modelData.at = 0.0;        % vertical wake displacement bias parameter (a*Drotor + bx)
-modelData.bt = 0.0;        % vertical wake displacement bias parameter (a*Drotor + bx)
-
-% Parameters specific for the Porte-Agel model
-modelData.alpha = 2.32;     % near wake parameter
-modelData.beta  = .154;     % near wake parameter
-modelData.veer  = 0;        % veer of atmosphere
-
-modelData.TIthresholdMult = 30; % threshold distance of turbines to include in \"added turbulence\"
-modelData.TIa   = .73;      % magnitude of turbulence added
-modelData.TIb   = .8325;    % contribution of turbine operation
-modelData.TIc   = .0325;    % contribution of ambient turbulence intensity
-modelData.TId   = -.32;     % contribution of downstream distance from turbine
-
-modelData.ka	= .3837;    % wake expansion parameter (ka*TI + kb)
-modelData.kb 	= .0037;    % wake expansion parameter (ka*TI + kb)
-
 % Shorthand for some parameters
 Ct = turbineResults.Ct;
 Ti = turbineCondition.TI;

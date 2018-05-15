@@ -5,7 +5,7 @@ import matlab.unittest.plugins.TAPPlugin;
 import matlab.unittest.plugins.ToFile;
 
 try
-    % Create the tesing suite
+    % Create the testing suite
 	suite = TestSuite.fromFolder(pwd);
     % Create a typical runner with text output
     runner = TestRunner.withTextOutput();

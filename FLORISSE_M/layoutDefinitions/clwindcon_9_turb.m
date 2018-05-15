@@ -1,4 +1,4 @@
-function layout_obj = clwindcon_9_turb(ambientFlow)
+function layout_obj = clwindcon_9_turb()
 %clwindcon_9_turb Summary of this class goes here
 %   Detailed explanation goes here
 
@@ -18,7 +18,7 @@ locIf = {D*[19,    10.0];
 turbines = struct('turbineType', DTU10mwTurbType , ...
                       'locIf',         locIf);
 
-layout_obj = layout_class(turbines, ambientFlow);
+layout_obj = layout_class(turbines, 'clwindcon_9_turb');
 end
 
 

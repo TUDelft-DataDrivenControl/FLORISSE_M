@@ -61,7 +61,6 @@ classdef floris<handle
             % control. Additionally, we can also assume fully greedy control, where we
             % cannot adjust the generator torque nor the blade pitch angles ('greedy').
             
-
             
             self.inputData = inputData;
         end

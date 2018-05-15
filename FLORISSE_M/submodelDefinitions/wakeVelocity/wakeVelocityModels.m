@@ -111,7 +111,7 @@ switch modelData.deficitModel
         A = pi*turbine.rotorRadius^2; % Rotor swept area [m]
         H = turbine.hub_height;       % Turbine hub height [m]
 
-        RnbLars = D*max(1.08,1.08+21.7*(modelData.IaLars-0.05));
+        RnbLars = D*max(1.08,1.08+21.7*(turbine.TI-0.05));
         R95Lars = 0.5*(RnbLars+min(H,RnbLars));
         DeffLars = D*sqrt((1+sqrt(1-turbine.Ct))/(2*sqrt(1-turbine.Ct)));
 

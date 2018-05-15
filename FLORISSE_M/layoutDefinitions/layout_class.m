@@ -6,6 +6,9 @@ classdef layout_class < handle
         turbines
         ambientInflow
     end
+    properties (SetAccess = immutable)
+        description
+    end
     properties (Dependent)
         nTurbs
         idIf
@@ -16,9 +19,9 @@ classdef layout_class < handle
     end
     
     methods
-        function obj = layout_class(turbines, ambientInflow)
+        function obj = layout_class(turbines, description)
             obj.turbines = turbines;
-            obj.ambientInflow = ambientInflow;
+            obj.description = description;
         end
         
         function nTurbs = get.nTurbs(obj)

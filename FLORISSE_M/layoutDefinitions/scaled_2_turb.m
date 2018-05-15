@@ -1,4 +1,4 @@
-function layout_obj = scaled_2_turb(ambientFlow)
+function layout_obj = scaled_2_turb()
 %scaled_2_turb Summary of this class goes here
 %   Detailed explanation goes here
 
@@ -13,6 +13,6 @@ locIf = {D*[0,    .5];
 % location specified
 turbines = struct('turbineType', TUMG1TurbType, ...
                       'locIf',         locIf);
-layout_obj = layout_class(turbines, ambientFlow);
+layout_obj = layout_class(turbines, 'scaled_2_turb');
 end
 
