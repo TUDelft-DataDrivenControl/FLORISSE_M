@@ -73,8 +73,8 @@ classdef turbine_type < handle
                 case {'pitch'}
                 % Load the lookup tables for cp and ct as a function of
                 % windspeed and pitch
-                    obj.lutCp = csvReadCCompatible([obj.dataPath '/cpPitch.csv']);
-                    obj.lutCt = csvReadCCompatible([obj.dataPath '/ctPitch.csv']);
+                    obj.lutCp = csvread([obj.dataPath '/cpPitch.csv']);
+                    obj.lutCt = csvread([obj.dataPath '/ctPitch.csv']);
                 % The lookup tables are formatted in this way:
                 % Wind speed in LUT in m/s
                 % lut_ws    = lut(1,2:end);
@@ -84,7 +84,7 @@ classdef turbine_type < handle
                 % lut_value = lut(2:end,2:end);
                 case {'greedy'}
                 % Load the lookup table for cp and ct as a function of windspeed
-                    obj.lutGreedy = csvReadCCompatible([obj.dataPath '/cpctgreedy.csv']);
+                    obj.lutGreedy = csvread([obj.dataPath '/cpctgreedy.csv']);
                 case {'axialInduction'}
                 % No preparation needed
                 otherwise
@@ -97,7 +97,6 @@ classdef turbine_type < handle
             %   Computes the power coefficient for this turbine depending
             %   on the condition at the rotor area and the controlset of
             %   the turbine
-%             keyboard
             switch obj.controlMethod
                 case {'pitch'}
                     turbineResult.cp = interp2(obj.lutCp(1,2:end), deg2rad(obj.lutCp(2:end,1)), obj.lutCp(2:end,2:end), ...
@@ -134,109 +133,4 @@ classdef turbine_type < handle
             end
         end
     end
-end
-
-function lut = csvReadCCompatible(path)
-    fid = fopen(path);
-    a = fread(fid, '*char');
-    fclose(fid);
-
-    iis = 0;
-    lls = 1;
-    line1 = 1;
-    nl = 0;
-    for pos = 1:length(a)
-        if (a(pos) == ',') && line1
-            lls=lls+1;
-        end
-        if (a(pos) == char(13))||(a(pos) == char(10))
-            if nl == 0
-                line1 = 0;
-                nl = 1;
-                iis = iis + 1;
-            end
-        else
-            nl = 0;
-        end
-    end
-    lut = zeros(iis,lls);
-
-    ii=1;
-    ll=1;
-    num = '                                       ';
-    aai =1;
-    nl = 0;
-    for pos = 1:length(a)
-        if (a(pos) == ',')
-            lut(ii,ll) = real(str2double(num));
-            ll=ll+1;
-            num = '                                       ';
-            aai =1;
-            nl = 0;
-        elseif ~(a(pos) == char(13))||(a(pos) == char(10))
-            num(aai) = a(pos);
-            aai = aai +1;
-            nl = 0;
-        elseif (a(pos) == char(13))||(a(pos) == char(10))
-            if nl == 0
-                nl = 1;
-                lut(ii,ll) = real(str2double(num));
-                ii = ii + 1;
-                ll=1;
-                num = '                                       ';
-                aai =1;
-            end
-        end
-    end
-end
-
-function Zi = codegen_interp2(X,Y,Z,xi,yi)
-%#codegen
-% zi = codegen_interp2(X,Y,Z,xi,yi) gives the same result as
-% interp2(X,Y,Z,xi,yi)
-% Unlike interp2, codegen_interp2 is compatible with code generation
-% Only linear interpolation is available
-
-% Usage restrictions
-%   X and Y must have the same size as Z
-%   e.g.,  [X,Y] = meshgrid(x,y);
-% keyboard
-X = X*1.0001;
-Y = Y*1.0001;
-Z = Z*1.0001;
-xi = xi*1.0001;
-yi = yi*1.0001;
-ndx = 1/(X(1,2)-X(1,1));        ndy = 1/(Y(2,1)-Y(1,1));
-
-idyi=(xi - X(1,1))*ndx+1;       idxi=(yi - Y(1,1))*ndy+1;
-
-if idxi/ceil(idxi)~=1&&idyi/ceil(idyi)~=1
-    if any(any(isnan(Z)))
-        error('nancrash')
-    end
-    Z1=Z(ceil(idxi)-1,ceil(idyi)-1);
-    Z2=Z(ceil(idxi)-1,ceil(idyi));
-    Z3=Z(ceil(idxi),ceil(idyi)-1);
-    Z4=Z(ceil(idxi),ceil(idyi));
-    
-    Zi= Z1*(ceil(idxi)-idxi)*(ceil(idyi)-idyi)+...
-        Z2*(ceil(idxi)-idxi)*(1-(ceil(idyi)-idyi))+...
-        Z3*(1-(ceil(idxi)-idxi))*(ceil(idyi)-idyi)+...
-        Z4*(1-(ceil(idxi)-idxi))*(1-(ceil(idyi)-idyi));
-    
-elseif idxi/ceil(idxi)~=1&&idyi/ceil(idyi)==1
-    Z1=Z(ceil(idxi)-1,idyi);
-    Z2=Z(ceil(idxi),idyi);
-    
-    Zi=Z1*(ceil(idxi)-idxi)+Z2*(1-(ceil(idxi)-idxi));
-    
-elseif idxi/ceil(idxi)==1&&idyi/ceil(idyi)~=1    
-    Z1=Z(idxi,ceil(idyi)-1);
-    Z2=Z(idxi,ceil(idyi));
-    
-    Zi=Z1*(ceil(idyi)-idyi)+Z2*(1-(ceil(idyi)-idyi));
-else
-    Zi=Z(idxi,idyi);    
-end
-    
 end

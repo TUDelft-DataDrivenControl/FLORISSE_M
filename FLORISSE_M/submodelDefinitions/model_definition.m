@@ -20,48 +20,13 @@ classdef model_definition
             %   Detailed explanation goes here
             
             % Make an empty modelData struct
-            % obj.modelData = struct('ad', [], ...
-            %                        'bd', [], ...
-            %                        'at', [], ...
-            %                        'bt', [], ...
-            %                        'KdY', [], ...
-            %                        'useWakeAngle', [], ...
-            %                        'kd', [], ...
-            %                        'alpha', [], ...
-            %                        'beta', [], ...
-            %                        'veer', [], ...
-            %                        'TIthresholdMult', [], ...
-            %                        'TIa', [], ...
-            %                        'TIb', [], ...
-            %                        'TIc', [], ...
-            %                        'TId', [], ...
-            %                        'ka', [], ...
-            %                        'kb', []);
-obj.modelData = struct(...
-'ad', -4.5/126.4, ...          % lateral wake displacement bias parameter (a*Drotor + bx)
-'bd', -0.01, ...               % lateral wake displacement bias parameter (a*Drotor + bx)
-'at', 0.0, ...                 % vertical wake displacement bias parameter (a*Drotor + bx)
-'bt', 0.0, ...                 % vertical wake displacement bias parameter (a*Drotor + bx)
-'KdY', 0.17, ...               % Wake deflection recovery factor
-'useWakeAngle', true, ...      % define initial wake displacement and angle (not determined by yaw angle)
-'kd', deg2rad(1.5), ...        % initialWakeAngle in X-Y plane
-'alpha', 2.32, ...             % near wake parameter
-'beta',  .154, ...             % near wake parameter
-'veer',  0, ...                % veer of atmosphere
-'TIthresholdMult', 30, ...     % threshold distance of turbines to include in \"added turbulence\"
-'TIa', .73, ...                % magnitude of turbulence added
-'TIb', .8325, ...              % contribution of turbine operation
-'TIc', .0325, ...              % contribution of ambient turbulence intensity
-'TId', -.32, ...               % contribution of downstream distance from turbine
-'ka', .3837, ...               % wake expansion parameter (ka*TI + kb)
-'kb',  .0037);                 % wake expansion parameter (ka*TI + kb)
-
-%             obj.modelData = linear_wake_deflection(obj.modelData);
+            obj.modelData = struct();
             % Put the relevant deflection parameters into the modelData
             % struct and store a function handle to the chosen model
+            obj.modelData = linear_wake_deflection(obj.modelData);
             switch deflectionModel
                 case 'jimenez'
-%                     obj.modelData = jimenez_params(obj.modelData);
+                    obj.modelData = jimenez_params(obj.modelData);
                     obj.deflectionModel = @jimenez_deflection;
                 case 'rans'
                     obj.modelData = self_similar_gaussian_rans_params(obj.modelData);
@@ -82,7 +47,7 @@ obj.modelData = struct(...
                 case 'larsen'
                     obj.velocityDeficitModel = @larsen_velocity;
                 case 'selfSimilar'
-%                     obj.modelData = self_similar_gaussian_rans_params(obj.modelData);
+                    obj.modelData = self_similar_gaussian_rans_params(obj.modelData);
                     obj.velocityDeficitModel = @self_similar_gaussian_velocity;
                 otherwise
                     error('Velocity model with name: "%s" is not defined', velocityDeficitModel);
@@ -99,7 +64,7 @@ obj.modelData = struct(...
             % Store a function handle to the added turbulence model
             switch addedTurbulenceModel
                 case 'crespoHernandez'
-%                     obj.modelData = crespo_hernandez_params(obj.modelData);
+                    obj.modelData = crespo_hernandez_params(obj.modelData);
                     obj.addedTurbulenceModel = @crespo_hernandez;
                 otherwise
                     error('Added turbulence model with name: "%s" is not defined', addedTurbulenceModel);

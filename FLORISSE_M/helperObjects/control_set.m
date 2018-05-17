@@ -73,11 +73,10 @@ classdef control_set < handle
             % The turbinetypes are handle objects and due to this they do
             % not have to be returned to the layout to be changed, they can
             % simply be set to the correct controlType
-%             keyboard
-%             for turbine = 1:length(obj.layout.uniqueTurbineTypes)
-%                 turbine{1}.controlMethod = controlMethod;
-%             end
-            obj.layout.uniqueTurbineTypes{1}.controlMethod = controlMethod;
+            for turbine = obj.layout.uniqueTurbineTypes
+                turbine.controlMethod = controlMethod;
+            end
+            
             switch controlMethod
                 case {'pitch'}
                     obj.pitchAngles_     = zeros(1,obj.layout.nTurbs);    % Blade pitch angles, by default set to greedy
