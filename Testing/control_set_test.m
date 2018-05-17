@@ -1,12 +1,12 @@
 classdef control_set_test < matlab.unittest.TestCase
     %INSPECTLAYOUTSTEST Summary of this class goes here
     %   Detailed explanation goes here
-    
-    methods(Test)
-        function testControlSet(testCase)
-            %testGeneric6Turb Test some attributes of a 6 turb layout
-            %   Test if there is only one unique turbine type and test that
-            %   there are 6 turbines in the layout
+    properties
+        controlSet
+    end
+    methods(TestMethodSetup)
+        function setFolders(testCase)
+            % Add the relevant folders to the current path
             import matlab.unittest.fixtures.PathFixture
             
             testCase.applyFixture(PathFixture('../FLORISSE_M/layoutDefinitions'));
@@ -25,9 +25,29 @@ classdef control_set_test < matlab.unittest.TestCase
                                                           'TI0', .01);
 
             % Make a controlObject for this layout
-            controlSet = control_set(clwindcon9Turb, 'axialInduction');
+            testCase.controlSet = control_set(clwindcon9Turb, 'axialInduction');
+        end
+    end
+    methods(Test)
+        function set_invalid_yaw_angle(testCase)
+            %testGeneric6Turb Test some attributes of a 6 turb layout
+            %   Test if there is only one unique turbine type and test that
+            %   there are 6 turbines in the layout
+            
             % Check that yaw and tilt angles throw errors when setting
-            % invalid values (deg2rad)
+            function set_yaw_angle_wrong(); testCase.controlSet.yawAngles(6) = 10; end
+            testCase.assertError(@set_yaw_angle_wrong, 'check_angles_in_rad:valueError')
+            function set_yaw_angle_correct(); testCase.controlSet.yawAngles(6) = deg2rad(10); end
+            testCase.assertWarningFree(@set_yaw_angle_correct)
+        end
+        function set_value_invalid_turbine(testCase)
+            %testGeneric6Turb Test some attributes of a 6 turb layout
+            %   Test if there is only one unique turbine type and test that
+            %   there are 6 turbines in the layout
+
+            % Check that yaw and tilt angles throw errors when setting
+            function set_yaw_angle_turb_10(); testCase.controlSet.yawAngles(10) = deg2rad(5); end
+            testCase.assertError(@set_yaw_angle_turb_10, 'check_doubles_array:valueError')
         end
     end
 end

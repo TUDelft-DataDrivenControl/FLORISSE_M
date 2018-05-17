@@ -167,14 +167,14 @@ classdef control_set < handle
             % CheckDoublesArray is a function that checks if an array with
             % control settings is of the right length and type
             if ~isa(x, 'double') || ~all(size(x)==[obj.layout.nTurbs, 1])
-                error('value must be a column vector of doubles with length %d', reqLength);
+                error('check_doubles_array:valueError', 'value must be a column vector of doubles with length %d', obj.layout.nTurbs);
             end
         end
         function check_angles_in_rad(obj, x)
             % CheckDoublesArray is a function that checks if an array with
             % control settings is of the right length and type
             if any(x<-pi/2) || any(x>pi/2)
-                error('angle values must be specified in radians and face into the wind, angle>pi/2 || angle<pi/2');
+                error('check_angles_in_rad:valueError', 'angle values must be specified in radians and face into the wind, angle>pi/2 || angle<pi/2');
             end
         end
     end

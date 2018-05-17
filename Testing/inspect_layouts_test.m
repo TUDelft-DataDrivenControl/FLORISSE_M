@@ -17,7 +17,7 @@ classdef inspect_layouts_test < matlab.unittest.TestCase
             % Check if the uniqueTurbineTypes function works as expected
             testCase.assertLength(generic6Turb.uniqueTurbineTypes, 1);
             % Check if there are 6 turbines as expected
-            testCase.assertLength(generic6Turb.turbines, 6);
+            testCase.assertEqual(generic6Turb.nTurbs, 6);
         end
     end
 end
