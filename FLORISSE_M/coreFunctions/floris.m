@@ -127,12 +127,14 @@ classdef floris < handle
         
         function compute_result(obj, ~, turbNum)
             %COMPUTE_RESULT Compute CP, CT and power of turbine turbNum
-            %   Detailed explanation goes here
+            %   Compute CP, CT and power of turbine turbNum and create its wake
+            
+            % Use the turbine type to compute the operational parameters of the turbine
             obj.turbineResults(turbNum) = obj.layout.turbines(turbNum).turbineType.cPcTpower(...
                                                 obj.turbineConditions(turbNum), ...
                                                 obj.controlSet.turbineControls(turbNum), ...
                                                 obj.turbineResults(turbNum));
-            % Create the wake for this turbine
+            % Create the wake for this turbine according to the specified model
             obj.turbineResults(turbNum).wake = obj.model.create_wake(...
                                                 obj.layout.turbines(turbNum), ...
                                                 obj.turbineConditions(turbNum), ...
@@ -142,12 +144,19 @@ classdef floris < handle
         
         function find_affected_by(obj, turbIndex, turbNumUw)
             %FIND_AFFECTED_BY Check which downwind turbines are affected by this turbine
-            %   Detailed explanation goes here
+            %   This function uses the wake of this turbine to check if any
+            %   donwind turbines re affected by its operation. At first
+            %   glance all turbines outside of 1200m wide downwind band are
+            %   discarded. The remaining turbines go through a calculation
+            %   to see if the wake affects them. The outline of a downwind
+            %   turbine is discretized in 6.28/.05 =approx 125 points. If
+            %   any of these points are inside the wake the turbine is said
+            %   to have been affected.
             
             locationUw = obj.layout.locWf(turbNumUw, :);
             % Only look at turbines that lie within a 1200m wide downwind band
             indexList = turbIndex+1:obj.layout.nTurbs;
-            possibleIndexes = indexList(obj.layout.locWf(indexList, 2)<900);
+            possibleIndexes = indexList(obj.layout.locWf(indexList, 2)<600);
             % Loop through the possible indexes and see if this turbine affects the downwind turbine
             for turbNumDw = obj.layout.idWf(possibleIndexes).'
                 locationDw = obj.layout.locWf(turbNumDw, :);
