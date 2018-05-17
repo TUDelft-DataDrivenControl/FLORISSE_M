@@ -114,10 +114,17 @@ classdef floris<handle
         
         
         %% FLORIS control optimization
-        function [] = optimize(self,optimizeYaw,optimizeAxInd)
+        function [] = optimize(self,optimizeYaw,optimizeAxInd,optimizeTurbines)
             % This function will optimize the turbine yaw angles and/or the
             % turbine axial induction factors (blade pitch angles) to
             % maximize the power output of the wind farm. 
+            % If only a subset of turbine shall be optimized,
+            % the (optional) vector 'optimizeTurbines' should contain the
+            % numbers/IDs of the turbines to be optimized.
+            
+            if nargin==3 % 'optimizeTurbines' not specified, optimize all turbines
+                optimizeTurbines=1:self.inputData.nTurbs;
+            end
             
             inputData = self.inputData;
             disp(['Performing optimization: optimizeYaw = ' num2str(optimizeYaw) ', optimizeAxInd: ' num2str(optimizeAxInd) '.']);
@@ -125,15 +132,15 @@ classdef floris<handle
             % Define initial guess x0, lower bounds lb, and upper bounds ub
             x0 = []; lb = []; ub = [];
             if optimizeYaw  
-                x0 = [x0, inputData.yawAngles];
-                lb = [lb, deg2rad(-25)*ones(inputData.nTurbs,1)];
-                ub = [ub, deg2rad(+25)*ones(inputData.nTurbs,1)];
+                x0 = [x0, inputData.yawAngles(optimizeTurbines)];
+                lb = [lb, deg2rad(-25)*ones(length(optimizeTurbines),1)];
+                ub = [ub, deg2rad(+25)*ones(length(optimizeTurbines),1)];
             end
             if optimizeAxInd
                 if inputData.axialControlMethod == 0
-                    x0 = [x0, inputData.pitchAngles];  
-                    lb = [lb, deg2rad(0.0)*ones(inputData.nTurbs,1)];
-                    ub = [ub, deg2rad(5.0)*ones(inputData.nTurbs,1)];
+                    x0 = [x0, inputData.pitchAngles(optimizeTurbines)];  
+                    lb = [lb, deg2rad(0.0)*ones(length(optimizeTurbines),1)];
+                    ub = [ub, deg2rad(5.0)*ones(length(optimizeTurbines),1)];
                 elseif inputData.axialControlMethod == 1
                     disp(['Cannot optimize axialInd for axialControlMethod == 1.']);
                     if optimizeYaw == false
@@ -144,25 +151,27 @@ classdef floris<handle
                         optimizeAxInd = false;
                     end
                 elseif inputData.axialControlMethod == 2
-                    x0 = [x0, inputData.axialInd];     
-                    lb = [lb, 0.0*ones(inputData.nTurbs,1)];
-                    ub = [ub, 1/3*ones(inputData.nTurbs,1)];
+                    x0 = [x0, inputData.axialInd(optimizeTurbines)];     
+                    lb = [lb, 0.0*ones(length(optimizeTurbines),1)];
+                    ub = [ub, 1/3*ones(length(optimizeTurbines),1)];
                 end
             end
             
             % Cost function that is to be optimized. Basically, J = -sum(P).
-            function J = costFunction(x,inputData,optimizeYaw,optimizeAxInd)
+            function J = costFunction(x,inputData,optimizeYaw,optimizeAxInd,optimizeTurbines)
                 % 'x' contains the to-be-optimized control variables. This
                 % can be yaw angles, blade pitch angles, or both. Hence,
                 % depending on these choices, we have to first extract the
                 % yaw angles and/or blade pitch angles back from x, before
                 % we trial them in a FLORIS simulation. That is what we do next:
-                if optimizeYaw; inputData.yawAngles = x(1:inputData.nTurbs); end
+                if optimizeYaw
+                    inputData.yawAngles(optimizeTurbines) = x(1:length(optimizeTurbines));
+                end
                 if optimizeAxInd
                     if inputData.axialControlMethod == 0
-                        inputData.pitchAngles = x(end-inputData.nTurbs+1:end);
+                        inputData.pitchAngles(optimizeTurbines) = x(end-length(optimizeTurbines)+1:end);
                     elseif inputData.axialControlMethod == 2
-                        inputData.axialInd    = x(end-inputData.nTurbs+1:end); 
+                        inputData.axialInd(optimizeTurbines)    = x(end-length(optimizeTurbines)+1:end); 
                     end
                 end
 
@@ -171,7 +180,7 @@ classdef floris<handle
                 J            = -sum(outputData.power);
             end
             
-            cost = @(x)costFunction(x,self.inputData,optimizeYaw,optimizeAxInd);
+            cost = @(x)costFunction(x,self.inputData,optimizeYaw,optimizeAxInd,optimizeTurbines);
               
             % Optimizer settings and optimization execution
             %options = optimset('Display','final','MaxFunEvals',1000 ); % Display nothing
@@ -184,25 +193,25 @@ classdef floris<handle
             %xopt    = simulannealbnd(cost,self.inputData.axialInd,lb,ub,options);
             
             % Display improvements
-            P_bl  = -costFunction(x0,  inputData,optimizeYaw,optimizeAxInd); % Calculate baseline power
-            P_opt = -costFunction(xopt,inputData,optimizeYaw,optimizeAxInd); % Calculate optimal power
+            P_bl  = -costFunction(x0,  inputData,optimizeYaw,optimizeAxInd,optimizeTurbines); % Calculate baseline power
+            P_opt = -costFunction(xopt,inputData,optimizeYaw,optimizeAxInd,optimizeTurbines); % Calculate optimal power
             disp(['Initial power: ' num2str(P_bl/10^6) ' MW']);
             disp(['Optimized power: ' num2str(P_opt/10^6) ' MW']);
             disp(['Relative increase: ' num2str((P_opt/P_bl-1)*100) '%.']);
             
             % Overwrite current settings with optimized oness
             if P_opt > P_bl
-                if optimizeYaw; self.inputData.yawAngles = xopt(1:inputData.nTurbs); end
+                if optimizeYaw; self.inputData.yawAngles(optimizeTurbines) = xopt(1:length(optimizeTurbines)); end
                 if optimizeAxInd
                     if inputData.axialControlMethod == 0
-                        self.inputData.pitchAngles = xopt(end-inputData.nTurbs+1:end); 
-                        self.inputData.axialInd    = NaN*ones(1,inputData.nTurbs);
+                        self.inputData.pitchAngles(optimizeTurbines) = xopt(end-length(optimizeTurbines)+1:end); 
+                        self.inputData.axialInd(optimizeTurbines)    = NaN*ones(1,length(optimizeTurbines));
                         % The implicit values for axialInd calculated from
                         % blade pitch angles can be found in outputData,
                         % under the 'turbine.axialInd' substructure.
                     elseif inputData.axialControlMethod == 2
-                        self.inputData.pitchAngles = NaN*ones(1,inputData.nTurbs);
-                        self.inputData.axialInd    = xopt(end-inputData.nTurbs+1:end); 
+                        self.inputData.pitchAngles(optimizeTurbines) = NaN*ones(1,length(optimizeTurbines));
+                        self.inputData.axialInd(optimizeTurbines)    = xopt(end-length(optimizeTurbines)+1:end); 
                     end
                 end
             else

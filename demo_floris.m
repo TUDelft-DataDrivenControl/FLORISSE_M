@@ -33,3 +33,11 @@ FLORIS_opt.inputData.yawAngles = zeros(1,9);  % Set all turbines in baseline cas
 FLORIS_opt.inputData.bladePitch = zeros(1,9); % Set all turbines in baseline case to greedy 
 FLORIS_opt.optimize(true,true);               % Optimization for yaw angles and axial induction
 FLORIS_opt.visualize(0,1,0,'IF');             % Generate a 2D visualization only (by default: inertial frame)
+
+%% Optimize both yaw angles and blade pitch angles on the first three turbines
+disp('Performing combined (yaw & blade pitch) optimization ...');
+FLORIS_opt = floris();  % Initialize FLORIS class with default configuration
+FLORIS_opt.inputData.yawAngles = zeros(1,9);  % Set all turbines in baseline case to greedy
+FLORIS_opt.inputData.bladePitch = zeros(1,9); % Set all turbines in baseline case to greedy 
+FLORIS_opt.optimize(true,true, [1 2 3]);       % Optimization for yaw angles and axial induction
+FLORIS_opt.visualize(0,1,0,'IF');             % Generate a 2D visualization only (by default: inertial frame)
