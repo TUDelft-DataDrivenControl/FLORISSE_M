@@ -38,11 +38,8 @@ classdef floris < handle
         function run(obj)
             %RUN Iterate through the turbines and compute the flow and powers
             %   Detailed explanation goes here
-%             keyboard
             for turbIndex = 1:obj.layout.nTurbs
                 turbNum = obj.layout.idWf(turbIndex);
-%                 sprintf('index %d is turbine %d', turbIndex,  turbNum)
-%                 keyboard
                 % Compute the conditions at the rotor of this turbine
                 obj.compute_condition(turbIndex, turbNum);
                 % Compute CP, CT and power of this turbine
@@ -99,13 +96,12 @@ classdef floris < handle
                 
                 
 %                 [PHI,Rmesh] = meshgrid([0:.1:2*pi 2*pi],0:rotRadius);
-%                 figure;surf(Rmesh.*cos(PHI), Rmesh.*sin(PHI), polarfun(PHI,Rmesh)./Rmesh);
+%                 figure;surf(Rmesh.*cos(PHI), Rmesh.*sin(PHI), polarfun(PHI,Rmesh)./Rmesh,'edgeAlpha',0);
 %                 title(1-Q/obj.layout.turbines(turbNumDw).turbineType.rotorArea); daspect([1 1 .001]);
 %                 
 %                 [y,z] = meshgrid(-100:100,-89:100);
-%                 wakeV = obj.turbineResults(turbNumAffector).wake.deficit(deltax*5,dY_wc(y),dZ_wc(z));
-%                 figure;surf(y, z, wakeV);
-%                 figure;surf(y, z, 1.1*mask(dY_wc(y),dZ_wc(z)));
+%                 wakeV = obj.turbineResults(turbNumAffector).wake.deficit(deltax,dY_wc(y),dZ_wc(z));
+%                 figure;surf(y, z, wakeV,'edgeAlpha',0);
 %                 keyboard
 
                 % Calculate turbine-added turbulence at location deltax

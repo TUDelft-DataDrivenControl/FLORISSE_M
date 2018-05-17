@@ -9,7 +9,7 @@ classdef control_set_test < matlab.unittest.TestCase
             %   there are 6 turbines in the layout
             import matlab.unittest.fixtures.PathFixture
             
-            testCase.applyFixture(PathFixture('../FLORISSE_M/LayoutDefinitions'));
+            testCase.applyFixture(PathFixture('../FLORISSE_M/layoutDefinitions'));
             testCase.applyFixture(PathFixture('../FLORISSE_M/helperObjects'));
             testCase.applyFixture(PathFixture('../FLORISSE_M/turbineDefinitions',...
                                               'IncludeSubfolders',true));

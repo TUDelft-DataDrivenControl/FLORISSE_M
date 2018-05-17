@@ -28,7 +28,6 @@ classdef jensen_gaussian_velocity < velocity_interface
             obj.sd = 2;   % Number of std. devs to which the gaussian wake extends
             obj.P_normcdf_lb = 0.022750131948179; % This is the evaluation of normcdf(-sd,0,1) for sd = 2
             obj.P_normcdf_ub = 0.977249868051821; % This is the evaluation of normcdf(+sd,0,1) for sd = 2
-
         end
         
         function Vdeficit = deficit(obj, x, y, z)
@@ -40,10 +39,12 @@ classdef jensen_gaussian_velocity < velocity_interface
             % Wake intensity reduction factor according to Jensen
             cJens = (obj.wakeRadiusInit./rJens).^2;
             varWake = rJens.*obj.gv;
+            % to avoid dependencies on the Statistics Toolbox
+            floris_normpdf = (1/(varWake*sqrt(2*pi)))*exp(-(hypot(y,z)).^2/(2*varWake.^2));
+            
             % cFull is the wake intensity reduction factor
-            % cFull = @(x,r) (pi*rJens(x).^2).*(normpdf(r,0,varWake(x))./((normcdf(sd,0,1)-normcdf(-sd,0,1))*varWake(x)*sqrt(2*pi))).*cJens(x);
+            % cFull = (pi*rJens(x).^2).*(normpdf(r,0,varWake(x))./((normcdf(sd,0,1)-normcdf(-sd,0,1))*varWake(x)*sqrt(2*pi))).*cJens(x);
             % The above function is the true equation. The lower one is evaluated for std = 2,  to avoid dependencies on the Statistics Toolbox.
-            floris_normpdf = (1/(varWake*sqrt(2*pi)))*exp(-(hypot(y,z)).^2/(2*varWake.^2)); % to avoid dependencies on the Statistics Toolbox
             cFull = (pi*rJens.^2).*(floris_normpdf./((obj.P_normcdf_ub-obj.P_normcdf_lb)*varWake*sqrt(2*pi))).*cJens;
 
             % wake.V is an analytical function for flow speed [m/s] in a single wake

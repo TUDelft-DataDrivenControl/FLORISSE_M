@@ -38,12 +38,17 @@ classdef model_definition
             % Put the relevant velocity deficit parameters into the modelData
             % struct and store a function handle to the chosen model
             switch velocityDeficitModel
-                case 'Jensen'
+                case 'jensenGauss'
                     obj.modelData = jensen_params(obj.modelData);
                     obj.velocityDeficitModel = @jensen_gaussian_velocity;
-                case 'zonedVelocity'
+                case 'zones'
                     obj.modelData = zoned_params(obj.modelData);
                     obj.velocityDeficitModel = @zoned_velocity;
+                case 'larsen'
+                    obj.velocityDeficitModel = @larsen_velocity;
+                case 'selfSimilar'
+                    obj.modelData = self_similar_gaussian_rans_params(obj.modelData);
+                    obj.velocityDeficitModel = @self_similar_gaussian_velocity;
                 otherwise
                     error('Velocity model with name: "%s" is not defined', velocityDeficitModel);
             end
