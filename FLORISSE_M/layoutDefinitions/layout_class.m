@@ -5,6 +5,7 @@ classdef layout_class < handle
     properties
         turbines
         ambientInflow
+        uniqueTurbineTypes
     end
     properties (SetAccess = immutable)
         description
@@ -15,13 +16,14 @@ classdef layout_class < handle
         locIf
         idWf
         locWf
-        uniqueTurbineTypes
+%         uniqueTurbineTypes
     end
     
     methods
-        function obj = layout_class(turbines, description)
+        function obj = layout_class(turbines, description, uniqueTurbineTypes)
             obj.turbines = turbines;
             obj.description = description;
+            obj.uniqueTurbineTypes = uniqueTurbineTypes;
         end
         
         function nTurbs = get.nTurbs(obj)
@@ -52,10 +54,10 @@ classdef layout_class < handle
             [~, idArray] = sort(obj.locWf(:, 1));
         end
         
-        function turbineTypes = get.uniqueTurbineTypes(obj)
-            %get.uniqueTurbineTypes Gets the unique turbines used in a layout
-            turbineTypes = unique([obj.turbines.turbineType]);
-        end
+%         function turbineTypes = get.uniqueTurbineTypes(obj)
+%             %get.uniqueTurbineTypes Gets the unique turbines used in a layout
+%             turbineTypes = unique([obj.turbines.turbineType]);
+%         end
     end
 end
 

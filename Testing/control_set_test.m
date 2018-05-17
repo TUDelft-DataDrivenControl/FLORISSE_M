@@ -9,6 +9,7 @@ classdef control_set_test < matlab.unittest.TestCase
             % Add the relevant folders to the current path
             import matlab.unittest.fixtures.PathFixture
             
+            testCase.applyFixture(PathFixture('../FLORISSE_M/coreFunctions'));
             testCase.applyFixture(PathFixture('../FLORISSE_M/layoutDefinitions'));
             testCase.applyFixture(PathFixture('../FLORISSE_M/helperObjects'));
             testCase.applyFixture(PathFixture('../FLORISSE_M/turbineDefinitions',...
@@ -48,6 +49,26 @@ classdef control_set_test < matlab.unittest.TestCase
             % Check that yaw and tilt angles throw errors when setting
             function set_yaw_angle_turb_10(); testCase.controlSet.yawAngles(10) = deg2rad(5); end
             testCase.assertError(@set_yaw_angle_turb_10, 'check_doubles_array:valueError')
+        end
+        function test_control_struct(testCase)
+            %testGeneric6Turb Test some attributes of a 6 turb layout
+            %   Test if there is only one unique turbine type and test that
+            %   there are 6 turbines in the layout
+
+            % The turbineControls struct should automatically mirror the
+            % values set in the arrays holding control settings
+            i = 5;
+            testCase.controlSet.yawAngles(i) = deg2rad(5);
+            testCase.assertEqual(testCase.controlSet.turbineControls(i).yawAngle, deg2rad(5))
+            
+            testCase.controlSet.tiltAngles(i) = deg2rad(15);
+            testCase.assertEqual(testCase.controlSet.turbineControls(i).tiltAngle, deg2rad(15))
+            
+            testCase.controlSet.pitchAngles(i) = .1;
+            testCase.assertEqual(testCase.controlSet.turbineControls(i).pitchAngle, .1)
+            
+            testCase.controlSet.axialInductions(i) = .3;
+            testCase.assertEqual(testCase.controlSet.turbineControls(i).axialInduction, .3)
         end
     end
 end

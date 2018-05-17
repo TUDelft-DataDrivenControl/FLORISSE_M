@@ -21,17 +21,17 @@ classdef floris < handle
             obj.layout = layout;
             obj.controlSet = controlSet;
             obj.model = model;
-            turbineCondition = struct('avgWS', {[]}, ...
-                                      'TI',    {[]}, ...
-                                      'rho',   {[]});
+            turbineCondition = struct('avgWS', {[0]}, ...
+                                      'TI',    {[0]}, ...
+                                      'rho',   {[0]});
             obj.turbineConditions = repmat(turbineCondition, obj.layout.nTurbs, 1);
             % The turbineResults property wil hold a struct array with one struct per turbine.
-            turbineResult = struct('affectedBy',    {[]}, ...
-                                   'cp',            {[]}, ...
-                                   'ct',            {[]}, ...
-                                   'axialInduction',{[]}, ...
-                                   'wake',          {[]}, ...
-                                   'power',         {[]});
+            turbineResult = struct('affectedBy',    {[0, 0, 0, 0]}, ...
+                                   'cp',            {[0]}, ...
+                                   'ct',            {[0]}, ...
+                                   'axialInduction',{[0]}, ...
+                                   'wake',          {[0]}, ...
+                                   'power',         {[0]});
             obj.turbineResults = repmat(turbineResult, obj.layout.nTurbs, 1);
         end
         
@@ -71,7 +71,8 @@ classdef floris < handle
                 % Compute predicted deficit by turbNumAffector
                 locationUw = obj.layout.locWf(turbNumAffector, :);
                 deltax = locationDw(1)-locationUw(1);
-                [dy, dz] = obj.turbineResults(turbNumAffector).wake.deflection(deltax);
+                res=obj.turbineResults(turbNumAffector)
+                [dy, dz] = res.wake.deflection(deltax);
                 rotRadius = obj.layout.turbines(turbNumDw).turbineType.rotorRadius;
 
                 dY_wc = @(y) y+locationDw(2)-locationUw(2)-dy;
@@ -113,14 +114,14 @@ classdef floris < handle
             
             obj.turbineConditions(turbNumDw).avgWS = Uhh-sqrt(sumKed);
             obj.turbineConditions(turbNumDw).TI = norm(TiVec);
-            if imag(obj.turbineConditions(turbNumDw).avgWS)>0
-                keyboard
+%             if imag(obj.turbineConditions(turbNumDw).avgWS)>0
+%                 keyboard
                 % If you end up here, please check the turbine spacing. Are any
                 % turbines located in the near wake of another one? Is the
                 % windspeed abnormally high or low? Have you made any changes
                 % to C_T? Somewhere, the wind speed at a rotor plane is smaller
                 % than 0, prompting this error.
-            end
+%             end
             obj.turbineConditions(turbNumDw).rho = obj.layout.ambientInflow.rho;
             % Combine all the added turbulence model using the 2-norm
         end

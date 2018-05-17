@@ -21,4 +21,3 @@ classdef inspect_layouts_test < matlab.unittest.TestCase
         end
     end
 end
-

@@ -46,8 +46,8 @@ classdef control_set < handle
             % struct that will hold all relevant control settings for each
             % turbine
             obj.layout = layout;
-            obj.yawAngles_ = zeros(obj.layout.nTurbs, 1);
-            obj.tiltAngles_ = zeros(obj.layout.nTurbs, 1);
+            obj.yawAngles_ = zeros(1, obj.layout.nTurbs);
+            obj.tiltAngles_ = zeros(1, obj.layout.nTurbs);
             % initStruct is the struct that is send to the CP/CT function of a turbine
             controlStruct = struct('yawAngle',        {0} , ...
                                    'tiltAngle',       {0} , ...
@@ -73,9 +73,11 @@ classdef control_set < handle
             % The turbinetypes are handle objects and due to this they do
             % not have to be returned to the layout to be changed, they can
             % simply be set to the correct controlType
-            for turbine = obj.layout.uniqueTurbineTypes
-                turbine.controlMethod = controlMethod;
-            end
+%             keyboard
+%             for turbine = 1:length(obj.layout.uniqueTurbineTypes)
+%                 turbine{1}.controlMethod = controlMethod;
+%             end
+            obj.layout.uniqueTurbineTypes{1}.controlMethod = controlMethod;
             switch controlMethod
                 case {'pitch'}
                     obj.pitchAngles_     = zeros(1,obj.layout.nTurbs);    % Blade pitch angles, by default set to greedy
@@ -164,15 +166,16 @@ classdef control_set < handle
         end
         
         function check_doubles_array(obj, x)
-            % CheckDoublesArray is a function that checks if an array with
+            % check_doubles_array is a function that checks if an array with
             % control settings is of the right length and type
-            if ~isa(x, 'double') || ~all(size(x)==[obj.layout.nTurbs, 1])
+            if ~isa(x, 'double') || ~all(size(x)==[1, obj.layout.nTurbs])
                 error('check_doubles_array:valueError', 'value must be a column vector of doubles with length %d', obj.layout.nTurbs);
             end
         end
         function check_angles_in_rad(obj, x)
-            % CheckDoublesArray is a function that checks if an array with
-            % control settings is of the right length and type
+            % check_angles_in_rad is a function that checks if an array with
+            % control settings only holds values in between -90 and +90
+            % degrees in rad
             if any(x<-pi/2) || any(x>pi/2)
                 error('check_angles_in_rad:valueError', 'angle values must be specified in radians and face into the wind, angle>pi/2 || angle<pi/2');
             end
