@@ -9,7 +9,8 @@ classdef control_set_test < matlab.unittest.TestCase
             % Add the relevant folders to the current path
             import matlab.unittest.fixtures.PathFixture
             
-            testCase.applyFixture(PathFixture('../FLORISSE_M/coreFunctions'));
+            testCase.applyFixture(PathFixture('../FLORISSE_M/coreFunctions',...
+                                              'IncludeSubfolders',true));
             testCase.applyFixture(PathFixture('../FLORISSE_M/layoutDefinitions'));
             testCase.applyFixture(PathFixture('../FLORISSE_M/helperObjects'));
             testCase.applyFixture(PathFixture('../FLORISSE_M/turbineDefinitions',...
