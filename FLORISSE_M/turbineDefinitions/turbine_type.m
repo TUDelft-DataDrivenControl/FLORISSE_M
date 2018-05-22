@@ -119,7 +119,9 @@ classdef turbine_type < handle
             % Correct Cp and Ct for rotor misallignment
             turbineResult.ct = turbineResult.ct * cos(turbineControl.thrustAngle)^2;
             turbineResult.cp = turbineResult.cp * cos(turbineControl.thrustAngle)^obj.pP;
-            
+            if isnan(turbineResult.ct) || isnan(turbineResult.cp)
+                error('cPcTpower:valueError', 'CT or CP is nan. This means that the windspeed (or pitchangle) dropped below the values listed in the lookup table of this turbine. Currently FLORIS does not support the below rated region.');
+            end
             turbineResult.power = (0.5*condition.rho*obj.rotorArea*turbineResult.cp)*(condition.avgWS^3.0)*obj.genEfficiency;
         end
     end

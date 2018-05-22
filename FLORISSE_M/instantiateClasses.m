@@ -7,12 +7,12 @@
 % layout = clwindcon_9_turb;
 layout = generic_6_turb;
 
-% Use the heigth us the first turbine type as reference heigth for theinflow profile
+% Use the heigth from the first turbine type as reference heigth for theinflow profile
 refHeigth = layout.uniqueTurbineTypes(1).hubHeight;
 % Define an inflow struct and use it in the layout, clwindcon9Turb
 layout.ambientInflow = ambient_inflow('PowerLawRefSpeed', 8, ...
                                       'PowerLawRefHeight', refHeigth, ...
-                                      'windDirection', pi/2, ...
+                                      'windDirection', 0, ...
                                       'TI0', .01);
 
 % Make a controlObject for this layout
@@ -27,8 +27,15 @@ subModels = model_definition('deflectionModel', 'jimenez',...
                              'wakeCombinationModel', 'quadratic',...
                              'addedTurbulenceModel', 'crespoHernandez');
 florisRunner = floris(layout, controlSet, subModels);
-
+% florisRunner.layout.ambientInflow.windDirection = pi/2;
+tic
 florisRunner.run
-
+toc
+tic
+florisRunner.run
+toc
+tic
+florisRunner.run
+toc
 % outputArg1 = florisRunner.layout.locWf;
 % end

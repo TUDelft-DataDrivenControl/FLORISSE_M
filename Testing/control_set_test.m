@@ -1,5 +1,5 @@
 classdef control_set_test < matlab.unittest.TestCase
-    %INSPECTLAYOUTSTEST Summary of this class goes here
+    %control_set_test Summary of this class goes here
     %   Detailed explanation goes here
     properties
         controlSet

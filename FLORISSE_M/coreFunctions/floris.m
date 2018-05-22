@@ -38,6 +38,10 @@ classdef floris < handle
         function run(obj)
             %RUN Iterate through the turbines and compute the flow and powers
             %   Detailed explanation goes here
+            if ~isempty(obj.turbineConditions(1).avgWS)
+                warning('floris.run has already been triggered, aborting new run')
+                return
+            end
             for turbIndex = 1:obj.layout.nTurbs
                 turbNum = obj.layout.idWf(turbIndex);
                 % Compute the conditions at the rotor of this turbine

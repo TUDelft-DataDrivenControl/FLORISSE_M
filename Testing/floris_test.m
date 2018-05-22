@@ -1,27 +1,48 @@
-classdef floris_test
-    %FLORIS_TEST Summary of this class goes here
+classdef floris_test < matlab.unittest.TestCase
+    %floris_test Summary of this class goes here
     %   Detailed explanation goes here
-    
     properties
-        Property1
+        florisRunner
     end
-    
-    methods
-        function obj = floris_test(inputArg1,inputArg2)
-            %FLORIS_TEST Construct an instance of this class
-            %   Detailed explanation goes here
-            obj.Property1 = inputArg1 + inputArg2;
+    methods(TestMethodSetup)
+        function setFolders(testCase)
+            % Add the relevant folders to the current path
+            import matlab.unittest.fixtures.PathFixture
             
-            % Check if this actually works for each layout
+            testCase.applyFixture(PathFixture('../FLORISSE_M/coreFunctions',...
+                                              'IncludeSubfolders',true));
+            testCase.applyFixture(PathFixture('../FLORISSE_M/layoutDefinitions'));
+            testCase.applyFixture(PathFixture('../FLORISSE_M/helperObjects'));
+            testCase.applyFixture(PathFixture('../FLORISSE_M/turbineDefinitions',...
+                                              'IncludeSubfolders',true));
+            % Instantiate a layout object with 6 identical turbines
+            generic6Turb = generic_6_turb;
+
+            % Use the heigth from the first turbine type as reference heigth for theinflow profile
+            refHeigth = generic6Turb.uniqueTurbineTypes(1).hubHeight;
+            % Define an inflow struct and use it in the layout, clwindcon9Turb
+            generic6Turb.ambientInflow = ambient_inflow('PowerLawRefSpeed', 8, ...
+                                                  'PowerLawRefHeight', refHeigth, ...
+                                                  'windDirection', 0, ...
+                                                  'TI0', .01);
+
+            % Make a controlObject for this layout
+            % controlSet = control_set(layout, 'axialInduction');
+            controlSet = control_set(generic6Turb, 'pitch');
             
-            % Exclude unlikely/impossible
-            % trace rotor outlines of possible turbines
+            % Define subModels
+            subModels = model_definition('deflectionModel', 'jimenez',...
+                                         'velocityDeficitModel', 'selfSimilar',...
+                                         'wakeCombinationModel', 'quadratic',...
+                                         'addedTurbulenceModel', 'crespoHernandez');
+            testCase.florisRunner = floris(generic6Turb, controlSet, subModels);
         end
-        
-        function outputArg = method1(obj,inputArg)
-            %METHOD1 Summary of this method goes here
-            %   Detailed explanation goes here
-            outputArg = obj.Property1 + inputArg;
+    end
+    methods(Test)
+        function set_wind_direction_for_invalid_windspeed(testCase)
+            import matlab.unittest.constraints.IssuesNoWarnings
+            function runner(); testCase.florisRunner.run; end
+            testCase.verifyThat(@runner, IssuesNoWarnings)
         end
     end
 end
