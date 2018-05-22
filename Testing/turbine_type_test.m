@@ -15,6 +15,8 @@ classdef turbine_type_test < matlab.unittest.TestCase
             testCase.applyFixture(PathFixture('../FLORISSE_M/helperObjects'));
             testCase.applyFixture(PathFixture('../FLORISSE_M/turbineDefinitions',...
                                               'IncludeSubfolders',true));
+            testCase.applyFixture(PathFixture('../FLORISSE_M/submodelDefinitions',...
+                                              'IncludeSubfolders',true));
             % Instantiate a layout object with 6 identical turbines
             generic6Turb = generic_6_turb;
 
@@ -48,8 +50,8 @@ classdef turbine_type_test < matlab.unittest.TestCase
             testCase.florisRunner.layout.ambientInflow.windDirection = pi/2;
             
             % Check that yaw and tilt angles throw errors when setting
-            function set_yaw_angle_wrong(); testCase.florisRunner.run; end
-            testCase.assertError(@set_yaw_angle_wrong, 'cPcTpower:valueError')
+            function runner(); testCase.florisRunner.run; end
+            testCase.assertError(@runner, 'cPcTpower:valueError')
 %             function set_yaw_angle_correct(); testCase.controlSet.yawAngles(6) = deg2rad(10); end
 %             testCase.assertWarningFree(@set_yaw_angle_correct)
         end

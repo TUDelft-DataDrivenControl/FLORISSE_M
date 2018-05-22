@@ -15,6 +15,8 @@ classdef floris_test < matlab.unittest.TestCase
             testCase.applyFixture(PathFixture('../FLORISSE_M/helperObjects'));
             testCase.applyFixture(PathFixture('../FLORISSE_M/turbineDefinitions',...
                                               'IncludeSubfolders',true));
+            testCase.applyFixture(PathFixture('../FLORISSE_M/submodelDefinitions',...
+                                              'IncludeSubfolders',true));
             % Instantiate a layout object with 6 identical turbines
             generic6Turb = generic_6_turb;
 
@@ -39,7 +41,7 @@ classdef floris_test < matlab.unittest.TestCase
         end
     end
     methods(Test)
-        function set_wind_direction_for_invalid_windspeed(testCase)
+        function test_standard_run(testCase)
             import matlab.unittest.constraints.IssuesNoWarnings
             function runner(); testCase.florisRunner.run; end
             testCase.verifyThat(@runner, IssuesNoWarnings)
