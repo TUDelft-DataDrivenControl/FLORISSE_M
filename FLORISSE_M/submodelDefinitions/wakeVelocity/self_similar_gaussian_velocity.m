@@ -1,5 +1,5 @@
 classdef self_similar_gaussian_velocity < velocity_interface
-    %jensen_gaussian_VELOCITY Summary of this class goes here
+    %self_similar_gaussian_velocity Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
@@ -17,7 +17,7 @@ classdef self_similar_gaussian_velocity < velocity_interface
     
     methods
         function obj = self_similar_gaussian_velocity(modelData, turbine, turbineCondition, turbineControl, turbineResult)
-            %jensen_gaussian_VELOCITY Construct an instance of this class
+            %self_similar_gaussian_velocity Construct an instance of this class
             %   Detailed explanation goes here
             
             % Store the thrust coefficient
@@ -53,9 +53,8 @@ classdef self_similar_gaussian_velocity < velocity_interface
         end
         
         function Vdeficit = deficit(obj, x, y, z)
-            %METHOD1 Summary of this method goes here
+            %DEFICIT Summary of this method goes here
             %   Detailed explanation goes here
-
             
             % r<=rpc Eq 6.13
             ellipse = obj.ellipseA(1)*y.^2+2*obj.ellipseA(2)*y.*z+obj.ellipseA(4)*z.^2;

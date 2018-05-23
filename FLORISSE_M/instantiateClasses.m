@@ -22,7 +22,7 @@ controlSet.yawAngles(6) = deg2rad(10);
 controlSet.tiltAngles(6) = deg2rad(10);
 
 % Define subModels
-subModels = model_definition('deflectionModel', 'jimenez',...
+subModels = model_definition('deflectionModel', 'rans',...
                              'velocityDeficitModel', 'selfSimilar',...
                              'wakeCombinationModel', 'quadratic',...
                              'addedTurbulenceModel', 'crespoHernandez');
@@ -31,11 +31,11 @@ florisRunner = floris(layout, controlSet, subModels);
 tic
 florisRunner.run
 toc
-tic
-florisRunner.run
-toc
-tic
-florisRunner.run
-toc
+% tic
+% florisRunner.run
+% toc
+% tic
+% florisRunner.run
+% toc
 % outputArg1 = florisRunner.layout.locWf;
 % end

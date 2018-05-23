@@ -1,8 +1,10 @@
 classdef deflection_interface
-    %DEFLECTION_INTERFACE Summary of this class goes here
+    %DEFLECTION_INTERFACE This class defines the functions that classes
+    %which describe wake centerline deflection have to implement
     %   Detailed explanation goes here
     
     methods (Abstract)
         deflection(obj, x)
+        % Computes deflection based on downwind distance x
     end
 end

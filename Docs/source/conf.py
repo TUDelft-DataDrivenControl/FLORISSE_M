@@ -44,20 +44,20 @@ release = '0.1'
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinxcontrib.matlab',
     'sphinx.ext.todo',
     'sphinx.ext.mathjax',
     'sphinx.ext.viewcode',
     'sphinx.ext.ifconfig',
-    'sphinxcontrib.bibtex',
-    'sphinxcontrib.matlab'
+    'sphinxcontrib.bibtex'
 ]
 
 mathjax_path="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
 matlab_src_dir = os.path.abspath(os.path.join('..', '..'))
-# matlab_src_dir = os.path.abspath('..')
-# matlab_src_dir = 'C:\\Users\\roald\\Dropbox\\TUwork\\MatlabCode\\FLORISSE_M'
+
 primary_domain = 'mat'
-autodoc_member_order = 'bysource'
+autodoc_member_order = 'groupwise'
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 

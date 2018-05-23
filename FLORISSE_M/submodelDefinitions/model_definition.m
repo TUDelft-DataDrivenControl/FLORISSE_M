@@ -23,7 +23,7 @@ classdef model_definition
             obj.modelData = struct();
             % Put the relevant deflection parameters into the modelData
             % struct and store a function handle to the chosen model
-            obj.modelData = linear_wake_deflection(obj.modelData);
+            obj.modelData = linear_wake_deflection_params(obj.modelData);
             switch deflectionModel
                 case 'jimenez'
                     obj.modelData = jimenez_params(obj.modelData);

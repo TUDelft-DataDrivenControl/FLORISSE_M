@@ -38,7 +38,7 @@ classdef floris < handle
         function run(obj)
             %RUN Iterate through the turbines and compute the flow and powers
             %   Detailed explanation goes here
-            if ~isempty(obj.turbineConditions(1).avgWS)
+            if ~isempty([obj.turbineConditions(:).avgWS])
                 warning('floris.run has already been triggered, aborting new run')
                 return
             end
@@ -53,7 +53,7 @@ classdef floris < handle
             end
         end
         
-        function compute_condition(obj, turbIndex, turbNumDw)
+        function compute_condition(obj, ~, turbNumDw)
             %COMPUTE_CONDITION Compute the conditions at the rotor of this turbine
             %   This function uses the ambientInflow and upwind turbines
             %   whose wake hits the rotor to determine the specific
@@ -90,10 +90,11 @@ classdef floris < handle
                 polarfun = @(theta,r) VelocityFun(r.*cos(theta),r.*sin(theta)).*r;
                 polarfunBound = @(theta,r) mask(r.*cos(theta),r.*sin(theta)).*r;
                 
-                % relative volumetric flowrate deficit
-                Qb = quad2d(polarfunBound,0,2*pi,0,rotRadius,'Abstol',15,...
+                % Compute the size of the area affected by the wake
+                wakeArea = quad2d(polarfunBound,0,2*pi,0,rotRadius,'Abstol',15,...
                 'Singular',false,'FailurePlot',true,'MaxFunEvals',3500);
-                overlap = Qb/obj.layout.turbines(turbNumDw).turbineType.rotorArea;
+                overlap = wakeArea/obj.layout.turbines(turbNumDw).turbineType.rotorArea;
+                % relative volumetric flowrate deficit
                 Q = quad2d(polarfun,0,2*pi,0,rotRadius,'Abstol',15,...
                 'Singular',false,'FailurePlot',true,'MaxFunEvals',3500);
                 Vni = 1-Q/obj.layout.turbines(turbNumDw).turbineType.rotorArea;
@@ -153,7 +154,7 @@ classdef floris < handle
             %   glance all turbines outside of 1200m wide downwind band are
             %   discarded. The remaining turbines go through a calculation
             %   to see if the wake affects them. The outline of a downwind
-            %   turbine is discretized in 6.28/.05 =approx 125 points. If
+            %   turbine is discretized in 6.28/.05 = approx 125 points. If
             %   any of these points are inside the wake the turbine is said
             %   to have been affected.
             

@@ -1,4 +1,4 @@
-function [modelData] = linear_wake_deflection(modelData)
+function [modelData] = linear_wake_deflection_params(modelData)
 %LINEARWAKEDEFLECTION Summary of this function goes here
 %   Detailed explanation goes here
 

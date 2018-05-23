@@ -46,6 +46,11 @@ classdef floris_test < matlab.unittest.TestCase
             function runner(); testCase.florisRunner.run; end
             testCase.verifyThat(@runner, IssuesNoWarnings)
         end
+        function test_again(testCase)
+            import matlab.unittest.constraints.IssuesNoWarnings
+            function runner(); testCase.florisRunner.run; end
+            testCase.verifyThat(@runner, IssuesNoWarnings)
+        end
     end
 end
 
