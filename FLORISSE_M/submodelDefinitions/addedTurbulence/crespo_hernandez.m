@@ -1,4 +1,4 @@
-classdef crespo_hernandez
+classdef crespo_hernandez < added_ti_interface
     %CRESPO_HERNANDEZ Summary of this class goes here
     %   Detailed explanation goes here
     

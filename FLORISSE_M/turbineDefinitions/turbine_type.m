@@ -27,7 +27,7 @@ classdef turbine_type < handle
     methods
         function obj = turbine_type(rotorRadius, genEfficiency, hubHeight, pP, path, allowableControlMethods)
             %turbine_prototype Construct an instance of this class
-            %   The turbine characters are saved as properties
+            %   The turbine characters are saved as properties 
             obj.controlMethod = nan;
             obj.dataPath = path;
             obj.allowableControlMethods = allowableControlMethods;

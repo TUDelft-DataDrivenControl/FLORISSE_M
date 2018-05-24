@@ -16,7 +16,7 @@ locIf = {D*[19,    10.0];
 
 % Put all the turbines in a struct array
 turbines = struct('turbineType', DTU10mwTurbType , ...
-                      'locIf',         locIf);
+                  'locIf',       locIf);
 
 layout_obj = layout_class(turbines, 'clwindcon_9_turb');
 end

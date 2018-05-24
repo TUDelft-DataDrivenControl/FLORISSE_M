@@ -140,6 +140,12 @@ classdef control_set < handle
             ais = obj.axialInductions_;
         end
         
+        function td = get.turbineControls(obj)
+            td = obj.turbineControls_;
+        end
+    end
+    
+    methods (Access = protected)
         % Define update function for controlStructArray, it is called by
         % the other setter methods where relevant
         function updateTurbineControlsStruct(obj)
@@ -159,9 +165,6 @@ classdef control_set < handle
                     obj.turbineControls_(i).wakeNormal = normalize(cross([1;0;0],obj.turbineControls_(i).thrustDirection));
                 end
             end
-        end
-        function td = get.turbineControls(obj)
-            td = obj.turbineControls_;
         end
         
         function check_doubles_array(obj, x)

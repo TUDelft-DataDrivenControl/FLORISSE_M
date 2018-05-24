@@ -45,15 +45,15 @@ classdef floris < handle
             for turbIndex = 1:obj.layout.nTurbs
                 turbNum = obj.layout.idWf(turbIndex);
                 % Compute the conditions at the rotor of this turbine
-                obj.compute_condition(turbIndex, turbNum);
+                obj.compute_condition(turbNum);
                 % Compute CP, CT and power of this turbine
-                obj.compute_result(turbIndex, turbNum);
+                obj.compute_result(turbNum);
                 % Compute which turbines are affected by this turbine
                 obj.find_affected_by(turbIndex, turbNum);
             end
         end
         
-        function compute_condition(obj, ~, turbNumDw)
+        function compute_condition(obj, turbNumDw)
             %COMPUTE_CONDITION Compute the conditions at the rotor of this turbine
             %   This function uses the ambientInflow and upwind turbines
             %   whose wake hits the rotor to determine the specific
@@ -130,7 +130,7 @@ classdef floris < handle
             % Combine all the added turbulence model using the 2-norm
         end
         
-        function compute_result(obj, ~, turbNum)
+        function compute_result(obj, turbNum)
             %COMPUTE_RESULT Compute CP, CT and power of turbine turbNum
             %   Compute CP, CT and power of turbine turbNum and create its wake
             

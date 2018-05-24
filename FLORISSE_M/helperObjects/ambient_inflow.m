@@ -1,4 +1,4 @@
-classdef ambient_inflow
+classdef ambient_inflow < handle
     %AMBIENT_INFLOW is a small helper object that holds the flow conditions
     %and describes the velocity profile used in the FLORIS simulation
     %   Detailed explanation goes here

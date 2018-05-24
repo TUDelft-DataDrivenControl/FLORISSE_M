@@ -1,20 +1,20 @@
 classdef larsen_velocity < velocity_interface
-    %jensen_gaussian_VELOCITY Summary of this class goes here
-    %   Detailed explanation goes here
+    %LARSEN_VELOCITY Wake velocity object implementing the larsen wake
+    %model. More details can be found in :cite:`Larsen1988`.
     
     properties
-        Area
-        ct
-        c1Lars
-        x0
+        Area % Initial wake cut-through area [m]
+        ct % Turbine thrust coefficient
+        c1Lars % Larsen wake coefficient
+        x0 % Larsen distance coefficient
     end
     
     methods
         function obj = larsen_velocity(modelData, turbine, turbineCondition, turbineControl, turbineResult)
-            %jensen_gaussian_VELOCITY Construct an instance of this class
+            %LARSEN_VELOCITY Construct an instance of this class
             %   Detailed explanation goes here
             
-            % Initial wake radius [m]
+            % Initial wake cut-through area [m]
             obj.Area = turbine.turbineType.rotorArea;
             % Store the thrust coefficient
             obj.ct = turbineResult.ct;
@@ -31,7 +31,7 @@ classdef larsen_velocity < velocity_interface
         end
         
         function Vdeficit = deficit(obj, x, y, z)
-            %METHOD1 Summary of this method goes here
+            %DEFICIT Summary of this method goes here
             %   Detailed explanation goes here
             
             Vdeficit  = ((1/9)*(obj.ct.*obj.Area.*((obj.x0+x).^-2)).^(1/3).* ...
@@ -39,7 +39,7 @@ classdef larsen_velocity < velocity_interface
                 (35/(2.*pi)).^(3/10).*(3.*obj.c1Lars^2).^(-1/5) ).^2);
         end
         function booleanMap = boundary(obj, x, y, z)
-            %METHOD1 Summary of this method goes here
+            %BOUNDARY Summary of this method goes here
             %   Detailed explanation goes here
             
             booleanMap = hypot(y,z)<((35/(2*pi))^(1/5)*(3*(obj.c1Lars)^2)^(1/5)*((x).*obj.ct*obj.Area).^(1/3));

@@ -1,7 +1,6 @@
 classdef deflection_interface
     %DEFLECTION_INTERFACE This class defines the functions that classes
     %which describe wake centerline deflection have to implement
-    %   Detailed explanation goes here
     
     methods (Abstract)
         deflection(obj, x)

@@ -1,5 +1,5 @@
 classdef rans_deficit_deflection < deflection_interface
-    %RANS_DEFICIT_DEFLECTION A wake centerline deflection model.
+    % RANS_DEFICIT_DEFLECTION A wake centerline deflection model.
     %   This wake centerline deflection model is described in [Bastankhah
     %   and Porte-Agel, 2016]. The model assumes a strict distinction
     %   between the near wake and far wake. The near wake is modeled as a
@@ -69,8 +69,7 @@ classdef rans_deficit_deflection < deflection_interface
         end
         
         function [dy, dz] = deflection(obj, x)
-            %DEFLECTION Computes deflection dz and dx based on downwind
-            %distance x.
+            %DEFLECTION Computes deflection dz and dx based on downwind distance x.
             %   This function is vectorized in the x-direction. That makes
             %   the notation slightly obtuse but the relvant equations can
             %   be found in [Bastankhah and Porte-Agel, 2016]
