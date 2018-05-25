@@ -1,24 +1,23 @@
 classdef self_similar_gaussian_velocity < velocity_interface
-    %self_similar_gaussian_velocity Summary of this class goes here
+    %SELF_SIMILAR_GAUSSIAN_VELOCITY Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
-        ct
-        thrustAngle
-        TI
-        x0
-        C0
-        ky
-        kz
-        C
-        ellipseA
-        sigNeutral_x0
+        ct % Turbine thrust coefficient
+        thrustAngle % Turbine thrust angle
+        TI % Turbulence intensity at turbine
+        x0 % Start of the far wake
+        C0 % Relative velocity deficit in the near wake core
+        ky % Horizontal wake expansion parameter
+        kz % Vertical wake expansion parameter
+        C % Ellipse covariance matrix
+        ellipseA % Wake standard deviation ellipse
+        sigNeutral_x0 % Wake standard deviation in the case of a wind-aligned turbine
     end
     
     methods
         function obj = self_similar_gaussian_velocity(modelData, turbine, turbineCondition, turbineControl, turbineResult)
-            %self_similar_gaussian_velocity Construct an instance of this class
-            %   Detailed explanation goes here
+            %SELF_SIMILAR_GAUSSIAN_VELOCITY Construct an instance of this class
             
             % Store the thrust coefficient
             obj.ct = turbineResult.ct;
@@ -53,8 +52,7 @@ classdef self_similar_gaussian_velocity < velocity_interface
         end
         
         function Vdeficit = deficit(obj, x, y, z)
-            %DEFICIT Summary of this method goes here
-            %   Detailed explanation goes here
+            %DEFICIT Compute the velocity deficit at a certain position
             
             % r<=rpc Eq 6.13
             ellipse = obj.ellipseA(1)*y.^2+2*obj.ellipseA(2)*y.*z+obj.ellipseA(4)*z.^2;
@@ -88,8 +86,7 @@ classdef self_similar_gaussian_velocity < velocity_interface
             Vdeficit  = NW.*(x<=obj.x0) + FW.*(x>obj.x0);
         end
         function booleanMap = boundary(obj, x, y, z)
-            %METHOD1 Summary of this method goes here
-            %   Detailed explanation goes here
+            %BOUNDARY Determine if a coordinate is inside the wake
 
             % r<=rpc Eq 6.13
             ellipse = obj.ellipseA(1)*y.^2+2*obj.ellipseA(2)*y.*z+obj.ellipseA(4)*z.^2;

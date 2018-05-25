@@ -1,21 +1,23 @@
 classdef jensen_gaussian_velocity < velocity_interface
-    %jensen_gaussian_VELOCITY Summary of this class goes here
-    %   Detailed explanation goes here
+    %JENSEN_GAUSSIAN_VELOCITY Wake velocity object implementing a version
+    %of the jensen wake model as described in :cite:`Jensen1983`. That
+    %paper describes as a possible variant a cosine bell fitted tp the
+    %tophat velocity profile. The approach taken here is to fit a 2D
+    %gaussian to the wake tophat.
     
     properties
-        wakeRadiusInit
-        a
-        Ke
-        gv
-        sd
-        P_normcdf_lb
-        P_normcdf_ub
+        wakeRadiusInit % Initial wake radius
+        a % Axial induction factor
+        Ke % Base expansion coefficient
+        gv % Gaussian variable, ratio between wake radius and standard deviation
+        sd % Number of std. devs to which the gaussian wake extends
+        P_normcdf_lb % normcdf(-sd,0,1)
+        P_normcdf_ub % normcdf(sd,0,1)
     end
     
     methods
         function obj = jensen_gaussian_velocity(modelData, turbine, turbineCondition, turbineControl, turbineResult)
-            %jensen_gaussian_VELOCITY Construct an instance of this class
-            %   Detailed explanation goes here
+            %JENSEN_GAUSSIAN_VELOCITY Construct an instance of this class
             
             % Initial wake radius [m]
             obj.wakeRadiusInit = turbine.turbineType.rotorRadius;
@@ -31,8 +33,7 @@ classdef jensen_gaussian_velocity < velocity_interface
         end
         
         function Vdeficit = deficit(obj, x, y, z)
-            %METHOD1 Summary of this method goes here
-            %   Detailed explanation goes here
+            %DEFICIT Compute the velocity deficit at a certain position
             
             % Wake radius as a function of x [m]
             rJens = obj.Ke*x+obj.wakeRadiusInit;
@@ -51,9 +52,8 @@ classdef jensen_gaussian_velocity < velocity_interface
             Vdeficit = 2*obj.a*cFull;
         end
         function booleanMap = boundary(obj, x, y, z)
-            %METHOD1 Summary of this method goes here
-            %   Detailed explanation goes here
-            
+            %BOUNDARY Determine if a coordinate is inside the wake
+
             % Wake radius as a function of x [m]
             rJens = obj.Ke*x+obj.wakeRadiusInit;      
             varWake = rJens.*obj.gv;

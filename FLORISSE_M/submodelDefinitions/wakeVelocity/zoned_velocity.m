@@ -1,19 +1,18 @@
 classdef zoned_velocity < velocity_interface
-    %ZONED_VELOCITY Summary of this class goes here
-    %   Detailed explanation goes here
+    %ZONED_VELOCITY Wake velocity object implementing the zoned wake
+    %model from Gebraad. More details can be found in :cite:`Gebraad2014`.
     
     properties
-        wakeRadiusInit
-        a
-        Ke
-        mU
-        me
+        wakeRadiusInit % Initial wake radius
+        a % Axial induction factor
+        Ke % Base expansion coefficient
+        mU % Zone multiplier for recovery
+        me % Zone multiplier for expansion
     end
     
     methods
         function obj = zoned_velocity(modelData, turbine, turbineCondition, turbineControl, turbineResult)
             %ZONED_VELOCITY Construct an instance of this class
-            %   Detailed explanation goes here
             
             % Initial wake radius [m]
             obj.wakeRadiusInit = turbine.turbineType.rotorRadius;
@@ -32,8 +31,7 @@ classdef zoned_velocity < velocity_interface
         end
         
         function Vdeficit = deficit(obj, x, y, z)
-            %METHOD1 Summary of this method goes here
-            %   Detailed explanation goes here
+            %DEFICIT Compute the velocity deficit at a certain position
             
             % Meshgrid of radii
             r = hypot(y,z);
@@ -52,8 +50,7 @@ classdef zoned_velocity < velocity_interface
             Vdeficit = 2*obj.a*cFull;
         end
         function booleanMap = boundary(obj, x, y, z)
-            %METHOD1 Summary of this method goes here
-            %   Detailed explanation goes here
+            %BOUNDARY Determine if a coordinate is inside the wake
 
             % wake.boundary is a boolean function telling whether a point (y,z)
             % lies within the wake radius of turbine(i) at distance x

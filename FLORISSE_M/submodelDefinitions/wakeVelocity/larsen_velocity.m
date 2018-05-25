@@ -12,7 +12,6 @@ classdef larsen_velocity < velocity_interface
     methods
         function obj = larsen_velocity(modelData, turbine, turbineCondition, turbineControl, turbineResult)
             %LARSEN_VELOCITY Construct an instance of this class
-            %   Detailed explanation goes here
             
             % Initial wake cut-through area [m]
             obj.Area = turbine.turbineType.rotorArea;
@@ -31,16 +30,14 @@ classdef larsen_velocity < velocity_interface
         end
         
         function Vdeficit = deficit(obj, x, y, z)
-            %DEFICIT Summary of this method goes here
-            %   Detailed explanation goes here
+            %DEFICIT Compute the velocity deficit at a certain position
             
             Vdeficit  = ((1/9)*(obj.ct.*obj.Area.*((obj.x0+x).^-2)).^(1/3).* ...
                 (hypot(y,z).^(3/2).*((3.*obj.c1Lars.^2).*obj.ct.*obj.Area.*(obj.x0+x)).^(-1/2) - ...
                 (35/(2.*pi)).^(3/10).*(3.*obj.c1Lars^2).^(-1/5) ).^2);
         end
         function booleanMap = boundary(obj, x, y, z)
-            %BOUNDARY Summary of this method goes here
-            %   Detailed explanation goes here
+            %BOUNDARY Determine if a coordinate is inside the wake
             
             booleanMap = hypot(y,z)<((35/(2*pi))^(1/5)*(3*(obj.c1Lars)^2)^(1/5)*((x).*obj.ct*obj.Area).^(1/3));
         end

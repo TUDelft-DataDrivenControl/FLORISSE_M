@@ -14,7 +14,7 @@ classdef rans_deficit_deflection < deflection_interface
         ky % Horizontal wake expansion parameter
         kz % Vertical wake expansion parameter
         x0 % Start of the far wake
-        sigNeutral_x0 % Wake standard deviation in the case of a wind-aligned turbine.
+        sigNeutral_x0 % Wake standard deviation in the case of a wind-aligned turbine
         ct % Thrust coefficient
         delta_x0 % Displacement at the end of the near wake
         theta_C0 % Skew angle in near wake
