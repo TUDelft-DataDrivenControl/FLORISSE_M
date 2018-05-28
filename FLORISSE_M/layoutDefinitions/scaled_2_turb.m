@@ -6,8 +6,9 @@ TUMG1TurbType = tum_g1;
 D = 2*TUMG1TurbType.rotorRadius;
 
 % Wind turbine location in inertial frame [x, y], multiplied with D
-locIf = {D*[0,    .5];
-         D*[0,    5]};
+locIf = {[0,    .5];
+         [0,    5]};
+locIf = cellfun(@(loc) D*loc, locIf, 'UniformOutput', false);
 
 % Put all the turbines in a struct array with their type and
 % location specified
