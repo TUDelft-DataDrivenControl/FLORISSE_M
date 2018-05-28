@@ -22,6 +22,7 @@ classdef turbine_type < handle
         lutCp
         lutCt
         lutGreedy
+        lutLambda
     end
     
     methods
@@ -85,6 +86,9 @@ classdef turbine_type < handle
                 case {'greedy'}
                 % Load the lookup table for cp and ct as a function of windspeed
                     obj.lutGreedy = csvread([obj.dataPath '/cpctgreedy.csv']);
+                case {'tipSpeedRatio'}
+                % Load the lookup table for cp and ct as a function of lambda
+                    obj.lutLambda = csvread([obj.dataPath '/cpctlambda.csv']);
                 case {'axialInduction'}
                 % No preparation needed
                 otherwise
@@ -107,6 +111,10 @@ classdef turbine_type < handle
                 case {'greedy'}
                     turbineResult.cp = interp1(obj.lutGreedy(1,:), obj.lutGreedy(2,:), condition.avgWS);
                     turbineResult.ct = interp1(obj.lutGreedy(1,:), obj.lutGreedy(3,:), condition.avgWS);
+                    turbineResult.axialInduction = obj.calc_axial_induction(turbineResult.ct);
+                case {'tipSpeedRatio'}
+                    turbineResult.cp = interp1(obj.lutLambda(1,:), obj.lutLambda(2,:), turbineControl.tipSpeedRatio);
+                    turbineResult.ct = interp1(obj.lutLambda(1,:), obj.lutLambda(3,:), turbineControl.tipSpeedRatio);
                     turbineResult.axialInduction = obj.calc_axial_induction(turbineResult.ct);
                 case {'axialInduction'}
                     turbineResult.axialInduction = turbineControl.axialInduction;

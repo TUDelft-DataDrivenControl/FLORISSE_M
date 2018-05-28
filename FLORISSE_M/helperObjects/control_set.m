@@ -1,6 +1,5 @@
 classdef control_set < handle
-    %CONTROL_SET The control_set class generates object that are used to
-    %control the turbines in a situation.
+    %CONTROL_SET The control_set class generates object that are used to control the turbines in a situation.
     %   A situation or layout object holds an array of turbines, this class
     %   holds a struct with the control settings for each turbines. It has
     %   several vector inputs, namely, yaw, tilt, pitch and axial induction
@@ -28,6 +27,7 @@ classdef control_set < handle
         yawAngles_
         tiltAngles_
         pitchAngles_
+        tipSpeedRatios_
         axialInductions_
     end
     
@@ -36,6 +36,7 @@ classdef control_set < handle
         yawAngles
         tiltAngles
         pitchAngles
+        tipSpeedRatios
         axialInductions
     end
     
@@ -55,6 +56,7 @@ classdef control_set < handle
                                    'thrustAngle',     {0} , ...
                                    'wakeNormal',      {[0; 0; 0]} , ...
                                    'pitchAngle',      {nan} , ...
+                                   'tipSpeedRatio',   {nan} , ...
                                    'axialInduction',  {nan});
             % The turbineControls property wil hold a struct array with one struct per turbine.
             obj.turbineControls_ = repmat(controlStruct, obj.layout.nTurbs, 1);
@@ -66,34 +68,10 @@ classdef control_set < handle
         function set.controlMethod(obj, controlMethod)
             % CONTROLMETHOD The controlMethod specifies what method of
             % turbine control will be used. Currently this can be either
-            % pitch control, greedy control (which has optimal pitch) or
-            % axial induction control.
-            
+            % pitch control, greedy control (which has optimal pitch),
+            % axial induction control or tip speed ratio control.
             obj.controlMethod = controlMethod;
-            % The turbinetypes are handle objects and due to this they do
-            % not have to be returned to the layout to be changed, they can
-            % simply be set to the correct controlType
-            for turbine = obj.layout.uniqueTurbineTypes
-                turbine.controlMethod = controlMethod;
-            end
-            
-            switch controlMethod
-                case {'pitch'}
-                    obj.pitchAngles_     = zeros(1,obj.layout.nTurbs);    % Blade pitch angles, by default set to greedy
-                    obj.axialInductions_ = nan*ones(1,obj.layout.nTurbs); % Axial inductions  are set to NaN
-                case {'greedy'}
-                    obj.pitchAngles_     = nan*ones(1,obj.layout.nTurbs); % Blade pitch angles are set to NaN
-                    obj.axialInductions_ = nan*ones(1,obj.layout.nTurbs); % Axial inductions  are set to NaN
-                case {'axialInduction'}
-                    obj.pitchAngles_     = nan*ones(1,obj.layout.nTurbs); % Blade pitch angles are set to NaN
-                    obj.axialInductions_ = 1/3*ones(1,obj.layout.nTurbs); % Axial induction factors, by default set to greedy
-                otherwise
-                    error(['Control methodology with name: "' controlMethod '" not defined']);
-            end
-            for i = 1:obj.layout.nTurbs
-                obj.turbineControls_(i).axialInduction = obj.axialInductions(i);
-                obj.turbineControls_(i).pitchAngle = obj.pitchAngles(i);
-            end
+            obj.instantiate_control_variables()
         end
 
         % Define setter and getter methods with value checking and
@@ -102,7 +80,9 @@ classdef control_set < handle
             obj.check_doubles_array(array)
             obj.check_angles_in_rad(array)
             obj.yawAngles_ = array;
-            obj.updateTurbineControlsStruct()
+            % The orientation of the turbine changed so the dependent
+            % properties need to be updated
+            obj.update_wake_thrust_direction()
         end
         function yaws = get.yawAngles(obj)
             yaws = obj.yawAngles_;
@@ -112,7 +92,9 @@ classdef control_set < handle
             obj.check_doubles_array(array)
             obj.check_angles_in_rad(array)
             obj.tiltAngles_ = array;
-            obj.updateTurbineControlsStruct()
+            % The orientation of the turbine changed so the dependent
+            % properties need to be updated
+            obj.update_wake_thrust_direction()
         end
         function tilts = get.tiltAngles(obj)
             tilts = obj.tiltAngles_;
@@ -122,18 +104,29 @@ classdef control_set < handle
             obj.check_doubles_array(array)
             obj.pitchAngles_ = array;
             for i = 1:obj.layout.nTurbs
-                obj.turbineControls_(i).pitchAngle = obj.pitchAngles(i);
+                obj.turbineControls_(i).pitchAngle = obj.pitchAngles_(i);
             end
         end
         function pitches = get.pitchAngles(obj)
             pitches = obj.pitchAngles_;
         end
         
+        function set.tipSpeedRatios(obj, array)
+            obj.check_doubles_array(array)
+            obj.tipSpeedRatios_ = array;
+            for i = 1:obj.layout.nTurbs
+                obj.turbineControls_(i).tipSpeedRatio = obj.tipSpeedRatios_(i);
+            end
+        end
+        function pitches = get.tipSpeedRatios(obj)
+            pitches = obj.tipSpeedRatios_;
+        end
+        
         function set.axialInductions(obj, array)
             obj.check_doubles_array(array)
             obj.axialInductions_ = array;
             for i = 1:obj.layout.nTurbs
-                obj.turbineControls_(i).axialInduction = obj.axialInductions(i);
+                obj.turbineControls_(i).axialInduction = obj.axialInductions_(i);
             end
         end
         function ais = get.axialInductions(obj)
@@ -146,10 +139,47 @@ classdef control_set < handle
     end
     
     methods (Access = protected)
+        
+        function instantiate_control_variables(obj)
+            % The turbinetypes are handle objects and due to this they do
+            % not have to be returned to the layout to be changed, they can
+            % simply be set to the correct controlType
+            for turbine = obj.layout.uniqueTurbineTypes
+                turbine.controlMethod = obj.controlMethod;
+            end
+            
+            switch obj.controlMethod
+                case {'pitch'}
+                    obj.pitchAngles_     = zeros(1,obj.layout.nTurbs);    % Blade pitch angles, by default set to greedy
+                    obj.tipSpeedRatios_  = nan*ones(1,obj.layout.nTurbs); % Lambdas  are set to NaN
+                    obj.axialInductions_ = nan*ones(1,obj.layout.nTurbs); % Axial inductions  are set to NaN
+                case {'greedy'}
+                    obj.pitchAngles_     = nan*ones(1,obj.layout.nTurbs); % Blade pitch angles are set to NaN
+                    obj.tipSpeedRatios_  = nan*ones(1,obj.layout.nTurbs); % Lambdas  are set to NaN
+                    obj.axialInductions_ = nan*ones(1,obj.layout.nTurbs); % Axial inductions  are set to NaN
+                case {'tipSpeedRatio'}
+                    obj.pitchAngles_     = nan*ones(1,obj.layout.nTurbs); % Blade pitch angles, by default set to greedy
+                    obj.tipSpeedRatios_  = 4.5*ones(1,obj.layout.nTurbs); % Lambdas  are set to NaN
+                    obj.axialInductions_ = nan*ones(1,obj.layout.nTurbs); % Axial inductions  are set to NaN
+                case {'axialInduction'}
+                    obj.pitchAngles_     = nan*ones(1,obj.layout.nTurbs); % Blade pitch angles are set to NaN
+                    obj.tipSpeedRatios_  = nan*ones(1,obj.layout.nTurbs); % Lambdas  are set to NaN
+                    obj.axialInductions_ = 1/3*ones(1,obj.layout.nTurbs); % Axial induction factors, by default set to greedy
+                otherwise
+                    error(['Control methodology with name: "' obj.controlMethod '" not defined']);
+            end
+            for i = 1:obj.layout.nTurbs
+                obj.turbineControls_(i).pitchAngle = obj.pitchAngles_(i);
+                obj.turbineControls_(i).tipSpeedRatio = obj.tipSpeedRatios_(i);
+                obj.turbineControls_(i).axialInduction = obj.axialInductions_(i);
+            end
+        end
+        
         % Define update function for controlStructArray, it is called by
-        % the other setter methods where relevant
-        function updateTurbineControlsStruct(obj)
-            % Define an empty structarray that will hold individual turbine controls
+        % the yaw and tilt setter methods
+        function update_wake_thrust_direction(obj)
+            % For each turbine compute the new wake direction and update
+            % the controls struct
             for i = 1:obj.layout.nTurbs
                 obj.turbineControls_(i).yawAngle = obj.yawAngles(i);
                 obj.turbineControls_(i).tiltAngle = obj.tiltAngles(i);

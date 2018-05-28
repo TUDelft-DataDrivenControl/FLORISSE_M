@@ -3,7 +3,6 @@ classdef deflection_interface
     %which describe wake centerline deflection have to implement
     
     methods (Abstract)
-        deflection(obj, x)
-        % Computes deflection based on downwind distance x
+        deflection(obj, x) % Computes deflection based on downwind distance x
     end
 end

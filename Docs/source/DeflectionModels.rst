@@ -18,5 +18,7 @@ This page documents the deflection models that are currently implemented in FLOR
 
 .. autoclass:: rans_deficit_deflection
 	:members:
-	:show-inheritance: False
+	:show-inheritance:
 
+.. bibliography:: FLORIS.bib
+	:filter: docname in docnames

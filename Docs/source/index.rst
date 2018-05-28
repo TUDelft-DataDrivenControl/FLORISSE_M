@@ -17,6 +17,7 @@ This is the documentation for (FLORIS) which stands for FLOw Redirection and Ind
    Turbines
    DeflectionModels
    VelocityModels
+   AmbientFlowClasses
    ForDevelopers
    IntroductionToTools
 

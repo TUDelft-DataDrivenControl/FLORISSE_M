@@ -12,19 +12,19 @@ This page documents the wake velocity models that are currently implemented in F
 
 .. autoclass:: self_similar_gaussian_velocity
 	:members:
-	:undoc-members:
+	:show-inheritance:
 
 .. autoclass:: zoned_velocity
 	:members:
-	:undoc-members:
+	:show-inheritance:
 
 .. autoclass:: jensen_gaussian_velocity
 	:members:
-	:undoc-members:
+	:show-inheritance:
 
 .. autoclass:: larsen_velocity
 	:members:
-	:undoc-members:
+	:show-inheritance:
 
 .. bibliography:: FLORIS.bib
 	:filter: docname in docnames

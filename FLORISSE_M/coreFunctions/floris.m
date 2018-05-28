@@ -15,7 +15,7 @@ classdef floris < handle
             %FLORIS Construct an instance of this class
             %   Detailed explanation goes here
             
-            if ~isa(layout.ambientInflow, 'ambient_inflow')
+            if ~isa(layout.ambientInflow, 'ambient_inflow_interface')
                 error('You must set an ambientFlow in layout %s.', layout.description)
             end
             obj.layout = layout;
