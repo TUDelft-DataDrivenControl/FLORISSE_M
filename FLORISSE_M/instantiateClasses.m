@@ -28,6 +28,8 @@ tic
 florisRunner.run
 toc
 display([florisRunner.turbineResults.power])
+florisRunner.clearOutput()
+optimizeControl(florisRunner)
 % tic
 % florisRunner.run
 % toc

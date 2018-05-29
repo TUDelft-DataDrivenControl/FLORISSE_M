@@ -80,6 +80,7 @@ classdef model_definition
             wakeTurbulenceObj = obj.addedTurbulenceModel(obj.modelData, turbine, turbineCondition, turbineControl, turbineResult);
             
             % Pass all the created functions to the wake struct
+            wake.deficit_integral = @wakeVelDefObj.deficit_integral;
             wake.deficit = @(x, y, z) wakeVelDefObj.deficit(x, y, z);
             wake.boundary = @(x, y, z) wakeVelDefObj.boundary(x, y, z);
             wake.deflection = @(x) wakeDeflObj.deflection(x);

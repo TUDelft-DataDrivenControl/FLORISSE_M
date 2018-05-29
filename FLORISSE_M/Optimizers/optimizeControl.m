@@ -1,8 +1,42 @@
-function [outputArg1,outputArg2] = optimizeControl(inputArg1,inputArg2)
+function [xopt] = optimizeControl(florisRunner)
 %OPTIMIZECONTROL Summary of this function goes here
 %   Detailed explanation goes here
-outputArg1 = inputArg1;
-outputArg2 = inputArg2;
+nTurbs = florisRunner.layout.nTurbs;
+x0 = []; lb = []; ub = [];
+
+x0 = [x0, florisRunner.controlSet.yawAngles];
+lb = [lb, deg2rad(-35)*ones(nTurbs,1)];
+ub = [ub, deg2rad(+35)*ones(nTurbs,1)];
+
+% Cost function that is to be optimized. Basically, J = -sum(P).
+function J = costFunction(x, florisRunner)
+    % 'x' contains the to-be-optimized control variables. This
+    % can be yaw angles, blade pitch angles, or both. Hence,
+    % depending on these choices, we have to first extract the
+    % yaw angles and/or blade pitch angles back from x, before
+    % we trial them in a FLORIS simulation. That is what we do next:
+    florisRunner.controlSet.yawAngles = x;
+    florisRunner.run
+    % Then, we simulate FLORIS and determine the cost J(x)
+    J            = -sum([florisRunner.turbineResults.power]);
+    florisRunner.clearOutput()
+end
+
+cost = @(x)costFunction(x, florisRunner);
+
+% Optimizer settings and optimization execution
+%options = optimset('Display','final','MaxFunEvals',1000 ); % Display nothing
+%options = optimset('Algorithm','sqp','Display','final','MaxFunEvals',1000,'PlotFcns',{@optimplotx, @optimplotfval} ); % Display convergence
+options = optimset('Display','final','MaxFunEvals',1e4,'PlotFcns',{@optimplotx, @optimplotfval} ); % Display convergence
+xopt    = fmincon(cost,x0,[],[],[],[],lb,ub,[],options);
+
+% Display improvements
+P_bl  = -costFunction(x0,  florisRunner); % Calculate baseline power
+P_opt = -costFunction(xopt,florisRunner); % Calculate optimal power
+disp(['Initial power: ' num2str(P_bl/10^6) ' MW']);
+disp(['Optimized power: ' num2str(P_opt/10^6) ' MW']);
+disp(['Relative increase: ' num2str((P_opt/P_bl-1)*100) '%.']);
+
 end
 
 %% FLORIS control optimization
@@ -18,8 +52,8 @@ function [] = optimize(self,optimizeYaw,optimizeAxInd)
     x0 = []; lb = []; ub = [];
     if optimizeYaw  
         x0 = [x0, inputData.yawAngles];
-        lb = [lb, deg2rad(-25)*ones(inputData.nTurbs,1)];
-        ub = [ub, deg2rad(+25)*ones(inputData.nTurbs,1)];
+        lb = [lb, deg2rad(-35)*ones(inputData.nTurbs,1)];
+        ub = [ub, deg2rad(+35)*ones(inputData.nTurbs,1)];
     end
     if optimizeAxInd
         if inputData.axialControlMethod == 0

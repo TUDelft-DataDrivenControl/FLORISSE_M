@@ -18,7 +18,7 @@ classdef self_similar_gaussian_velocity < velocity_interface
     methods
         function obj = self_similar_gaussian_velocity(modelData, turbine, turbineCondition, turbineControl, turbineResult)
             %SELF_SIMILAR_GAUSSIAN_VELOCITY Construct an instance of this class
-            
+
             % Store the thrust coefficient
             obj.ct = turbineResult.ct;
             obj.thrustAngle = turbineControl.thrustAngle;

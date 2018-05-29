@@ -21,6 +21,10 @@ classdef floris < handle
             obj.layout = layout;
             obj.controlSet = controlSet;
             obj.model = model;
+            obj.clearOutput()
+        end
+        
+        function clearOutput(obj)
             turbineCondition = struct('avgWS', {[]}, ...
                                       'TI',    {[]}, ...
                                       'rho',   {[]});
@@ -69,46 +73,23 @@ classdef floris < handle
             sumKed  = 0; % Sum of kinetic energy deficits (outer sum of Eq. 22)
             TiVec = obj.layout.ambientInflow.TI0; % Turbulence intensity vector
             locationDw = obj.layout.locWf(turbNumDw, :);
-            Uhh = obj.layout.ambientInflow.Vfun(locationDw(3)); % Free-stream velocity at hubheigth
+            Uhh = obj.layout.ambientInflow.Vfun(locationDw(3)); % Free-stream velocity at hub heigth
             
             for turbNumAffector = obj.turbineResults(turbNumDw).affectedBy.'
                 % Compute predicted deficit by turbNumAffector
                 locationUw = obj.layout.locWf(turbNumAffector, :);
                 deltax = locationDw(1)-locationUw(1);
-                [dy, dz] = obj.turbineResults(turbNumAffector).wake.deflection(deltax);
+                [dyWake, dzWake] = obj.turbineResults(turbNumAffector).wake.deflection(deltax);
                 rotRadius = obj.layout.turbines(turbNumDw).turbineType.rotorRadius;
-
-                dY_wc = @(y) y+locationDw(2)-locationUw(2)-dy;
-                dZ_wc = @(z) z+locationDw(3)-locationUw(3)-dz;
-                % Create a mask that is 1 where the wake exists and 0 where it
-                % does not exists
-                mask = @(y,z) obj.turbineResults(turbNumAffector).wake.boundary(deltax,dY_wc(y),dZ_wc(z));
-                % Make a velocity function that combines the free stream and
-                % wake velocity by using the mask. The velocity function is
-                % normalized with respect the to the free stream.
-                VelocityFun = @(y,z) (mask(y,z).*obj.turbineResults(turbNumAffector).wake.deficit(deltax,dY_wc(y),dZ_wc(z)));
-                polarfun = @(theta,r) VelocityFun(r.*cos(theta),r.*sin(theta)).*r;
-                polarfunBound = @(theta,r) mask(r.*cos(theta),r.*sin(theta)).*r;
                 
-                % Compute the size of the area affected by the wake
-                wakeArea = quad2d(polarfunBound,0,2*pi,0,rotRadius,'Abstol',15,...
-                'Singular',false,'FailurePlot',true,'MaxFunEvals',3500);
+                dy = locationDw(2)-locationUw(2)-dyWake;
+                dz = locationDw(3)-locationUw(3)-dzWake;
+                
+                [wakeArea, Q] = obj.turbineResults(turbNumAffector).wake.deficit_integral(deltax, dy, dz, rotRadius);
+                
                 overlap = wakeArea/obj.layout.turbines(turbNumDw).turbineType.rotorArea;
-                % relative volumetric flowrate deficit
-                Q = quad2d(polarfun,0,2*pi,0,rotRadius,'Abstol',15,...
-                'Singular',false,'FailurePlot',true,'MaxFunEvals',3500);
                 Vni = 1-Q/obj.layout.turbines(turbNumDw).turbineType.rotorArea;
                 
-                
-%                 [PHI,Rmesh] = meshgrid([0:.1:2*pi 2*pi],0:rotRadius);
-%                 figure;surf(Rmesh.*cos(PHI), Rmesh.*sin(PHI), polarfun(PHI,Rmesh)./Rmesh,'edgeAlpha',0);
-%                 title(1-Q/obj.layout.turbines(turbNumDw).turbineType.rotorArea); daspect([1 1 .001]);
-%                 
-%                 [y,z] = meshgrid(-100:100,-89:100);
-%                 wakeV = obj.turbineResults(turbNumAffector).wake.deficit(deltax,dY_wc(y),dZ_wc(z));
-%                 figure;surf(y, z, wakeV,'edgeAlpha',0);
-%                 keyboard
-
                 % Calculate turbine-added turbulence at location deltax
                 TiVec = [TiVec overlap*obj.turbineResults(turbNumAffector).wake.added_TI(deltax, TiVec(1))];
                 % Combine the effects of multiple turbines' wakes
