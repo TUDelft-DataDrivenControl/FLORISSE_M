@@ -16,10 +16,10 @@ function J = costFunction(x, florisRunner)
     % yaw angles and/or blade pitch angles back from x, before
     % we trial them in a FLORIS simulation. That is what we do next:
     florisRunner.controlSet.yawAngles = x;
+    florisRunner.clearOutput()
     florisRunner.run
     % Then, we simulate FLORIS and determine the cost J(x)
     J            = -sum([florisRunner.turbineResults.power]);
-    florisRunner.clearOutput()
 end
 
 cost = @(x)costFunction(x, florisRunner);

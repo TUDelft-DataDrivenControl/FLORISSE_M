@@ -3,12 +3,11 @@ function layout_obj = wind_tunnel_3_turb()
 %   Detailed explanation goes here
 
 MWT12TurbType = mwt12;
-D = 2*MWT12TurbType.rotorRadius;
 
 % Wind turbine location in inertial frame [x, y], multiplied with D
-locIf = {D*[0,    0];
-         D*[0,    4];
-         D*[0,    8]};
+locIf = {[0,    0];
+         [0,    .5];
+         [0,    1]};
 
 % Put all the turbines in a struct array with their type and
 % location specified
