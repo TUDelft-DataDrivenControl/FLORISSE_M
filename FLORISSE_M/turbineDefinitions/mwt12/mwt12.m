@@ -9,7 +9,7 @@ filepath = getFileLocation();
 availableControl = {'tipSpeedRatio', 'axialInduction'};
 % Instantiate turbine with
 % obj = turbine_type(rotorRadius, genEfficiency, hubHeight, pP, path, allowableControlMethods)
-turbineType = turbine_type((12*10^-2)/2., 1, .3, 1.88, filepath, availableControl);
+turbineType = turbine_type((12*10^-2)/2., 1, .2, 1.88, filepath, availableControl);
 end
 
 % This function is compatible with C-compilation

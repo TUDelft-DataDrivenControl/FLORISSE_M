@@ -1,18 +1,17 @@
-function [ flowField ] = floris_flowField( inputData,flowField,turbines,wakes )
-    
+function [ flowField ] = floris_flowField(flowField, layout, turbineResults, fixYaw, wakeCombinationModel)
     % Sort turbine and wake structs by WF
-    sortVector = [turbines.turbId_WF];
-    turbines(sortVector) = turbines;
-    wakes(sortVector)    = wakes;
+%     sortVector = [turbines.turbId_WF];
+%     turbines(sortVector) = turbines;
+%     wakes(sortVector)    = wakes;
     
-    if flowField.fixYaw
+    if fixYaw
         % tpr stands for TurbinePreRegion. It is the amount of meters in front
         % of a turbine where the flowfield will take into account a turbine
-        tpr = 50;
+        tpr = max([layout.uniqueTurbineTypes.rotorRadius])/2;
     else
         tpr = 0;
     end
-    
+    keyboard
     % Compute the centerLines and zone diameters at every voxel
     for  turb_num = 1:length(turbines)
         % Clear the current x and y coordinates which correspond to turbine locations.
@@ -21,6 +20,12 @@ function [ flowField ] = floris_flowField( inputData,flowField,turbines,wakes )
         wakes(turb_num).centerLine(1,:) = flowField.X(1,flowField.X(1,:,1)>=(turbines(turb_num).LocWF(1)-tpr),1);
         % Compute the Y and Z coordinates of the wake
         wakes(turb_num).centerLine = floris_wakeCenterline(inputData.wakeModel, turbines(turb_num), wakes(turb_num).centerLine(1,:));
+    end
+    
+    for turbIndex = 1:layout.nTurbs
+        turbNum = layout.idWf(turbIndex);
+        flowField.X(1,flowField.X(1,:,1)>=(layout.turbines(turb_num).LocWF(1)-tpr),1);
+        turbineResults(turbNum).wake.deflection
     end
     
     % Compute the windspeed at a cutthrough of the wind farm at every x-coordinate
@@ -46,7 +51,7 @@ function [ flowField ] = floris_flowField( inputData,flowField,turbines,wakes )
             % deficits.^2 and taking the root
             sumKed = zeros(size(squeeze(flowField.U(:,1,:))));
             for turb_num = 1:length(UwTurbines)
-                if flowField.fixYaw
+                if fixYaw
                     % The mask determines if the free stream applies or the
                     % wake velocity needs to be computed
                     mask = (wakes(turb_num).boundary(deltaXs(turb_num),dY_wc(:,:,turb_num),dZ_wc(:,:,turb_num))).*...

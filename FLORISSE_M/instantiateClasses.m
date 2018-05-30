@@ -4,7 +4,7 @@
 %   compatible with the matlab coder, use: > codegen instantiateClasses
 
 % Instantiate a layout without ambientInflow conditions
-layout = clwindcon_9_turb;
+layout = two_heigths_6_turb;
 
 % Use the heigth from the first turbine type as reference heigth for theinflow profile
 refHeigth = layout.uniqueTurbineTypes(1).hubHeight;
@@ -31,7 +31,8 @@ display([florisRunner.turbineResults.power])
 % tic
 % optimizeControl(florisRunner)
 % toc
-visualizer(florisRunner)
+visTool = visualizer(florisRunner);
+
 % tic
 % florisRunner.run
 % toc

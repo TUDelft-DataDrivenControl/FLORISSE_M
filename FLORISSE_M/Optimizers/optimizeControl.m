@@ -5,8 +5,8 @@ nTurbs = florisRunner.layout.nTurbs;
 x0 = []; lb = []; ub = [];
 
 x0 = [x0, florisRunner.controlSet.yawAngles];
-lb = [lb, deg2rad(-35)*ones(nTurbs,1)];
-ub = [ub, deg2rad(+35)*ones(nTurbs,1)];
+lb = [lb, deg2rad(-45)*ones(nTurbs,1)];
+ub = [ub, deg2rad(+45)*ones(nTurbs,1)];
 
 % Cost function that is to be optimized. Basically, J = -sum(P).
 function J = costFunction(x, florisRunner)
