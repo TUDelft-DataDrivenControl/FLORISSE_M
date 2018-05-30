@@ -112,5 +112,72 @@ classdef self_similar_gaussian_velocity < velocity_interface
             % lies within the wake radius of turbine(i) at distance x
             booleanMap = (NW_mask+~NW_mask.*NW_exp.*(x<=obj.x0) + FW_exp.*(x>obj.x0))>0.022750131948179; % Evaluated to avoid dependencies on Statistics Toolbox
         end
+        
+        function [wakeArea, Q] = deficit_integral(obj, deltax, dy, dz, rotRadius)
+            varWake = obj.C*((diag([obj.ky obj.kz])*(deltax-obj.x0))+obj.sigNeutral_x0).^2;
+            FW_scalar = 1-sqrt(1-obj.ct.*cos(obj.thrustAngle)*...
+                sqrt(det((obj.C*(obj.sigNeutral_x0.^2))/varWake)));
+            Q = obj.bvcdf_wake(dy, dz, rotRadius, varWake, FW_scalar);
+            
+            % Create a mask that is 1 where the wake exists and 0 where it
+            % does not exists
+            mask = @(y,z) obj.boundary(deltax,y+dy,z+dz);
+            % Compute the size of the area affected by the wake
+            wakeArea = quad2d(@(theta,r) mask(r.*cos(theta), r.*sin(theta)).*r,0,2*pi,0,rotRadius,'Abstol',15,...
+            'Singular',false,'FailurePlot',true,'MaxFunEvals',3500);
+        end
+        function Qdef = bvcdf_wake(obj, y, z, bladeR, varWake, FW_scalar)
+            %bvcdf_wake uses the bvcdf function to compute the velocity deficit at the
+            %swept area of a turbine
+
+            [v, e] = eig(varWake);  % Linear transformation to make sigma_y and sigma_z uncorrelated
+            sigma_y = sqrt(e(1)); % This is the standard deviation in y'-dir
+            sigma_z = sqrt(e(4)); % This is the standard deviation in z'-dir
+
+            Sigma_zn = sigma_z/sigma_y; % Non-dimensionalized sigma_z
+            bladeRn  = bladeR/sigma_y;  % Non-dimensionalized circle radius
+            dC       = norm([y z]*v)/sigma_y; % Non-dim. distance between circle and biv. dist. mean
+
+            Qdef = FW_scalar*(obj.bvcdf(Sigma_zn, bladeRn, dC, 4)*2*pi*sqrt(det(varWake)));
+        end
+    end
+    methods(Static)
+        function series0 = bvcdf(Sigma_norm, R_norm, dS_norm, nMax)
+            % function [series0] = bvcdf(Sigma_norm, R_norm, dS_norm, nMax)
+            %BVCDF computes the bivariate cumulative distribution function over a
+            %circular region
+            %
+            %   The document:
+            %   TECHNICAL REPORT ECOM-2625
+            %   TABLES OF OFFSET CIRCLE PROBABILITIES FOR A
+            %   NORMAL BIVARIATE ELLIPTICAL DISTRIBUTION
+            %   explains how to compute the integral of a bivariate normal distribution
+            %   by expanding the integral to a power series. The exact solution uses
+            %   nMax = infty but the series converges so a few terms are enough to
+            %   accurately approximate the integral
+            %
+            %   Inputs:
+            %   Sigma_norm = Sigma of second dimension normalized by sigma in first
+            %   R_norm = normalized radius of the circle by Sigma(1)
+            %   dS_norm = normalized distance between circle and mean Gaus by Sigma(1)
+            
+            t = .5*dS_norm^2;
+            a = 4*Sigma_norm*Sigma_norm*t;
+            b = Sigma_norm*Sigma_norm-1;
+            s = .5*R_norm*R_norm/(Sigma_norm*Sigma_norm);
+
+            series0 = 0;
+            for n=0:nMax
+                series1 = 0;
+                series2 = 0;
+                for kj = 0:n
+                    series1=series1+(s^kj)/factorial(kj);
+                    series2=series2+((-1)^kj)*((b/a)^kj)/(factorial(kj)*factorial(2*(n-kj)));
+                end
+                series0=series0+(factorial(2*n)/(2^(2*n)*factorial(n)))*...
+                (1-exp(-s)*series1)*(a^n)*series2;
+            end
+            series0 = Sigma_norm*exp(-t)*series0;
+        end
     end
 end

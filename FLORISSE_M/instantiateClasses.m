@@ -18,7 +18,7 @@ layout.ambientInflow = ambient_inflow_log('PowerLawRefSpeed', 8, ...
 controlSet = control_set(layout, 'axialInduction');
 
 % Define subModels
-subModels = model_definition('deflectionModel', 'rans',...
+subModels = model_definition('deflectionModel',      'rans',...
                              'velocityDeficitModel', 'selfSimilar',...
                              'wakeCombinationModel', 'quadratic',...
                              'addedTurbulenceModel', 'crespoHernandez');
@@ -28,8 +28,10 @@ tic
 florisRunner.run
 toc
 display([florisRunner.turbineResults.power])
-florisRunner.clearOutput()
-optimizeControl(florisRunner)
+% tic
+% optimizeControl(florisRunner)
+% toc
+visualizer(florisRunner)
 % tic
 % florisRunner.run
 % toc

@@ -30,8 +30,8 @@ classdef velocity_interface
             % wake velocity by using the mask. The velocity function is
             % normalized with respect the to the free stream.
             VelocityFun = @(y,z) (mask(y,z).*obj.deficit(deltax,dY_wc(y),dZ_wc(z)));
-            polarfun = @(theta,r) VelocityFun(r.*cos(theta),r.*sin(theta)).*r;
-            polarfunBound = @(theta,r) mask(r.*cos(theta),r.*sin(theta)).*r;
+            polarfun = @(theta,r) VelocityFun(r.*cos(theta), r.*sin(theta)).*r;
+            polarfunBound = @(theta,r) mask(r.*cos(theta), r.*sin(theta)).*r;
 
             % Compute the size of the area affected by the wake
             wakeArea = quad2d(polarfunBound,0,2*pi,0,rotRadius,'Abstol',15,...

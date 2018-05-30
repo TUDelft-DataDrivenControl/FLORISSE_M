@@ -42,7 +42,7 @@ classdef floris < handle
         function run(obj)
             %RUN Iterate through the turbines and compute the flow and powers
             %   Detailed explanation goes here
-            if ~isempty([obj.turbineConditions(:).avgWS])
+            if has_run(obj)
                 warning('floris.run has already been triggered, aborting new run')
                 return
             end
@@ -55,6 +55,10 @@ classdef floris < handle
                 % Compute which turbines are affected by this turbine
                 obj.find_affected_by(turbIndex, turbNum);
             end
+        end
+        
+        function hasRunBoolean = has_run(obj)
+            hasRunBoolean = ~isempty([obj.turbineConditions(:).avgWS]);
         end
         
         function compute_condition(obj, turbNumDw)
