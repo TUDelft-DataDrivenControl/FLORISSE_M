@@ -74,7 +74,7 @@ classdef zoned_velocity < velocity_interface
                 end
                 Q = Q + 2*obj.a*obj.cZones(deltax,zone)*wakeOverlapTurb(zone);
             end
-            wakeArea = wakeOverlapTurb(3);
+            wakeArea = sum(wakeOverlapTurb(:));
         end
     end
     methods(Static)

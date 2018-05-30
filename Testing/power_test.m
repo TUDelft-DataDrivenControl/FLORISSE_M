@@ -43,12 +43,13 @@ classdef power_test < matlab.unittest.TestCase
     methods(Test)
         function test_standard_run(testCase)
             testCase.florisRunner.run
-            powers = [testCase.florisRunner.turbineResults.power];
-            actPowers = [1705362.030372323   1705362.030372323   1705362.030372323   0350069.973068104   0350069.973068104   0350069.973068104];
+            actpowers = [testCase.florisRunner.turbineResults.power];
+
+            expectedPowers = [1705362.030372323   1705362.030372323   1705362.030372323   0350069.973068104   0350069.973068104   0350069.973068104];
 
             import matlab.unittest.constraints.IsEqualTo;
             import matlab.unittest.constraints.AbsoluteTolerance;
-            testCase.assertThat(actPowers, IsEqualTo(powers, ...
+            testCase.assertThat(expectedPowers, IsEqualTo(actpowers, ...
                 'Within', AbsoluteTolerance(1e-5)));
         end
     end

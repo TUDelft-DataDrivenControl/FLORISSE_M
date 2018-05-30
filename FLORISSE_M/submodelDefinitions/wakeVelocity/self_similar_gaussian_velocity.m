@@ -113,19 +113,23 @@ classdef self_similar_gaussian_velocity < velocity_interface
             booleanMap = (NW_mask+~NW_mask.*NW_exp.*(x<=obj.x0) + FW_exp.*(x>obj.x0))>0.022750131948179; % Evaluated to avoid dependencies on Statistics Toolbox
         end
         
-%         function [wakeArea, Q] = deficit_integral(obj, deltax, dy, dz, rotRadius)
-%             varWake = obj.C*((diag([obj.ky obj.kz])*(deltax-obj.x0))+obj.sigNeutral_x0).^2;
-%             FW_scalar = 1-sqrt(1-obj.ct.*cos(obj.thrustAngle)*...
-%                 sqrt(det((obj.C*(obj.sigNeutral_x0.^2))/varWake)));
-%             Q = obj.bvcdf_wake(dy, dz, rotRadius, varWake, FW_scalar);
-%             
-%             % Create a mask that is 1 where the wake exists and 0 where it
-%             % does not exists
-%             mask = @(y,z) obj.boundary(deltax,y+dy,z+dz);
-%             % Compute the size of the area affected by the wake
-%             wakeArea = quad2d(@(theta,r) mask(r.*cos(theta), r.*sin(theta)).*r,0,2*pi,0,rotRadius,'Abstol',15,...
-%             'Singular',false,'FailurePlot',true,'MaxFunEvals',3500);
-%         end
+        function [wakeArea, Q] = deficit_integral(obj, deltax, dy, dz, rotRadius)
+            if deltax < obj.x0
+                % The downwind turbine is positioned in the near-wake, falling back to numerical method
+                [wakeArea, Q] = deficit_integral@velocity_interface(obj, deltax, dy, dz, rotRadius);
+            else
+                varWake = obj.C*((diag([obj.ky obj.kz])*(deltax-obj.x0))+obj.sigNeutral_x0).^2;
+                FW_scalar = 1-sqrt(1-obj.ct.*cos(obj.thrustAngle)*...
+                    sqrt(det((obj.C*(obj.sigNeutral_x0.^2))/varWake)));
+                Q = obj.bvcdf_wake(dy, dz, rotRadius, varWake, FW_scalar);
+
+                % Create a mask that is 1 where the wake exists and 0 where it does not exists
+                mask = @(y,z) obj.boundary(deltax,y+dy,z+dz);
+                % Compute the size of the area affected by the wake
+                wakeArea = quad2d(@(theta,r) mask(r.*cos(theta), r.*sin(theta)).*r,0,2*pi,0,rotRadius,'Abstol',15,...
+                'Singular',false,'FailurePlot',true,'MaxFunEvals',3500);
+            end
+        end
         function Qdef = bvcdf_wake(obj, y, z, bladeR, varWake, FW_scalar)
             %bvcdf_wake uses the bvcdf function to compute the velocity deficit at the
             %swept area of a turbine
