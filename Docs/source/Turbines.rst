@@ -5,13 +5,25 @@ This page documents the turbines that are currently implemented in FLORIS. The f
 
 .. automodule:: FLORISSE_M.turbineDefinitions
 
-.. autoclass:: turbine_prototype
+.. autoclass:: turbine_type
 	:show-inheritance:
 	:members:
 
-The nrel5mw is a specific implementation.
+.. automodule:: FLORISSE_M.turbineDefinitions.dtu10mw
+
+.. autofunction:: dtu10mw()
+
+.. automodule:: FLORISSE_M.turbineDefinitions.mwt12
+
+.. autofunction:: mwt12()
 
 .. automodule:: FLORISSE_M.turbineDefinitions.nrel5mw
 
-.. autofunction:: funcname()
+.. autofunction:: nrel5mw()
 
+.. automodule:: FLORISSE_M.turbineDefinitions.TUM_G1
+
+.. autofunction:: tum_g1()
+
+.. bibliography:: FLORIS.bib
+	:filter: docname in docnames

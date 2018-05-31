@@ -1,6 +1,7 @@
 classdef layout_class < handle
-    %LAYOUT_CLASS Summary of this class goes here
-    %   Detailed explanation goes here
+    %LAYOUT_CLASS Defines wind farms layouts to use in FLORIS
+    %   This class has 2 important properties, namely a struct with
+    %   turbines and an ambientInflow object.
     
     properties
         turbines
@@ -50,6 +51,7 @@ classdef layout_class < handle
         function idArray = get.idWf(obj)
             %get.locIf Get the location order in the wind frame.
             [~, idArray] = sort(obj.locWf(:, 1));
+%             [~, idArt] = sort(idArray);
         end
         
         function turbineTypes = get.uniqueTurbineTypes(obj)

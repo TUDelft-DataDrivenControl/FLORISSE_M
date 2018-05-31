@@ -1,13 +1,13 @@
 function turbineType = tum_g1()
-%TUM_G1 Summary of this function goes here
-%   Detailed explanation goes here
+%TUM_G1 This functions creates a turbine type of a small scale wind turbine
+%as used in TUM
 
-filepath = getFileLocation();
 % Available control methods
 availableControl = {'pitch', 'greedy', 'axialInduction'};
-% Instantiate turbine with
-% obj = turbine_type(rotorRadius, genEfficiency, hubHeight, pP, path, allowableControlMethods)
-turbineType = turbine_type(1.1/2, 1.0, 0.825, 1.787, filepath, availableControl);
+% Instantiate turbine with the correct dimensions and characteristics
+% obj = turbine_type(rotorRadius, genEfficiency, hubHeight, pP, ...
+turbineType = turbine_type(1.1/2, 1.0, 0.825, 1.787, ...
+                           getFileLocation(), availableControl, 'Small scale turbine TUM');
 end
 
 % This function is compatible with C-compilation

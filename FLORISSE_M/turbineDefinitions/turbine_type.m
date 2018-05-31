@@ -9,12 +9,15 @@ classdef turbine_type < handle
     %   vary per simulation such as power are stored elsewhere (TODO: explain where)
     
     properties
-        controlMethod
-        rotorRadius
-        rotorArea
-        genEfficiency
-        hubHeight
-        pP
+        controlMethod % The controlMethod that is being used in this turbine
+        rotorRadius % Length of a single turbine blade
+        rotorArea % Swept area of the rotor
+        genEfficiency % Generator efficiency
+        hubHeight % Heigth of the turbine nacelle
+        pP % Fitting parameter to adjust CP down for a turbine angle
+    end
+    properties (SetAccess = immutable)
+        description % Short description of the turbine
     end
     properties (Access = private)
         allowableControlMethods
@@ -26,8 +29,8 @@ classdef turbine_type < handle
     end
     
     methods
-        function obj = turbine_type(rotorRadius, genEfficiency, hubHeight, pP, path, allowableControlMethods)
-            %turbine_prototype Construct an instance of this class
+        function obj = turbine_type(rotorRadius, genEfficiency, hubHeight, pP, path, allowableControlMethods, description)
+            %TURBINE_TYPE Construct an instance of this class
             %   The turbine characters are saved as properties 
             obj.controlMethod = nan;
             obj.dataPath = path;
@@ -38,6 +41,7 @@ classdef turbine_type < handle
             obj.genEfficiency = genEfficiency;
             obj.hubHeight = hubHeight;
             obj.pP = pP;
+            obj.description = description;
         end
         
         function set.controlMethod(obj, controlMethod)

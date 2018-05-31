@@ -1,15 +1,16 @@
-function layout_obj = generic_6_turb()
-%GENERIC_6_TURB Summary of this class goes here
+function layout_obj = tester_6_turb_5D()
+%TESTER_6_TURB_5D Summary of this class goes here
 %   Detailed explanation goes here
 
 NREL5MWTurbType = nrel5mw();
-locIf = {[300,    100.0];
-         [300,    500.0];
-         [300,    900.0];
-         [1000,   100.0];
-         [1000,   500.0];
-         [1000,   900.0]};
+D = 2*NREL5MWTurbType.rotorRadius;
 
+locIf = {[300,    D];
+         [300,    6*D];
+         [300,    11*D];
+         [1000,   D];
+         [1000,   6*D];
+         [1000,   11*D]};
 % Put all the turbines in a struct array
 turbines = struct('turbineType', NREL5MWTurbType , ...
                       'locIf',         locIf);

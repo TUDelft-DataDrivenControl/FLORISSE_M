@@ -6,6 +6,8 @@ classdef visualizer < handle
         layout
         turbineResults
         wakeCombinationModel
+        yawAngles
+        avgWs
         plotLayout
         plot2DFlowfield
         plot3DFlowfield
@@ -34,6 +36,8 @@ classdef visualizer < handle
             obj.layout = florisRunner.layout;
             obj.turbineResults = florisRunner.turbineResults;
             obj.wakeCombinationModel = florisRunner.model.wakeCombinationModel;
+            obj.yawAngles = florisRunner.controlSet.yawAngles;
+            obj.avgWs = [florisRunner.turbineConditions.avgWS];
             
             % Default visualization settings, if not specified
             if ~exist('plotLayout','var');  obj.plotLayout      = false; end
@@ -42,6 +46,7 @@ classdef visualizer < handle
             if ~exist('frame','var');       obj.frame           = 'IF';  end
             obj.define_flow_field_wf_mesh()
             obj.compute_flow_field_wf()
+            plot_2d_field(obj.layout, obj.flowFieldWF, obj.yawAngles)
         end
         
         function define_flow_field_wf_mesh(obj)
@@ -50,15 +55,21 @@ classdef visualizer < handle
             refTurbType = obj.layout.turbines(1).turbineType;
 
             % Setup mesh resolution
-            obj.resx = 0.20*refTurbType.rotorRadius; % resolution in x-axis in meters
-            obj.resy = 0.20*refTurbType.rotorRadius; % resolution in y-axis in meters
+%             obj.resx = 0.20*refTurbType.rotorRadius; % resolution in x-axis in meters
+%             obj.resy = 0.20*refTurbType.rotorRadius; % resolution in y-axis in meters
+%             obj.resz = 0.10*refTurbType.hubHeight;  % resolution in z-axis in meters
+            obj.resx = 0.05*refTurbType.rotorRadius; % resolution in x-axis in meters
+            obj.resy = 0.05*refTurbType.rotorRadius; % resolution in y-axis in meters
             obj.resz = 0.10*refTurbType.hubHeight;  % resolution in z-axis in meters
-%             obj.fixYaw = true;% Account for yaw in near-turbine region in 2Dplot
             
-            obj.xMin = min(obj.layout.locWf(:,1))-14*refTurbType.rotorRadius;
-            obj.xMax = max(obj.layout.locWf(:,1))+14*refTurbType.rotorRadius;
-            obj.yMin = min(obj.layout.locWf(:,2))-14*refTurbType.rotorRadius;
-            obj.yMax = max(obj.layout.locWf(:,2))+14*refTurbType.rotorRadius;
+%             obj.xMin = min(obj.layout.locWf(:,1))-14*refTurbType.rotorRadius;
+%             obj.xMax = max(obj.layout.locWf(:,1))+14*refTurbType.rotorRadius;
+%             obj.yMin = min(obj.layout.locWf(:,2))-14*refTurbType.rotorRadius;
+%             obj.yMax = max(obj.layout.locWf(:,2))+14*refTurbType.rotorRadius;
+            obj.xMin = min(obj.layout.locWf(:,1))-4*refTurbType.rotorRadius;
+            obj.xMax = max(obj.layout.locWf(:,1))+25*refTurbType.rotorRadius;
+            obj.yMin = min(obj.layout.locWf(:,2))-4*refTurbType.rotorRadius;
+            obj.yMax = max(obj.layout.locWf(:,2))+4*refTurbType.rotorRadius;
     
             % Determine if we need to calculate IF flowField
             if (~isfield(obj.flowFieldWF,'U') && (obj.plot2DFlowfield || obj.plotLayout))
@@ -85,10 +96,9 @@ classdef visualizer < handle
             obj.flowFieldWF.W  = zeros(size(obj.flowFieldWF.X));
 
             % Compute the flowfield velocity at every voxel(3D) or pixel(2D)
-            obj.flowFieldWF = floris_flowField(obj.flowFieldWF, obj.layout, obj.turbineResults, true, obj.wakeCombinationModel);
+            obj.flowFieldWF = floris_flowField(obj.flowFieldWF, obj.layout, obj.turbineResults, ...
+                obj.yawAngles, obj.avgWs, true, obj.wakeCombinationModel);
             
-%             [flowField.WF] = floris_flowField(inputData,flowField.WF,outputData.turbines,outputData.wakes);        
-
         end
     end
 end

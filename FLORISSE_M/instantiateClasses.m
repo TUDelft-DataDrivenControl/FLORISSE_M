@@ -19,7 +19,7 @@ controlSet = control_set(layout, 'axialInduction');
 
 % Define subModels
 subModels = model_definition('deflectionModel',      'rans',...
-                             'velocityDeficitModel', 'zones',...
+                             'velocityDeficitModel', 'selfSimilar',...
                              'wakeCombinationModel', 'quadratic',...
                              'addedTurbulenceModel', 'crespoHernandez');
 florisRunner = floris(layout, controlSet, subModels);
@@ -31,7 +31,7 @@ display([florisRunner.turbineResults.power])
 % tic
 % optimizeControl(florisRunner)
 % toc
-% visTool = visualizer(florisRunner);
+visTool = visualizer(florisRunner);
 
 % tic
 % florisRunner.run

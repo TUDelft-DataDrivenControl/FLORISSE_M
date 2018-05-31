@@ -46,14 +46,14 @@ classdef floris < handle
                 warning('floris.run has already been triggered, aborting new run')
                 return
             end
-            for turbIndex = 1:obj.layout.nTurbs
-                turbNum = obj.layout.idWf(turbIndex);
+            for turbWfIndex = 1:obj.layout.nTurbs
+                turbIfIndex = obj.layout.idWf(turbWfIndex);
                 % Compute the conditions at the rotor of this turbine
-                obj.compute_condition(turbNum);
+                obj.compute_condition(turbIfIndex);
                 % Compute CP, CT and power of this turbine
-                obj.compute_result(turbNum);
+                obj.compute_result(turbIfIndex);
                 % Compute which turbines are affected by this turbine
-                obj.find_affected_by(turbIndex, turbNum);
+                obj.find_affected_by(turbWfIndex, turbIfIndex);
             end
         end
         
@@ -61,38 +61,37 @@ classdef floris < handle
             hasRunBoolean = ~isempty([obj.turbineConditions(:).avgWS]);
         end
         
-        function compute_condition(obj, turbNumDw)
+        function compute_condition(obj, turbIfIndex)
             %COMPUTE_CONDITION Compute the conditions at the rotor of this turbine
             %   This function uses the ambientInflow and upwind turbines
             %   whose wake hits the rotor to determine the specific
             %   conditions at the rotor of this turbine.
             
-            if isempty(obj.turbineResults(turbNumDw).affectedBy)
-                obj.turbineConditions(turbNumDw).avgWS = obj.layout.ambientInflow.Vref;
-                obj.turbineConditions(turbNumDw).TI = obj.layout.ambientInflow.TI0;
-                obj.turbineConditions(turbNumDw).rho = obj.layout.ambientInflow.rho;
+            if isempty(obj.turbineResults(turbIfIndex).affectedBy)
+                obj.turbineConditions(turbIfIndex).avgWS = obj.layout.ambientInflow.Vref;
+                obj.turbineConditions(turbIfIndex).TI = obj.layout.ambientInflow.TI0;
+                obj.turbineConditions(turbIfIndex).rho = obj.layout.ambientInflow.rho;
                 return
             end
-            
             sumKed  = 0; % Sum of kinetic energy deficits (outer sum of Eq. 22)
             TiVec = obj.layout.ambientInflow.TI0; % Turbulence intensity vector
-            locationDw = obj.layout.locWf(turbNumDw, :);
+            locationDw = obj.layout.locWf(turbIfIndex, :);
             Uhh = obj.layout.ambientInflow.Vfun(locationDw(3)); % Free-stream velocity at hub heigth
             
-            for turbNumAffector = obj.turbineResults(turbNumDw).affectedBy.'
+            for turbNumAffector = obj.turbineResults(turbIfIndex).affectedBy.'
                 % Compute predicted deficit by turbNumAffector
                 locationUw = obj.layout.locWf(turbNumAffector, :);
                 deltax = locationDw(1)-locationUw(1);
                 [dyWake, dzWake] = obj.turbineResults(turbNumAffector).wake.deflection(deltax);
-                rotRadius = obj.layout.turbines(turbNumDw).turbineType.rotorRadius;
+                rotRadius = obj.layout.turbines(turbIfIndex).turbineType.rotorRadius;
                 
                 dy = locationDw(2)-locationUw(2)-dyWake;
                 dz = locationDw(3)-locationUw(3)-dzWake;
                 
                 [wakeArea, Q] = obj.turbineResults(turbNumAffector).wake.deficit_integral(deltax, dy, dz, rotRadius);
                 
-                overlap = wakeArea/obj.layout.turbines(turbNumDw).turbineType.rotorArea;
-                Vni = 1-Q/obj.layout.turbines(turbNumDw).turbineType.rotorArea;
+                overlap = wakeArea/obj.layout.turbines(turbIfIndex).turbineType.rotorArea;
+                Vni = 1-Q/obj.layout.turbines(turbIfIndex).turbineType.rotorArea;
                 
                 % Calculate turbine-added turbulence at location deltax
                 TiVec = [TiVec overlap*obj.turbineResults(turbNumAffector).wake.added_TI(deltax, TiVec(1))];
@@ -101,9 +100,9 @@ classdef floris < handle
                 sumKed = sumKed+obj.model.wakeCombinationModel(Uhh,U_uw,Vni);
             end
             
-            obj.turbineConditions(turbNumDw).avgWS = Uhh-sqrt(sumKed);
-            obj.turbineConditions(turbNumDw).TI = norm(TiVec);
-            if imag(obj.turbineConditions(turbNumDw).avgWS)>0
+            obj.turbineConditions(turbIfIndex).avgWS = Uhh-sqrt(sumKed);
+            obj.turbineConditions(turbIfIndex).TI = norm(TiVec);
+            if imag(obj.turbineConditions(turbIfIndex).avgWS)>0
                 keyboard
                 % If you end up here, please check the turbine spacing. Are any
                 % turbines located in the near wake of another one? Is the
@@ -111,7 +110,7 @@ classdef floris < handle
                 % to C_T? Somewhere, the wind speed at a rotor plane is smaller
                 % than 0, prompting this error.
             end
-            obj.turbineConditions(turbNumDw).rho = obj.layout.ambientInflow.rho;
+            obj.turbineConditions(turbIfIndex).rho = obj.layout.ambientInflow.rho;
             % Combine all the added turbulence model using the 2-norm
         end
         
@@ -132,7 +131,7 @@ classdef floris < handle
                                                 obj.turbineResults(turbNum));
         end
         
-        function find_affected_by(obj, turbIndex, turbNumUw)
+        function find_affected_by(obj, turbWfIndex, turbIfIndex)
             %FIND_AFFECTED_BY Check which downwind turbines are affected by this turbine
             %   This function uses the wake of this turbine to check if any
             %   donwind turbines re affected by its operation. At first
@@ -143,24 +142,25 @@ classdef floris < handle
             %   any of these points are inside the wake the turbine is said
             %   to have been affected.
             
-            locationUw = obj.layout.locWf(turbNumUw, :);
+            locationWfUw = obj.layout.locWf(turbIfIndex, :);
+            % Only look at turbines that are further downstream than this one
+            indexWfList = obj.layout.idWf(turbWfIndex+1:obj.layout.nTurbs);
             % Only look at turbines that lie within a 1200m wide downwind band
-            indexList = turbIndex+1:obj.layout.nTurbs;
-            possibleIndexes = indexList(obj.layout.locWf(indexList, 2)<600);
+            possibleIndexesIf = indexWfList(abs(obj.layout.locWf(indexWfList, 2)-locationWfUw(2))<600);
             % Loop through the possible indexes and see if this turbine affects the downwind turbine
-            for turbNumDw = obj.layout.idWf(possibleIndexes).'
-                locationDw = obj.layout.locWf(turbNumDw, :);
-                deltax = locationDw(1)-locationUw(1);
+            for turbNumIfDw = possibleIndexesIf.'
+                locationWfDw = obj.layout.locWf(turbNumIfDw, :);
+                deltax = locationWfDw(1)-locationWfUw(1);
                 
-                rotRadius = obj.layout.turbines(turbNumDw).turbineType.rotorRadius;
-                [dy, dz] = obj.turbineResults(turbNumUw).wake.deflection(deltax);
+                rotRadius = obj.layout.turbines(turbNumIfDw).turbineType.rotorRadius;
+                [dy, dz] = obj.turbineResults(turbIfIndex).wake.deflection(deltax);
                 
                 % Check if any of the rotor outlines fall in the wake boundary
-                if any(obj.turbineResults(turbNumUw).wake.boundary(deltax, ...
-                           rotRadius*sin(0:.05:2*pi)+locationDw(2)-locationUw(2)-dy, ...
-                           rotRadius*cos(0:.05:2*pi)+locationDw(3)-locationUw(3)-dz))
+                if any(obj.turbineResults(turbIfIndex).wake.boundary(deltax, ...
+                           rotRadius*sin(0:.05:2*pi)+locationWfDw(2)-locationWfUw(2)-dy, ...
+                           rotRadius*cos(0:.05:2*pi)+locationWfDw(3)-locationWfUw(3)-dz))
                        % If yes, add this turbNumUw to their affected_by array
-                       obj.turbineResults(turbNumDw).affectedBy(end+1,:) = turbNumUw;
+                       obj.turbineResults(turbNumIfDw).affectedBy(end+1,:) = turbIfIndex;
                 end
             end
         end

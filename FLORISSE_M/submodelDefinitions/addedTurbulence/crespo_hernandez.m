@@ -7,6 +7,7 @@ classdef crespo_hernandez < added_ti_interface
         TIb
         TIc
         TId
+        TI0Test
         axialInd
         rotorRadius
         TIthresholdMult
@@ -21,6 +22,7 @@ classdef crespo_hernandez < added_ti_interface
             obj.TIb = modelData.TIb;
             obj.TIc = modelData.TIc;
             obj.TId = modelData.TId;
+%             obj.TI0Test = turbineCondition.TI;
             obj.axialInd = turbineResult.axialInduction;
             obj.rotorRadius = turbine.turbineType.rotorRadius;
             obj.TIthresholdMult = modelData.TIthresholdMult;
@@ -29,7 +31,7 @@ classdef crespo_hernandez < added_ti_interface
         function TI_out = added_TI(obj, x, TI0)
             %METHOD1 Summary of this method goes here
             %   Detailed explanation goes here
-
+%             TI0 = obj.TI0Test;
             if (x < obj.rotorRadius*obj.TIthresholdMult)
 %                 R = turbineDw.rotorRadius;
 %                 [Y,Z]=meshgrid(linspace(-R,R,50),linspace(-R,R,50)); % Generating grid points
