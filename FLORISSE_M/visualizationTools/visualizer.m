@@ -90,7 +90,6 @@ classdef visualizer < handle
         function compute_flow_field_wf(obj)
             % Compute the flow field for the WF
             disp(' Computing flowfield in wind-aligned frame. This may take some time.');
-            
             obj.flowFieldWF.U  = obj.layout.ambientInflow.Vfun(obj.flowFieldWF.Z);
             obj.flowFieldWF.V  = zeros(size(obj.flowFieldWF.X));
             obj.flowFieldWF.W  = zeros(size(obj.flowFieldWF.X));

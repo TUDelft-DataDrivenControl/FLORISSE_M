@@ -10,12 +10,8 @@ function [ flowField ] = floris_flowField(flowField, layout, turbineResults, yaw
     
     % Compute the windspeed at a cutthrough of the wind farm at every x-coordinate
     for xSample = flowField.X(1,:,1)
-%         keyboard
         % Select the upwind turbines and store them in a struct
         uwTurbIfIndexes = find(xSample-(layout.locWf(:,1)-tpr)>=0);
-%         if xSample >= 180
-%             keyboard
-%         end
         if ~isempty(uwTurbIfIndexes)
             % compute the upwind turbine distance with respect to xSample
             deltaXs = xSample - layout.locWf(uwTurbIfIndexes, 1);

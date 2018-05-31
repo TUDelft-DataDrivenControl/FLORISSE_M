@@ -1,6 +1,5 @@
 % Create a florisRunner object that holds settings for the windtunnel
 florisRunner = create_wind_tunnel_floris();
-
 % Time a testrun
 % tic
 % florisRunner.run
@@ -26,3 +25,4 @@ florisRunner.controlSet.tipSpeedRatios = [5 3 3.5];
 tic
 optYaws = optimizeControl(florisRunner);
 toc
+visTool = visualizer(florisRunner);
