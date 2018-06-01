@@ -46,6 +46,8 @@ classdef visualizer < handle
             if ~exist('frame','var');       obj.frame           = 'IF';  end
             obj.define_flow_field_wf_mesh()
             obj.compute_flow_field_wf()
+%             volvisApp(obj.flowFieldWF.X, obj.flowFieldWF.Y,...
+%                   obj.flowFieldWF.Z, obj.flowFieldWF.U)
             plot_2d_field(obj.layout, obj.flowFieldWF, obj.yawAngles)
         end
         
@@ -55,21 +57,21 @@ classdef visualizer < handle
             refTurbType = obj.layout.turbines(1).turbineType;
 
             % Setup mesh resolution
-%             obj.resx = 0.20*refTurbType.rotorRadius; % resolution in x-axis in meters
-%             obj.resy = 0.20*refTurbType.rotorRadius; % resolution in y-axis in meters
-%             obj.resz = 0.10*refTurbType.hubHeight;  % resolution in z-axis in meters
-            obj.resx = 0.05*refTurbType.rotorRadius; % resolution in x-axis in meters
-            obj.resy = 0.05*refTurbType.rotorRadius; % resolution in y-axis in meters
+            obj.resx = 0.20*refTurbType.rotorRadius; % resolution in x-axis in meters
+            obj.resy = 0.20*refTurbType.rotorRadius; % resolution in y-axis in meters
             obj.resz = 0.10*refTurbType.hubHeight;  % resolution in z-axis in meters
+%             obj.resx = 0.05*refTurbType.rotorRadius; % resolution in x-axis in meters
+%             obj.resy = 0.05*refTurbType.rotorRadius; % resolution in y-axis in meters
+%             obj.resz = 0.10*refTurbType.hubHeight;  % resolution in z-axis in meters
             
-%             obj.xMin = min(obj.layout.locWf(:,1))-14*refTurbType.rotorRadius;
-%             obj.xMax = max(obj.layout.locWf(:,1))+14*refTurbType.rotorRadius;
-%             obj.yMin = min(obj.layout.locWf(:,2))-14*refTurbType.rotorRadius;
-%             obj.yMax = max(obj.layout.locWf(:,2))+14*refTurbType.rotorRadius;
-            obj.xMin = min(obj.layout.locWf(:,1))-4*refTurbType.rotorRadius;
-            obj.xMax = max(obj.layout.locWf(:,1))+25*refTurbType.rotorRadius;
-            obj.yMin = min(obj.layout.locWf(:,2))-4*refTurbType.rotorRadius;
-            obj.yMax = max(obj.layout.locWf(:,2))+4*refTurbType.rotorRadius;
+            obj.xMin = min(obj.layout.locWf(:,1))-14*refTurbType.rotorRadius;
+            obj.xMax = max(obj.layout.locWf(:,1))+14*refTurbType.rotorRadius;
+            obj.yMin = min(obj.layout.locWf(:,2))-14*refTurbType.rotorRadius;
+            obj.yMax = max(obj.layout.locWf(:,2))+14*refTurbType.rotorRadius;
+%             obj.xMin = min(obj.layout.locWf(:,1))-4*refTurbType.rotorRadius;
+%             obj.xMax = max(obj.layout.locWf(:,1))+15*refTurbType.rotorRadius;
+%             obj.yMin = min(obj.layout.locWf(:,2))-4*refTurbType.rotorRadius;
+%             obj.yMax = max(obj.layout.locWf(:,2))+4*refTurbType.rotorRadius;
     
             % Determine if we need to calculate IF flowField
             if (~isfield(obj.flowFieldWF,'U') && (obj.plot2DFlowfield || obj.plotLayout))

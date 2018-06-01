@@ -55,8 +55,10 @@ classdef model_definition
             
             % Store a function handle to the wake combination model
             switch wakeCombinationModel
-                case 'quadratic'
+                case 'quadraticRotorVelocity'
                     obj.wakeCombinationModel = @quadratic_rotor_velocity;
+                case 'quadraticAmbientVelocity'
+                    obj.wakeCombinationModel = @quadratic_ambient_velocity;
                 otherwise
                     error('Wake combination model with name: "%s" is not defined', wakeCombinationModel);
             end

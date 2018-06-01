@@ -21,7 +21,7 @@ classdef floris < handle
             obj.layout = layout;
             obj.controlSet = controlSet;
             obj.model = model;
-            obj.clearOutput()
+            obj.clearOutput();
         end
         
         function clearOutput(obj)
@@ -90,9 +90,10 @@ classdef floris < handle
                 
                 [wakeArea, Q] = obj.turbineResults(turbNumAffector).wake.deficit_integral(deltax, dy, dz, rotRadius);
                 
-                overlap = wakeArea/obj.layout.turbines(turbIfIndex).turbineType.rotorArea;
+%                 overlap = wakeArea/obj.layout.turbines(turbIfIndex).turbineType.rotorArea;
                 Vni = 1-Q/obj.layout.turbines(turbIfIndex).turbineType.rotorArea;
-                
+                overlap = Q/obj.layout.turbines(turbIfIndex).turbineType.rotorArea;
+
                 % Calculate turbine-added turbulence at location deltax
                 TiVec = [TiVec overlap*obj.turbineResults(turbNumAffector).wake.added_TI(deltax, TiVec(1))];
                 % Combine the effects of multiple turbines' wakes

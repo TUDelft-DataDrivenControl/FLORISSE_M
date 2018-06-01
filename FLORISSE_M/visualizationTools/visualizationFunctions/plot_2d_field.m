@@ -13,7 +13,7 @@ function [ ] = plot_2d_field(layout, flowField, YawAngles)
     
     % Select the flowfield at hub height and accompanying x and y index
     if ndims(flowField.U) == 3
-        [~, ix] = min(abs(flowField.U(1,1,:)-mean(turbLoc(:,3))));
+        [~, ix] = min(abs(flowField.Z(1,1,:)-mean(turbLoc(:,3))));
         UatHub = squeeze(flowField.U(:,:,ix));
         xVec = squeeze(flowField.X(:,:,1));
         yVec = squeeze(flowField.Y(:,:,1));
@@ -38,7 +38,7 @@ function [ ] = plot_2d_field(layout, flowField, YawAngles)
         hold on;
         plot(turbLoc(j,1)+ [-1  1]*layout.turbines(j).turbineType.rotorRadius*sin(YawAngles(j)),...
              turbLoc(j,2)+ [ 1 -1]*layout.turbines(j).turbineType.rotorRadius*cos(YawAngles(j)),'k','LineWidth',2); 
-        text(turbLoc(j,1)+30,turbLoc(j,2),['T ' num2str(j) ':' num2str(layout.idWf(j))]);
+        text(turbLoc(j,1)+30,turbLoc(j,2),['T ' num2str(j)]);% ':' num2str(layout.idWf(j))]);
     end
     axis equal;
 end

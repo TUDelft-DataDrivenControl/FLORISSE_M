@@ -1,4 +1,4 @@
-classdef ambient_inflow_interface < handle
+classdef ambient_inflow_interface
     %AMBIENT_INFLOW_INTERFACE defines how ambientInflow objects should behave
     
     properties (Abstract)

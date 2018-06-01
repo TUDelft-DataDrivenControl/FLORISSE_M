@@ -59,7 +59,7 @@ classdef rans_deficit_deflection < deflection_interface
             % displacement at the end of the near wake
             obj.delta_x0 = tan(obj.theta_C0)*obj.x0;
             
-            obj.wakeDir = [1 0 0;0 0 1;0 -1 0]*turbineControl.wakeNormal;
+            obj.wakeDir = [1 0 0;0 0 -1;0 1 0]*turbineControl.wakeNormal;
 
             % Turbine rotation induced linear wake deflection parameters
             obj.ad = modelData.ad;
@@ -106,7 +106,7 @@ classdef rans_deficit_deflection < deflection_interface
 
             dz = obj.wakeDir(3)*displacements + ...  % initial position + yaw*tilt induced offset
                 (obj.at*(2*obj.rotorRadius) + x * obj.bt); % bladerotation-induced vertical offset
-
+            
         end
     end
 end
