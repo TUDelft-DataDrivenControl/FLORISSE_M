@@ -14,10 +14,6 @@ This is the documentation for (FLORIS) which stands for FLOw Redirection and Ind
    Background
    Architecture
    Classes
-   Turbines
-   DeflectionModels
-   VelocityModels
-   AmbientFlowClasses
    ForDevelopers
    IntroductionToTools
 
@@ -27,3 +23,11 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
+
+   .. Turbines
+   .. AddedTurbulenceModels
+   .. DeflectionModels
+   .. SummationModels
+   .. VelocityModels
+   .. AmbientFlowClasses

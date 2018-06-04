@@ -88,28 +88,16 @@ classdef floris < handle
                 dy = locationDw(2)-locationUw(2)-dyWake;
                 dz = locationDw(3)-locationUw(3)-dzWake;
                 
-                [wakeArea, Q] = obj.turbineResults(turbNumAffector).wake.deficit_integral(deltax, dy, dz, rotRadius);
-                
-%                 overlap = wakeArea/obj.layout.turbines(turbIfIndex).turbineType.rotorArea;
-                % Vni = Relative volumetric flow rate divided by freestream
-                Vni = 1-Q/obj.layout.turbines(turbIfIndex).turbineType.rotorArea;
-                
-%                 if turbIfIndex == 9
-%                     keyboard
-%                 end
-%                 overlap = Q/obj.layout.turbines(turbIfIndex).turbineType.rotorArea;
-% keyboard
-                [Y,Z]=meshgrid(linspace(-rotRadius,rotRadius,50),linspace(-rotRadius,rotRadius,50));
-                overlap = nnz((hypot(Y,Z)<rotRadius)&...
-                    (obj.turbineResults(turbNumAffector).wake.boundary(deltax,Y+dy,...
-                    Z+dz)))/...
-                    nnz(hypot(Y,Z)<rotRadius);
+                % Compute the portion of the swept area that is affected by
+                % the wake from turbNumAffector and compute the relative
+                % volumetric flowrate deficit Q
+                [overlap, RVdef] = obj.turbineResults(turbNumAffector).wake.deficit_integral(deltax, dy, dz, rotRadius);
                 
                 % Calculate turbine-added turbulence at location deltax
-                TiVec = [TiVec overlap*obj.turbineResults(turbNumAffector).wake.added_TI(deltax, TiVec(1))];
+                TiVec = [TiVec overlap*obj.turbineResults(turbNumAffector).wake.added_TI(deltax)];
                 % Combine the effects of multiple turbines' wakes
                 U_uw  = obj.turbineConditions(turbNumAffector).avgWS;
-                sumKed = sumKed+obj.model.wakeCombinationModel(Uhh,U_uw,Vni);
+                sumKed = sumKed+obj.model.wakeCombinationModel(Uhh, U_uw, RVdef);
             end
             
             obj.turbineConditions(turbIfIndex).avgWS = Uhh-sqrt(sumKed);

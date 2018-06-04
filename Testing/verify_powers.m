@@ -52,7 +52,7 @@ oldPowers = [];
 % Test all possible combinations of options
 for atmoType = {'uniform','boundary'}
     for controlType = {'pitch','greedy','axialInduction'}
-        for wakeType = {'zones','jensenGauss','larsen','selfSimilar'}
+        for wakeType = {'zones','jensenGauss','selfSimilar'}
             for wakeSum = {'quadraticAmbientVelocity','quadraticRotorVelocity'}
                 for deflType = {'jimenez','rans'}
                     
@@ -107,8 +107,9 @@ for atmoType = {'uniform','boundary'}
 end
 [~, idxs] = sort(newPowers);
 figure; plot(1:length(newPowers), newPowers, 1:length(newPowers), oldPowers)
+figure; plot(newPowers-oldPowers);
 % plot(1:length(newPowers), newPowers(idxs), 1:length(newPowers), oldPowers(idxs))
-cd('../Testing')
+
 % if generateData
 %     save('newPowData', 'powerData')
 % else

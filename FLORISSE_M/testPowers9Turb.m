@@ -11,7 +11,7 @@ layout.ambientInflow = ambient_inflow_log('PowerLawRefSpeed', 12, ...
                                           'windDirection', 0.30, ...
                                           'TI0', .1);
 
-controlSet = control_set(layout, 'axialInduction');
+controlSet = control_set(layout, 'pitch');
 % controlSet.tiltAngles = deg2rad([0 10 0 0 -10 0 10 0 0]);
 % controlSet.yawAngles = deg2rad([-30 10 -10 -30 -20 -15 0 10 0]);
 controlSet.tiltAngles = deg2rad([0 0 0 0 0 0 0 0 0]);
@@ -19,15 +19,17 @@ controlSet.yawAngles = deg2rad([-30 10 -10 -30 -20 -15 0 10 0]);
 
 % Define subModels
 subModels = model_definition('deflectionModel',      'jimenez',...
-                             'velocityDeficitModel', 'larsen',...
+                             'velocityDeficitModel', 'selfSimilar',...
                              'wakeCombinationModel', 'quadraticAmbientVelocity',...
                              'addedTurbulenceModel', 'crespoHernandez');
 
 florisRunner = floris(layout, controlSet, subModels);
+tic
 florisRunner.run
-display([florisRunner.turbineResults.power])
-display([florisRunner.turbineConditions.avgWS])
-display([florisRunner.turbineConditions.TI])
-display([florisRunner.turbineResults.axialInduction])
-display([florisRunner.turbineResults.ct])
-visTool = visualizer(florisRunner);
+toc
+% display([florisRunner.turbineResults.power])
+% display([florisRunner.turbineConditions.avgWS])
+% display([florisRunner.turbineConditions.TI])
+% display([florisRunner.turbineResults.axialInduction])
+% display([florisRunner.turbineResults.ct])
+% visTool = visualizer(florisRunner);

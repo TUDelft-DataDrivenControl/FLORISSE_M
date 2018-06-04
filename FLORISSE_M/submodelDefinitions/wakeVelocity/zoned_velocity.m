@@ -63,7 +63,7 @@ classdef zoned_velocity < velocity_interface
             booleanMap = hypot(y,z)<(obj.wakeRadiusInit+obj.Ke.*obj.me(3)*x);
         end
         
-        function [wakeArea, Q] = deficit_integral(obj, deltax, dy, dz, rotRadius)
+        function [overlap, RVdef] = deficit_integral(obj, deltax, dy, dz, rotRadius)
             Q   = 0;
             wakeOverlapTurb = [0 0 0];
             for zone = 1:3
@@ -74,7 +74,12 @@ classdef zoned_velocity < velocity_interface
                 end
                 Q = Q + 2*obj.a*obj.cZones(deltax,zone)*wakeOverlapTurb(zone);
             end
-            wakeArea = sum(wakeOverlapTurb(:));
+            
+            rotorArea = pi * rotRadius^2;
+            % Relative volumetric flowrate through swept area
+            RVdef = 1-Q/rotorArea;
+            % Estimate the size of the area affected by the wake
+            overlap = sum(wakeOverlapTurb(:))/(rotorArea);
         end
     end
     methods(Static)

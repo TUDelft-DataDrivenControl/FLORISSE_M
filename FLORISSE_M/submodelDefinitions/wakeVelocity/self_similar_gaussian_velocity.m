@@ -1,6 +1,6 @@
 classdef self_similar_gaussian_velocity < velocity_interface
-    %SELF_SIMILAR_GAUSSIAN_VELOCITY Summary of this class goes here
-    %   Detailed explanation goes here
+    %SELF_SIMILAR_GAUSSIAN_VELOCITY Wake velocity object implementing a
+    %symmetric Gaussian wake as described in :cite:`Bastankhah2016`.
     
     properties
         ct % Turbine thrust coefficient
@@ -30,10 +30,8 @@ classdef self_similar_gaussian_velocity < velocity_interface
             D = 2*turbine.turbineType.rotorRadius;    % Rotor diameter
 
             % NEAR WAKE CALCULATIONS
-            % Eq. 7.3, x0 is the start of the far wake
-%             obj.x0 = D.*(cos(obj.thrustAngle).*(1+sqrt(1-obj.ct*cos(obj.thrustAngle))))./...
-%                     (sqrt(2)*(modelData.alpha*obj.TI + modelData.beta*(1-sqrt(1-obj.ct))));
-            obj.x0 = D.*(cos(obj.thrustAngle).*(1+sqrt(1-obj.ct*cos(obj.thrustAngle))))./...
+            % Eq. 6.16, x0 is the start of the far wake
+            obj.x0 = D.*(cos(obj.thrustAngle).*(1+sqrt(1-obj.ct)))./...
                     (sqrt(2)*(modelData.alpha*obj.TI + modelData.beta*(1-sqrt(1-obj.ct))));
 
             % C0 is the relative velocity deficit in the near wake core
@@ -115,27 +113,28 @@ classdef self_similar_gaussian_velocity < velocity_interface
             booleanMap = (NW_mask+~NW_mask.*NW_exp.*(x<=obj.x0) + FW_exp.*(x>obj.x0))>0.022750131948179; % Evaluated to avoid dependencies on Statistics Toolbox
         end
         
-        function [wakeArea, Q] = deficit_integral(obj, deltax, dy, dz, rotRadius)
+        function [overlap, RVdef] = deficit_integral(obj, deltax, dy, dz, rotRadius)
             if deltax < obj.x0
                 % The downwind turbine is positioned in the near-wake, falling back to numerical method
-                [wakeArea, Q] = deficit_integral@velocity_interface(obj, deltax, dy, dz, rotRadius);
+                [overlap, RVdef] = deficit_integral@velocity_interface(obj, deltax, dy, dz, rotRadius);
             else
                 varWake = obj.C*((diag([obj.ky obj.kz])*(deltax-obj.x0))+obj.sigNeutral_x0).^2;
                 FW_scalar = 1-sqrt(1-obj.ct.*cos(obj.thrustAngle)*...
                     sqrt(det((obj.C*(obj.sigNeutral_x0.^2))/varWake)));
                 Q = obj.bvcdf_wake(dy, dz, rotRadius, varWake, FW_scalar);
-
-                % Create a mask that is 1 where the wake exists and 0 where it does not exists
-                mask = @(y,z) obj.boundary(deltax,y+dy,z+dz);
-                % Compute the size of the area affected by the wake
-                wakeArea = quad2d(@(theta,r) mask(r.*cos(theta), r.*sin(theta)).*r,0,2*pi,0,rotRadius,'Abstol',15,...
-                'Singular',false,'FailurePlot',true,'MaxFunEvals',3500);
+                
+                % Relative volumetric flowrate through swept area
+                RVdef = 1-Q/(pi * rotRadius^2);
+                % Estimate the size of the area affected by the wake
+                [Y,Z] = meshgrid(linspace(-rotRadius,rotRadius,50),linspace(-rotRadius,rotRadius,50));
+                overlap = nnz((hypot(Y,Z)<rotRadius)&...
+                    (obj.boundary(deltax, Y+dy, Z+dz)))/nnz(hypot(Y,Z)<rotRadius);
             end
         end
         function Qdef = bvcdf_wake(obj, y, z, bladeR, varWake, FW_scalar)
             %bvcdf_wake uses the bvcdf function to compute the velocity deficit at the
             %swept area of a turbine
-% keyboard
+            
             [v, e] = eig(varWake);  % Linear transformation to make sigma_y and sigma_z uncorrelated
             sigma_y = sqrt(e(1)); % This is the standard deviation in y'-dir
             sigma_z = sqrt(e(4)); % This is the standard deviation in z'-dir

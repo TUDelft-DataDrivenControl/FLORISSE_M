@@ -1,10 +1,10 @@
 classdef jimenez_deflection < deflection_interface
     %JIMINEZ_DEFLECTION A wake centerline deflection model.
-    %   This wake centerline deflection model is described in [Jimenez et
-    %   al 2009]. It uses the rotor misalignment to compute an intital wake
-    %   deflection angle. This angle decreases downwin similarly to the
-    %   decrease of the wake deficit. Integrating the tangent of the wake
-    %   centerline angle yields the deflection
+    %   This wake centerline deflection model is described in 
+    %   :cite:`Jimenez2009`. It uses the rotor misalignment to compute an
+    %   intital wake deflection angle. This angle decreases downwin
+    %   similarly to the decrease of the wake deficit. Integrating the
+    %   tangent of the wake centerline angle yields the deflection.
     
     properties
         zetaInit % Initial wake centerline angle

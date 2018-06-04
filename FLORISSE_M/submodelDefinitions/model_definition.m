@@ -86,7 +86,7 @@ classdef model_definition
             wake.deficit = @(x, y, z) wakeVelDefObj.deficit(x, y, z);
             wake.boundary = @(x, y, z) wakeVelDefObj.boundary(x, y, z);
             wake.deflection = @(x) wakeDeflObj.deflection(x);
-            wake.added_TI = @(x, ti0) wakeTurbulenceObj.added_TI(x, ti0);
+            wake.added_TI = @(x, ti0) wakeTurbulenceObj.added_TI(x);
         end
     end
 end
