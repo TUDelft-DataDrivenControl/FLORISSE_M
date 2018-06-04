@@ -31,6 +31,8 @@ classdef self_similar_gaussian_velocity < velocity_interface
 
             % NEAR WAKE CALCULATIONS
             % Eq. 7.3, x0 is the start of the far wake
+%             obj.x0 = D.*(cos(obj.thrustAngle).*(1+sqrt(1-obj.ct*cos(obj.thrustAngle))))./...
+%                     (sqrt(2)*(modelData.alpha*obj.TI + modelData.beta*(1-sqrt(1-obj.ct))));
             obj.x0 = D.*(cos(obj.thrustAngle).*(1+sqrt(1-obj.ct*cos(obj.thrustAngle))))./...
                     (sqrt(2)*(modelData.alpha*obj.TI + modelData.beta*(1-sqrt(1-obj.ct))));
 
@@ -133,7 +135,7 @@ classdef self_similar_gaussian_velocity < velocity_interface
         function Qdef = bvcdf_wake(obj, y, z, bladeR, varWake, FW_scalar)
             %bvcdf_wake uses the bvcdf function to compute the velocity deficit at the
             %swept area of a turbine
-
+% keyboard
             [v, e] = eig(varWake);  % Linear transformation to make sigma_y and sigma_z uncorrelated
             sigma_y = sqrt(e(1)); % This is the standard deviation in y'-dir
             sigma_z = sqrt(e(4)); % This is the standard deviation in z'-dir

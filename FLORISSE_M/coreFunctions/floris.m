@@ -77,7 +77,7 @@ classdef floris < handle
             TiVec = obj.layout.ambientInflow.TI0; % Turbulence intensity vector
             locationDw = obj.layout.locWf(turbIfIndex, :);
             Uhh = obj.layout.ambientInflow.Vfun(locationDw(3)); % Free-stream velocity at hub heigth
-            
+
             for turbNumAffector = obj.turbineResults(turbIfIndex).affectedBy.'
                 % Compute predicted deficit by turbNumAffector
                 locationUw = obj.layout.locWf(turbNumAffector, :);
@@ -91,9 +91,20 @@ classdef floris < handle
                 [wakeArea, Q] = obj.turbineResults(turbNumAffector).wake.deficit_integral(deltax, dy, dz, rotRadius);
                 
 %                 overlap = wakeArea/obj.layout.turbines(turbIfIndex).turbineType.rotorArea;
+                % Vni = Relative volumetric flow rate divided by freestream
                 Vni = 1-Q/obj.layout.turbines(turbIfIndex).turbineType.rotorArea;
-                overlap = Q/obj.layout.turbines(turbIfIndex).turbineType.rotorArea;
-
+                
+%                 if turbIfIndex == 9
+%                     keyboard
+%                 end
+%                 overlap = Q/obj.layout.turbines(turbIfIndex).turbineType.rotorArea;
+% keyboard
+                [Y,Z]=meshgrid(linspace(-rotRadius,rotRadius,50),linspace(-rotRadius,rotRadius,50));
+                overlap = nnz((hypot(Y,Z)<rotRadius)&...
+                    (obj.turbineResults(turbNumAffector).wake.boundary(deltax,Y+dy,...
+                    Z+dz)))/...
+                    nnz(hypot(Y,Z)<rotRadius);
+                
                 % Calculate turbine-added turbulence at location deltax
                 TiVec = [TiVec overlap*obj.turbineResults(turbNumAffector).wake.added_TI(deltax, TiVec(1))];
                 % Combine the effects of multiple turbines' wakes
@@ -124,6 +135,9 @@ classdef floris < handle
                                                 obj.turbineConditions(turbNum), ...
                                                 obj.controlSet.turbineControls(turbNum), ...
                                                 obj.turbineResults(turbNum));
+%             if turbNum == 1
+%                 keyboard
+%             end
             % Create the wake for this turbine according to the specified model
             obj.turbineResults(turbNum).wake = obj.model.create_wake(...
                                                 obj.layout.turbines(turbNum), ...

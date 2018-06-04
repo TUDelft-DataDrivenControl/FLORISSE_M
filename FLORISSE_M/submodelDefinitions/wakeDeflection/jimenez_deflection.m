@@ -25,8 +25,30 @@ classdef jimenez_deflection < deflection_interface
 
             % Initial wake centerline angle
             obj.zetaInit = 0.5*sin(turbineControl.thrustAngle)*turbineResult.ct; % Eq. 8
+            
+            % Add an initial wakeangle to the zeta
+            if modelData.useWakeAngle
+                % Rodriques rotation formula to rotate vector 'v', 'th' radians
+                % around vector 'k'
+                rod = @(v,th,k) v*cos(th)+cross(k,v)*sin(th)+k*dot(k,v)*(1-cos(th));
+                % Compute initial direction of wake unadjusted
+                initDir = rod([1;0;0],obj.zetaInit,turbineControl.wakeNormal);
+                % Initial wake direction adjusted for initial wake angle kd
+                floris_rotz = @(x) [cosd(x) -sind(x) 0; sind(x) cosd(x) 0; 0 0 1];
+                wakeVector = floris_rotz(rad2deg(modelData.kd))*initDir;
+                obj.zetaInit = acos(dot(wakeVector,[1;0;0]));
+                % Set the wakeNormal
+                if wakeVector(1)==1
+                    wakeNormal = [0 0 1].';
+                else
+                    normalize = @(v) v./norm(v);
+                    wakeNormal = normalize(cross([1;0;0],wakeVector));
+                end
+            else
+                wakeNormal = turbineControl.wakeNormal;
+            end
             % Direction into which the wake deflects
-            obj.wakeDir = [1 0 0;0 0 1;0 -1 0]*turbineControl.wakeNormal;
+            obj.wakeDir = [1 0 0;0 0 1;0 -1 0]*wakeNormal;
             obj.rotorRadius = turbine.turbineType.rotorRadius;
             % Deflection decreasing parameter
             obj.KdY = modelData.KdY;

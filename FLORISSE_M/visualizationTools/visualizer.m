@@ -64,10 +64,14 @@ classdef visualizer < handle
 %             obj.resy = 0.05*refTurbType.rotorRadius; % resolution in y-axis in meters
 %             obj.resz = 0.10*refTurbType.hubHeight;  % resolution in z-axis in meters
             
-            obj.xMin = min(obj.layout.locWf(:,1))-14*refTurbType.rotorRadius;
-            obj.xMax = max(obj.layout.locWf(:,1))+14*refTurbType.rotorRadius;
-            obj.yMin = min(obj.layout.locWf(:,2))-14*refTurbType.rotorRadius;
-            obj.yMax = max(obj.layout.locWf(:,2))+14*refTurbType.rotorRadius;
+%             obj.xMin = min(obj.layout.locWf(:,1))-14*refTurbType.rotorRadius;
+%             obj.xMax = max(obj.layout.locWf(:,1))+14*refTurbType.rotorRadius;
+%             obj.yMin = min(obj.layout.locWf(:,2))-14*refTurbType.rotorRadius;
+%             obj.yMax = max(obj.layout.locWf(:,2))+14*refTurbType.rotorRadius;
+            obj.xMin = -1.1068e+03;
+            obj.xMax = 2.4451e+03;
+            obj.yMin = -1.1036e+03;
+            obj.yMax = 1.8542e+03;
 %             obj.xMin = min(obj.layout.locWf(:,1))-4*refTurbType.rotorRadius;
 %             obj.xMax = max(obj.layout.locWf(:,1))+15*refTurbType.rotorRadius;
 %             obj.yMin = min(obj.layout.locWf(:,2))-4*refTurbType.rotorRadius;

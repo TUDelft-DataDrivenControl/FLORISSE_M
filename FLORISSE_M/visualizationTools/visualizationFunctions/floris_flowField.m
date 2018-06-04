@@ -3,7 +3,7 @@ function [ flowField ] = floris_flowField(flowField, layout, turbineResults, yaw
     if fixYaw
         % tpr stands for TurbinePreRegion. It is the amount of meters in front
         % of a turbine where the flowfield will take into account a turbine
-        tpr = max([layout.uniqueTurbineTypes.rotorRadius])/2;
+        tpr = 50;%max([layout.uniqueTurbineTypes.rotorRadius])/2;
     else
         tpr = 0;
     end
@@ -27,7 +27,8 @@ function [ flowField ] = floris_flowField(flowField, layout, turbineResults, yaw
                 turbIfIndex = uwTurbIfIndexes(turbNum);
                 curWake = turbineResults(turbIfIndex).wake;
                 % Find the index of this xSample in the wake centerline
-                [dy, dz] = curWake.deflection(xSample);
+                [dy, dz] = curWake.deflection(xSample-layout.locWf(turbIfIndex,1));
+%                 keyboard
                 dY_wc(:,:,turbNum) = flowField.Y(:,1,:)-dy-layout.locWf(turbIfIndex,2);
                 dZ_wc(:,:,turbNum) = flowField.Z(:,1,:)-dz-layout.locWf(turbIfIndex,3);
                 

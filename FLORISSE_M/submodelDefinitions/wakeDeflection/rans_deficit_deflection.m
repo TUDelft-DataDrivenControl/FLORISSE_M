@@ -45,7 +45,9 @@ classdef rans_deficit_deflection < deflection_interface
             D = 2*obj.rotorRadius;
             obj.ct = turbineResult.ct;
             % Eq. 7.3, x0 is the start of the far wake
-            obj.x0 = D.*(cos(turbineControl.thrustAngle).*(1+sqrt(1-obj.ct*cos(turbineControl.thrustAngle))))./...
+%             obj.x0 = D.*(cos(turbineControl.thrustAngle).*(1+sqrt(1-obj.ct*cos(turbineControl.thrustAngle))))./...
+%                     (sqrt(2)*(modelData.alpha*turbineCondition.TI + modelData.beta*(1-sqrt(1-obj.ct))));
+            obj.x0 = D.*(cos(turbineControl.thrustAngle).*(1+sqrt(1-obj.ct)))./...
                     (sqrt(2)*(modelData.alpha*turbineCondition.TI + modelData.beta*(1-sqrt(1-obj.ct))));
                 
             % sigNeutralx0 is the wake standard deviation in the case of a

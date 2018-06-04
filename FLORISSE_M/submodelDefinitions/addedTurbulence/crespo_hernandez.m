@@ -33,21 +33,9 @@ classdef crespo_hernandez < added_ti_interface
             %   Detailed explanation goes here
 %             TI0 = obj.TI0Test;
             if (x < obj.rotorRadius*obj.TIthresholdMult)
-%                 R = turbineDw.rotorRadius;
-%                 [Y,Z]=meshgrid(linspace(-R,R,50),linspace(-R,R,50)); % Generating grid points
-%                 
-%                 % Determine overlap ratio by counting number of
-%                 % elements that coincide with both planes.
-%                 overlapRatio = nnz((hypot(Y,Z)<turbineDw.rotorRadius)&...
-%                     (wakeUw.boundary(deltax,Y+turbineDw.LocWF(2)-wakeUw.centerLine(2,turbLocIndex),...
-%                     Z+turbineDw.LocWF(3)-wakeUw.centerLine(3,turbLocIndex))))/...
-%                     nnz(hypot(Y,Z)<turbineDw.rotorRadius);
-
                 % Determine effects of turbulence intensity
                 TI_out = obj.TIa*(obj.axialInd^obj.TIb)*...
                     (TI0^obj.TIc)*((x/(2*obj.rotorRadius))^obj.TId);
-
-%                 TI_out = overlapRatio*TI_out;
             else
                 TI_out = 0;
             end
