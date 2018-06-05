@@ -1,19 +1,18 @@
 classdef control_set < handle
-    %CONTROL_SET The control_set class generates object that are used to control the turbines in a situation.
-    %   A situation or layout object holds an array of turbines, this class
+    %CONTROL_SET The control_set class generates an object that is used to control the turbines in a layout.
+    %   A layout object holds an array of turbines, this class
     %   holds a struct with the control settings for each turbines. It has
     %   several vector inputs, namely, yaw, tilt, pitch and axial induction
     %   These are dynamically linked to the control struct via dependent
-    %   properties. This class also checks that control settings are valid
-    %   in the sense that they have to contain arrays of doubles.
+    %   properties. This class also checks that control settings are valid.
     
     properties
-        controlMethod
+        controlMethod % ControlMethod used in layout
     end
     % The layout can be set during construction but is not allowed to be
     % changed afterwards. (SetAccess = immutable)
     properties (SetAccess = immutable)
-        layout
+        layout % Layout that is controlled by this controlset
     end
     
     % The pattern used in this object is explained here:
@@ -32,12 +31,12 @@ classdef control_set < handle
     end
     
     properties (Dependent)
-        turbineControls
-        yawAngles
-        tiltAngles
-        pitchAngles
-        tipSpeedRatios
-        axialInductions
+        turbineControls % A struct array with the controlsettings ordered per turbine
+        yawAngles % An array with the yawAngles for each turbine
+        tiltAngles % An array with the tiltAngles for each turbine
+        pitchAngles % An array with the pitchAngles for each turbine
+        tipSpeedRatios % An array with the tipSpeedRatios for each turbine
+        axialInductions % An array with the axialInductions for each turbine
     end
     
     methods

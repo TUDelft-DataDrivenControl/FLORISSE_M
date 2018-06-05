@@ -12,7 +12,8 @@ classdef turbine_type_test < matlab.unittest.TestCase
             testCase.applyFixture(PathFixture('../FLORISSE_M/coreFunctions',...
                                               'IncludeSubfolders',true));
             testCase.applyFixture(PathFixture('../FLORISSE_M/layoutDefinitions'));
-            testCase.applyFixture(PathFixture('../FLORISSE_M/helperObjects'));
+            testCase.applyFixture(PathFixture('../FLORISSE_M/ambientFlowDefinitions'));
+            testCase.applyFixture(PathFixture('../FLORISSE_M/controlDefinitions'));
             testCase.applyFixture(PathFixture('../FLORISSE_M/turbineDefinitions',...
                                               'IncludeSubfolders',true));
             testCase.applyFixture(PathFixture('../FLORISSE_M/submodelDefinitions',...

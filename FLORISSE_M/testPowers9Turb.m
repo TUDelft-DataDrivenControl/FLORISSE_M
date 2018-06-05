@@ -32,4 +32,4 @@ toc
 % display([florisRunner.turbineConditions.TI])
 % display([florisRunner.turbineResults.axialInduction])
 % display([florisRunner.turbineResults.ct])
-% visTool = visualizer(florisRunner);
+visTool = visualizer(florisRunner);

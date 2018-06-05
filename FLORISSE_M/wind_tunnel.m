@@ -25,4 +25,5 @@ florisRunner.controlSet.tipSpeedRatios = [5 3 3.5];
 tic
 optYaws = optimizeControl(florisRunner);
 toc
-visTool = visualizer(florisRunner);
+rad2deg(optYaws)
+% visTool = visualizer(florisRunner);

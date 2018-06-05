@@ -12,7 +12,8 @@ classdef power_test < matlab.unittest.TestCase
             testCase.applyFixture(PathFixture('../FLORISSE_M/coreFunctions',...
                                               'IncludeSubfolders',true));
             testCase.applyFixture(PathFixture('../FLORISSE_M/layoutDefinitions'));
-            testCase.applyFixture(PathFixture('../FLORISSE_M/helperObjects'));
+            testCase.applyFixture(PathFixture('../FLORISSE_M/ambientFlowDefinitions'));
+            testCase.applyFixture(PathFixture('../FLORISSE_M/controlDefinitions'));
             testCase.applyFixture(PathFixture('../FLORISSE_M/turbineDefinitions',...
                                               'IncludeSubfolders',true));
             testCase.applyFixture(PathFixture('../FLORISSE_M/submodelDefinitions',...
@@ -44,7 +45,7 @@ classdef power_test < matlab.unittest.TestCase
         function test_standard_run(testCase)
             testCase.florisRunner.run
             actpowers = [testCase.florisRunner.turbineResults.power];
-            expectedPowers = [1705362.030372323   1705362.030372323   1705362.030372323   0350069.973068104   0350069.973068104   0350069.973068104];
+            expectedPowers = 1e6*[1.705362030372323   1.705362030372323   1.705362030372323   0.377701475778703   0.377701475778703   0.377701475778703];
 
             import matlab.unittest.constraints.IsEqualTo;
             import matlab.unittest.constraints.AbsoluteTolerance;
