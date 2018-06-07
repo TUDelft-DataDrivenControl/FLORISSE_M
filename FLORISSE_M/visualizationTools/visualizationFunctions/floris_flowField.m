@@ -7,7 +7,6 @@ function [ flowField ] = floris_flowField(flowField, layout, turbineResults, yaw
     else
         tpr = 0;
     end
-    
     % Compute the windspeed at a cutthrough of the wind farm at every x-coordinate
     for xSample = flowField.X(1,:,1)
         % Select the upwind turbines and store them in a struct
@@ -28,7 +27,6 @@ function [ flowField ] = floris_flowField(flowField, layout, turbineResults, yaw
                 curWake = turbineResults(turbIfIndex).wake;
                 % Find the index of this xSample in the wake centerline
                 [dy, dz] = curWake.deflection(xSample-layout.locWf(turbIfIndex,1));
-%                 keyboard
                 dY_wc(:,:,turbNum) = flowField.Y(:,1,:)-dy-layout.locWf(turbIfIndex,2);
                 dZ_wc(:,:,turbNum) = flowField.Z(:,1,:)-dz-layout.locWf(turbIfIndex,3);
                 
@@ -40,7 +38,7 @@ function [ flowField ] = floris_flowField(flowField, layout, turbineResults, yaw
                 else
                     mask = curWake.boundary(deltaXs(turbNum),dY_wc(:,:,turbNum),dZ_wc(:,:,turbNum));
                 end
-                
+                % Sum the velocity deficits according to the wake model
                 sumKed = sumKed+wakeCombinationModel(squeeze(flowField.U(:,1,:)), avgWs(turbIfIndex), ...
                     1-mask.*curWake.deficit(deltaXs(turbNum), dY_wc(:,:,turbNum), dZ_wc(:,:,turbNum)));
             end

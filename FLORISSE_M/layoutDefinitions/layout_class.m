@@ -51,7 +51,6 @@ classdef layout_class
         function idArray = get.idWf(obj)
             %get.locIf Get the location order in the wind frame.
             [~, idArray] = sort(obj.locWf(:, 1));
-%             [~, idArt] = sort(idArray);
         end
         
         function turbineTypes = get.uniqueTurbineTypes(obj)

@@ -2,7 +2,7 @@
 
 Architecture
 ===============
-As explained in the :ref:`background` page
+As explained in the :ref:`background` page the FLORIS model has several use cases. The below diagram gives an overview of the different components of FLORIS and which parts interact with eachother.
 
 .. image:: Images/DrawIODiagrams/FLORIS_top_level.png
    :width: 100 %

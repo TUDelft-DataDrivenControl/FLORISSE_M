@@ -4,14 +4,15 @@
 %   compatible with the matlab coder, use: > codegen instantiateClasses
 
 % Instantiate a layout without ambientInflow conditions
-layout = generic_6_turb;
+layout = generic_4_turb;
 
 % Use the heigth from the first turbine type as reference heigth for theinflow profile
 refHeigth = layout.uniqueTurbineTypes(1).hubHeight;
+
 % Define an inflow struct and use it in the layout, clwindcon9Turb
 layout.ambientInflow = ambient_inflow_log('PowerLawRefSpeed', 8, ...
                                           'PowerLawRefHeight', refHeigth, ...
-                                          'windDirection', pi/2, ...
+                                          'windDirection', 13*pi/8, ...
                                           'TI0', .05);
 
 % Make a controlObject for this layout
@@ -28,10 +29,17 @@ tic
 florisRunner.run
 toc
 display([florisRunner.turbineResults.power])
-% tic
-% optimizeControl(florisRunner)
-% toc
+tic
+optimizeControl(florisRunner)
+toc
+
 visTool = visualizer(florisRunner);
+visTool.plot2dWF()
+visTool.plot2dIF()
+visTool.plot3dWF()
+visTool.plot3dIF()
+
+tic; visTool.plot2dWF(); toc;
 
 % tic
 % florisRunner.run
