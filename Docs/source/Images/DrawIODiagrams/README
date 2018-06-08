@@ -1,0 +1,1 @@
+The XML files in this folder should be files that are compatible with the https://www.draw.io/ website. This allows further refining and editing. When you are pleased with the edites simply export the diagram as a .png file and place it in this folder as well. The .png files can be used by sphinx in our documentation.

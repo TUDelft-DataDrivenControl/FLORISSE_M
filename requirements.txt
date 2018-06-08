@@ -1,0 +1,4 @@
+# requirements list for floris
+Sphinx==1.7.2
+sphinxcontrib.bibtex
+sphinxcontrib.matlabdomain
