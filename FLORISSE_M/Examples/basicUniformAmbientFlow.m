@@ -1,4 +1,3 @@
-function florisRunner = create_wind_tunnel_floris()
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -20,5 +19,8 @@ subModels = model_definition('deflectionModel', 'rans',...
                              'wakeCombinationModel', 'quadraticRotorVelocity',...
                              'addedTurbulenceModel', 'crespoHernandez');
 florisRunner = floris(layout, controlSet, subModels);
-end
+florisRunner.run
+display([florisRunner.turbineResults.power])
 
+% visTool = visualizer(florisRunner);
+% visTool.plot2dWF()

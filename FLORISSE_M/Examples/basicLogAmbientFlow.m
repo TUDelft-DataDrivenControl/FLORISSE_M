@@ -1,8 +1,3 @@
-% function [outputArg1] = instantiateClasses()
-%instantiateClasses This function instantiates a few classes
-%   Try to generate c-code from this function to see if the current code is
-%   compatible with the matlab coder, use: > codegen instantiateClasses
-
 % Instantiate a layout without ambientInflow conditions
 layout = generic_9_turb;
 
@@ -12,11 +7,11 @@ refHeigth = layout.uniqueTurbineTypes(1).hubHeight;
 % Define an inflow struct and use it in the layout, clwindcon9Turb
 layout.ambientInflow = ambient_inflow_log('PowerLawRefSpeed', 8, ...
                                           'PowerLawRefHeight', refHeigth, ...
-                                          'windDirection', 13*pi/8, ...
+                                          'windDirection', 0, ...
                                           'TI0', .05);
 
 % Make a controlObject for this layout
-controlSet = control_set(layout, 'axialInduction');
+controlSet = control_set(layout, 'pitch');
 
 % Define subModels
 subModels = model_definition('deflectionModel',      'rans',...
@@ -24,28 +19,8 @@ subModels = model_definition('deflectionModel',      'rans',...
                              'wakeCombinationModel', 'quadraticRotorVelocity',...
                              'addedTurbulenceModel', 'crespoHernandez');
 florisRunner = floris(layout, controlSet, subModels);
-% florisRunner.layout.ambientInflow.windDirection = pi/2;
-tic
 florisRunner.run
-toc
 display([florisRunner.turbineResults.power])
-tic
-optimizeControl(florisRunner)
-toc
 
-visTool = visualizer(florisRunner);
-visTool.plot2dWF()
-visTool.plot2dIF()
-visTool.plot3dWF()
-visTool.plot3dIF()
-
-tic; visTool.plot2dWF(); toc;
-
-% tic
-% florisRunner.run
-% toc
-% tic
-% florisRunner.run
-% toc
-% outputArg1 = florisRunner.layout.locWf;
-% end
+% visTool = visualizer(florisRunner);
+% visTool.plot2dWF()
