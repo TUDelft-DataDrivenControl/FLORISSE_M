@@ -19,7 +19,7 @@ function [ ] = plot_2d_field(turbines, turbLoc, flowField, YawAngles)
     xlabel('x-direction (m)');
     ylabel('y-direction (m)');
     colorbar;
-    caxis([floor(min(flowField.U(:))) ceil(max(flowField.U(:)))])
+%     caxis([floor(min(flowField.U(:))) ceil(max(flowField.U(:)))])
     
     % Plot the turbine numbers
     for j = 1:size(turbLoc,1)

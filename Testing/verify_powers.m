@@ -1,58 +1,25 @@
-% function [] = verify_powers(generateData)
-% cd('../FLORIS') % Return by: cd('../Testing')
+function [] = verify_powers(testCase)
 % Set generateData to 'false' if nothing specified
-% if nargin == 0
-    generateData = false;
-% end
 
+generateData = false;
 if generateData
     % Generate an empty powerData container
     powerData = containers.Map;
 else
+    % Import testing functions
+    import matlab.unittest.constraints.IsEqualTo;
+    import matlab.unittest.constraints.AbsoluteTolerance;
     % Load existing power data .mat file
     sr = strsplit(mfilename('fullpath'), filesep);
     sr(end) = {'testingData'}; sr(end+1) = {'powDat'};
     load(strjoin(sr, filesep))
 end
-keyConverter = containers.Map;
-oldKeys = keys(powerData);
-newKeys = oldKeys;
-for i = 1:length(oldKeys)
-    newKeys(i) = strrep(oldKeys(i),'Katic','quadraticAmbientVelocity');
-end
-for i = 1:length(oldKeys)
-    newKeys(i) = strrep(newKeys(i),'Voutsinas','quadraticRotorVelocity');
-end
-for i = 1:length(oldKeys)
-    newKeys(i) = strrep(newKeys(i),'VelocityPorteAgel','Velocityrans');
-end
-for i = 1:length(oldKeys)
-    newKeys(i) = strrep(newKeys(i),'Jimenez','jimenez');
-end
-for i = 1:length(oldKeys)
-    newKeys(i) = strrep(newKeys(i),'Zones','zones');
-end
-for i = 1:length(oldKeys)
-    newKeys(i) = strrep(newKeys(i),'JensenGaussian','jensenGauss');
-end
-for i = 1:length(oldKeys)
-    newKeys(i) = strrep(newKeys(i),'Larsen','larsen');
-end
-for i = 1:length(oldKeys)
-    newKeys(i) = strrep(newKeys(i),'PorteAgel','selfSimilar');
-end
-for i = 1:length(oldKeys)
-    keyConverter(newKeys{i}) = oldKeys{i};
-end
 
-
-newPowers = [];
-oldPowers = [];
 
 % Test all possible combinations of options
 for atmoType = {'uniform','boundary'}
     for controlType = {'pitch','greedy','axialInduction'}
-        for wakeType = {'zones','jensenGauss','selfSimilar'}
+        for wakeType = {'zones','jensenGauss','selfSimilar','larsen'}
             for wakeSum = {'quadraticAmbientVelocity','quadraticRotorVelocity'}
                 for deflType = {'jimenez','rans'}
                     
@@ -81,37 +48,27 @@ for atmoType = {'uniform','boundary'}
                                                  'addedTurbulenceModel', 'crespoHernandez');
                     florisRunner = floris(layout, controlSet, subModels);
                     florisRunner.run
-%                     keyboard
                     %  display(sprintf('power difference is %d between %d and %d',abs(powerData(key) - sum(FLORIS.outputData.power)),powerData(key) , sum(FLORIS.outputData.power)));
                     key = [atmoType{1} controlType{1} wakeType{1} wakeSum{1} deflType{1}];
+                    florisTotalPower = florisRunner.turbineResults.power;
+                    
                     if generateData
-                        powerData(keyConverter(key)) = sum(FLORIS.outputData.power);
+                        powerData(key) = florisTotalPower;
                     else
                         % Throw an error message if the difference between
                         % new and old power values is too large.
-%                         if strcmp(key, 'uniformpitchlarsenquadraticAmbientVelocityjimenez')
-%                             keyboard
-%                         end
-                        display(key)
-                        newPowers = [newPowers sum([florisRunner.turbineResults.power])];
-                        oldPowers = [oldPowers powerData(keyConverter(key))];
-                        sprintf('OrigPower = %d, newPower = %d', powerData(keyConverter(key)), sum([florisRunner.turbineResults.power]))
-%                         assert(abs(powerData(keyConverter(key)) - sum(FLORIS.outputData.power))<1e-5,...
-%                                sprintf('power data differs at %s \n power difference is %d between %d and %d', join(key, ', '),abs(powerData(key) - sum(FLORIS.outputData.power)), powerData(key) , sum(FLORIS.outputData.power)));
+                        testCase.assertThat(powerData(key), IsEqualTo(florisTotalPower, ...
+                            'Within', AbsoluteTolerance(1e-5)));
+                        sprintf('power data differs at %s \n power difference is %d between %d and %d', join(key, ', '),abs(powerData(key) - florisTotalPower), powerData(key) , florisTotalPower);
                     end
-%                     clear FLORIS
                 end
             end
         end
     end
 end
-[~, idxs] = sort(newPowers);
-figure; plot(1:length(newPowers), newPowers, 1:length(newPowers), oldPowers)
-figure; plot(newPowers-oldPowers);
-% plot(1:length(newPowers), newPowers(idxs), 1:length(newPowers), oldPowers(idxs))
 
-% if generateData
-%     save('newPowData', 'powerData')
-% else
-%     disp('Test passed succesfully.')
-% end
+if generateData
+    save('powDatNew', 'powerData')
+else
+    disp('Test passed succesfully.')
+end

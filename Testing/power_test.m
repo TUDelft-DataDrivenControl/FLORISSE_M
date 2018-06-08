@@ -52,6 +52,9 @@ classdef power_test < matlab.unittest.TestCase
             testCase.assertThat(expectedPowers, IsEqualTo(actpowers, ...
                 'Within', AbsoluteTolerance(1e-5)));
         end
+        function test_all_options(testCase)
+            verify_powers(testCase)
+        end
     end
 end
 

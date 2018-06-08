@@ -1,4 +1,4 @@
-function [ flowField ] = floris_flowField(flowField, layout, turbineResults, yawAngles, avgWs, fixYaw, wakeCombinationModel)
+function [ flowField ] = compute_flow_field(flowField, layout, turbineResults, yawAngles, avgWs, fixYaw, wakeCombinationModel)
     % Sort turbine and wake structs by WF
     if fixYaw
         % tpr stands for TurbinePreRegion. It is the amount of meters in front

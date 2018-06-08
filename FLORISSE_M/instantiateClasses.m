@@ -4,7 +4,7 @@
 %   compatible with the matlab coder, use: > codegen instantiateClasses
 
 % Instantiate a layout without ambientInflow conditions
-layout = generic_4_turb;
+layout = generic_9_turb;
 
 % Use the heigth from the first turbine type as reference heigth for theinflow profile
 refHeigth = layout.uniqueTurbineTypes(1).hubHeight;

@@ -34,7 +34,7 @@ classdef visualizer < handle
             obj.flowFieldIF = obj.create_empty_flowfield(obj.layout.locIf, [-14 14 -14 14]);
             % Take the corners of the Inertial and Wind Direction frame
             allCorners = [obj.flowFieldWF.corners [0 0 0 0].'; ...
-                frame_IF2WF(-obj.layout.ambientInflow.windDirection, ...
+                frame_IF2WF(obj.layout.ambientInflow.windDirection, ...
                 [obj.flowFieldIF.corners [0 0 0 0].'])];
             % Make another flowfield which contains both flowfields
             obj.flowfieldMain = obj.create_empty_flowfield(allCorners, [0 0 0 0]);
@@ -48,7 +48,7 @@ classdef visualizer < handle
             xmax = max(locAr(:,1)) + boundaries(2)*refTurbType.rotorRadius;
             ymin = min(locAr(:,2)) + boundaries(3)*refTurbType.rotorRadius;
             ymax = max(locAr(:,2)) + boundaries(4)*refTurbType.rotorRadius;
-            % Store the corners starting at the bottom left and continuuing
+            % Store the corners starting at the bottom left and continuing
             % counterclockwise
             corners = [xmin ymin; xmax ymin; xmax ymax; xmin ymax];
             flowField = struct('resx',    0.20*refTurbType.rotorRadius, ...
@@ -165,6 +165,10 @@ classdef visualizer < handle
                       obj.flowFieldIF.Z, obj.flowFieldIF.U)
         end
         
+        function plot_layout(obj)
+            plot_layout_and_wakes(obj)
+        end
+        
         function flowField = define_flow_field_mesh(obj, flowField, dimension)
             % Make a 2D or 3D meshgrid for a flowfield
             refTurbType = obj.layout.turbines(1).turbineType;
@@ -178,10 +182,13 @@ classdef visualizer < handle
                     end
                 case '3D'
                     if ismatrix(flowField.X)
+                        % Make sure the z-array includes the hub
+                        zArHalf1 = refTurbType.hubHeight : -flowField.resz : 0;
+                        zArHalf2 = refTurbType.hubHeight : flowField.resz : 2*refTurbType.hubHeight;
                         [flowField.X, flowField.Y, flowField.Z] = meshgrid(...
                             flowField.corners(1, 1) : flowField.resx : flowField.corners(3, 1), ...
                             flowField.corners(1, 2) : flowField.resy : flowField.corners(3, 2), ...
-                            0 : flowField.resz : 2*refTurbType.hubHeight);
+                            [zArHalf1(end:-1:2) zArHalf2]);
                     end
                 otherwise
                     error('define_flow_field_wf_mesh:valueError', 'dimension input most contain string with either 2D or 3D, it contained %s', dimension);
@@ -198,7 +205,7 @@ classdef visualizer < handle
                 obj.flowfieldMain.W  = zeros(size(obj.flowfieldMain.X));
 
                 % Compute the flowfield velocity at every voxel(3D) or pixel(2D)
-                obj.flowfieldMain = floris_flowField(obj.flowfieldMain, obj.layout, obj.turbineResults, ...
+                obj.flowfieldMain = compute_flow_field(obj.flowfieldMain, obj.layout, obj.turbineResults, ...
                     obj.yawAngles, obj.avgWs, true, obj.wakeCombinationModel);
             end
         end
