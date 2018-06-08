@@ -15,7 +15,6 @@ else
     load(strjoin(sr, filesep))
 end
 
-
 % Test all possible combinations of options
 for atmoType = {'uniform','boundary'}
     for controlType = {'pitch','greedy','axialInduction'}
