@@ -127,6 +127,7 @@ classdef turbine_type < handle
                     turbineResult.axialInduction = turbineControl.axialInduction;
                     turbineResult.ct = 4*turbineControl.axialInduction*(1-turbineControl.axialInduction);
                     turbineResult.cp = 4*turbineControl.axialInduction*(1-turbineControl.axialInduction)^2;
+                    turbineResult = obj.adjust_cp_ct_for_yaw(turbineControl, turbineResult);
                 otherwise
                     error('Control methodology with name: "%s" not defined', obj.controlMethod);
             end

@@ -3,10 +3,11 @@ function [ flowField ] = compute_flow_field(flowField, layout, turbineResults, y
     if fixYaw
         % tpr stands for TurbinePreRegion. It is the amount of meters in front
         % of a turbine where the flowfield will take into account a turbine
-        tpr = 50;%max([layout.uniqueTurbineTypes.rotorRadius])/2;
+        tpr = max([layout.uniqueTurbineTypes.rotorRadius])/2;
     else
         tpr = 0;
     end
+    
     % Compute the windspeed at a cutthrough of the wind farm at every x-coordinate
     for xSample = flowField.X(1,:,1)
         % Select the upwind turbines and store them in a struct
@@ -30,17 +31,27 @@ function [ flowField ] = compute_flow_field(flowField, layout, turbineResults, y
                 dY_wc(:,:,turbNum) = flowField.Y(:,1,:)-dy-layout.locWf(turbIfIndex,2);
                 dZ_wc(:,:,turbNum) = flowField.Z(:,1,:)-dz-layout.locWf(turbIfIndex,3);
                 
+                % Make a mask where the wake exists
+                mask = curWake.boundary(deltaXs(turbNum),dY_wc(:,:,turbNum),dZ_wc(:,:,turbNum));
                 if fixYaw
-                    % The mask determines if the free stream applies or the
-                    % wake velocity needs to be computed
-                    mask = (curWake.boundary(deltaXs(turbNum),dY_wc(:,:,turbNum),dZ_wc(:,:,turbNum))).*...
-                        (((squeeze(flowField.Y(:,1,:))-layout.locWf(turbIfIndex,2))*tan(-yawAngles(turbIfIndex)))<deltaXs(turbNum));
+                    % Extend the mask with the location of the swept area
+                    mask = mask.*(((squeeze(flowField.Y(:,1,:))- ...
+                        layout.locWf(turbIfIndex,2))*tan(-yawAngles(turbIfIndex)))<deltaXs(turbNum));
+                    if deltaXs(turbNum)<=0
+                        % If the coordinates are in front of the turbine
+                        % use the velocity deficit in the wake.
+                        velDef = mask.*curWake.deficit(1, 0, 0);
+                    else
+                        % Behind the turbine compute the wake
+                        velDef = mask.*curWake.deficit(deltaXs(turbNum), dY_wc(:,:,turbNum), dZ_wc(:,:,turbNum));
+                    end
                 else
-                    mask = curWake.boundary(deltaXs(turbNum),dY_wc(:,:,turbNum),dZ_wc(:,:,turbNum));
+                    % Compute the wake deficit
+                    velDef = mask.*curWake.deficit(deltaXs(turbNum), dY_wc(:,:,turbNum), dZ_wc(:,:,turbNum));
                 end
                 % Sum the velocity deficits according to the wake model
-                sumKed = sumKed+wakeCombinationModel(squeeze(flowField.U(:,1,:)), avgWs(turbIfIndex), ...
-                    1-mask.*curWake.deficit(deltaXs(turbNum), dY_wc(:,:,turbNum), dZ_wc(:,:,turbNum)));
+                sumKed = sumKed+wakeCombinationModel(squeeze(flowField.U(:,1,:)), ...
+                    avgWs(turbIfIndex), 1-velDef);
             end
             flowField.U(:,flowField.X(1,:,1)==xSample,:) = squeeze(flowField.U(:,1,:))-sqrt(sumKed);
         end

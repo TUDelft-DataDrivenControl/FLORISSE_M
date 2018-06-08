@@ -45,7 +45,7 @@ classdef velocity_interface
             overlap = nnz((hypot(Y,Z)<rotRadius)&...
                 (obj.boundary(deltax, Y+dy, Z+dz)))/nnz(hypot(Y,Z)<rotRadius);
             
-%             % Compute the size of the area affected by the wake
+            % Compute the size of the area affected by the wake
 %             polarfunBound = @(theta,r) mask(r.*cos(theta), r.*sin(theta)).*r;
 %             wakeArea = quad2d(polarfunBound,0,2*pi,0,rotRadius,'Abstol',15,...
 %             'Singular',false,'FailurePlot',true,'MaxFunEvals',3500);

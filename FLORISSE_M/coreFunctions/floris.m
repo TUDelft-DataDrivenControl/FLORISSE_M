@@ -144,12 +144,13 @@ classdef floris < handle
             %   turbine is discretized in 6.28/.05 = approx 125 points. If
             %   any of these points are inside the wake the turbine is said
             %   to have been affected.
-            
             locationWfUw = obj.layout.locWf(turbIfIndex, :);
             % Only look at turbines that are further downstream than this one
             indexWfList = obj.layout.idWf(turbWfIndex+1:obj.layout.nTurbs);
             % Only look at turbines that lie within a 1200m wide downwind band
             possibleIndexesIf = indexWfList(abs(obj.layout.locWf(indexWfList, 2)-locationWfUw(2))<600);
+            if isempty(possibleIndexesIf); return; end
+            
             % Loop through the possible indexes and see if this turbine affects the downwind turbine
             for turbNumIfDw = possibleIndexesIf.'
                 locationWfDw = obj.layout.locWf(turbNumIfDw, :);
