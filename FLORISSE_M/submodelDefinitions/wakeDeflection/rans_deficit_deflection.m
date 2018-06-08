@@ -1,7 +1,7 @@
 classdef rans_deficit_deflection < deflection_interface
     % RANS_DEFICIT_DEFLECTION A wake centerline deflection model.
-    %   This wake centerline deflection model is described in [Bastankhah
-    %   and Porte-Agel, 2016]. The model assumes a strict distinction
+    %   This wake centerline deflection model is described in
+    %   :cite:`Bastankhah2016`. The model assumes a strict distinction
     %   between the near wake and far wake. The near wake is modeled as a
     %   constant velocity core that transforms from a tophat into a
     %   gaussian. When the gaussian is fully formed the far wake starts.
@@ -44,8 +44,9 @@ classdef rans_deficit_deflection < deflection_interface
           	obj.rotorRadius = turbine.turbineType.rotorRadius;
             D = 2*obj.rotorRadius;
             obj.ct = turbineResult.ct;
-            % Eq. 7.3, x0 is the start of the far wake
-            obj.x0 = D.*(cos(turbineControl.thrustAngle).*(1+sqrt(1-obj.ct*cos(turbineControl.thrustAngle))))./...
+            
+            % Eq. 6.16, x0 is the start of the far wake
+            obj.x0 = D.*(cos(turbineControl.thrustAngle).*(1+sqrt(1-obj.ct)))./...
                     (sqrt(2)*(modelData.alpha*turbineCondition.TI + modelData.beta*(1-sqrt(1-obj.ct))));
                 
             % sigNeutralx0 is the wake standard deviation in the case of a
@@ -59,7 +60,7 @@ classdef rans_deficit_deflection < deflection_interface
             % displacement at the end of the near wake
             obj.delta_x0 = tan(obj.theta_C0)*obj.x0;
             
-            obj.wakeDir = [1 0 0;0 0 1;0 -1 0]*turbineControl.wakeNormal;
+            obj.wakeDir = [1 0 0;0 0 -1;0 1 0]*turbineControl.wakeNormal;
 
             % Turbine rotation induced linear wake deflection parameters
             obj.ad = modelData.ad;
@@ -72,7 +73,7 @@ classdef rans_deficit_deflection < deflection_interface
             %DEFLECTION Computes deflection dz and dx based on downwind distance x.
             %   This function is vectorized in the x-direction. That makes
             %   the notation slightly obtuse but the relvant equations can
-            %   be found in [Bastankhah and Porte-Agel, 2016]
+            %   be found in :cite:`Bastankhah2016`
 
             varWake = mmat(repmat(obj.C,1,1,length(x)),...
                 (  repmat(diag([obj.ky obj.kz]),[1,1,length(x)])...
@@ -106,7 +107,7 @@ classdef rans_deficit_deflection < deflection_interface
 
             dz = obj.wakeDir(3)*displacements + ...  % initial position + yaw*tilt induced offset
                 (obj.at*(2*obj.rotorRadius) + x * obj.bt); % bladerotation-induced vertical offset
-
+            
         end
     end
 end

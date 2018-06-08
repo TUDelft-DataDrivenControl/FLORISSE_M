@@ -1,4 +1,4 @@
-classdef floris_test < matlab.unittest.TestCase
+classdef power_test < matlab.unittest.TestCase
     %floris_test Summary of this class goes here
     %   Detailed explanation goes here
     properties
@@ -19,38 +19,41 @@ classdef floris_test < matlab.unittest.TestCase
             testCase.applyFixture(PathFixture('../FLORISSE_M/submodelDefinitions',...
                                               'IncludeSubfolders',true));
             % Instantiate a layout object with 6 identical turbines
-            generic6Turb = generic_6_turb;
+            layout = tester_6_turb_5D;
 
             % Use the heigth from the first turbine type as reference heigth for theinflow profile
-            refHeigth = generic6Turb.uniqueTurbineTypes(1).hubHeight;
+            refHeigth = layout.uniqueTurbineTypes(1).hubHeight;
             % Define an inflow struct and use it in the layout, clwindcon9Turb
-            generic6Turb.ambientInflow = ambient_inflow_log('PowerLawRefSpeed', 8, ...
+            layout.ambientInflow = ambient_inflow_log('PowerLawRefSpeed', 8, ...
                                                   'PowerLawRefHeight', refHeigth, ...
                                                   'windDirection', 0, ...
                                                   'TI0', .01);
 
             % Make a controlObject for this layout
             % controlSet = control_set(layout, 'axialInduction');
-            controlSet = control_set(generic6Turb, 'pitch');
+            controlSet = control_set(layout, 'pitch');
             
             % Define subModels
             subModels = model_definition('deflectionModel', 'jimenez',...
                                          'velocityDeficitModel', 'selfSimilar',...
                                          'wakeCombinationModel', 'quadraticRotorVelocity',...
                                          'addedTurbulenceModel', 'crespoHernandez');
-            testCase.florisRunner = floris(generic6Turb, controlSet, subModels);
+            testCase.florisRunner = floris(layout, controlSet, subModels);
         end
     end
     methods(Test)
         function test_standard_run(testCase)
-            import matlab.unittest.constraints.IssuesNoWarnings
-            function runner(); testCase.florisRunner.run; end
-            testCase.verifyThat(@runner, IssuesNoWarnings)
+            testCase.florisRunner.run
+            actpowers = [testCase.florisRunner.turbineResults.power];
+            expectedPowers = 1e6*[1.705362030372323   1.705362030372323   1.705362030372323   0.377701475778703   0.377701475778703   0.377701475778703];
+
+            import matlab.unittest.constraints.IsEqualTo;
+            import matlab.unittest.constraints.AbsoluteTolerance;
+            testCase.assertThat(expectedPowers, IsEqualTo(actpowers, ...
+                'Within', AbsoluteTolerance(1e-5)));
         end
-        function test_again(testCase)
-            import matlab.unittest.constraints.IssuesNoWarnings
-            function runner(); testCase.florisRunner.run; end
-            testCase.verifyThat(@runner, IssuesNoWarnings)
+        function test_all_options(testCase)
+            verify_powers(testCase)
         end
     end
 end

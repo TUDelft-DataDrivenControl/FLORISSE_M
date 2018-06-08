@@ -6,8 +6,7 @@ classdef ambient_inflow_test < matlab.unittest.TestCase
         function setFolders(testCase)
             % Add the relevant folders to the current path
             import matlab.unittest.fixtures.PathFixture
-            
-            testCase.applyFixture(PathFixture('../FLORISSE_M/helperObjects'));
+            testCase.applyFixture(PathFixture('../FLORISSE_M/ambientFlowDefinitions'));
         end
     end
     methods(Test)

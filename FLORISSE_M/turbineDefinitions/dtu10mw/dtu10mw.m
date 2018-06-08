@@ -1,13 +1,13 @@
 function turbineType = dtu10mw()
-%TUM_G1 Summary of this function goes here
-%   Detailed explanation goes here
+%DTU10MW This functions creates a turbine type of the DTU10MW reference turbine
+%    More information can be found in :cite:`Christian2013`.
 
-filepath = getFileLocation();
 % Available control methods
 availableControl = {'axialInduction'};
-% Instantiate turbine with
-% obj = turbine_type(rotorRadius, genEfficiency, hubHeight, pP, path, allowableControlMethods)
-turbineType = turbine_type(178.3/2., 0.944, 119.0, 1.88, filepath, availableControl);
+% Instantiate turbine with the correct dimensions and characteristics
+% obj = turbine_type(rotorRadius, genEfficiency, hubHeight, pP, ...
+turbineType = turbine_type(178.3/2., 0.944, 119.0, 1.88, ...
+                           getFileLocation(), availableControl, 'DTU 10 MW Turbine');
 end
 
 % This function is compatible with C-compilation
@@ -15,4 +15,3 @@ function Path = getFileLocation()
     filePath = mfilename('fullpath');
     Path = filePath(1:end-1-length(mfilename()));
 end
-

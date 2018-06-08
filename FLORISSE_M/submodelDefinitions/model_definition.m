@@ -55,8 +55,10 @@ classdef model_definition
             
             % Store a function handle to the wake combination model
             switch wakeCombinationModel
-                case 'quadratic'
+                case 'quadraticRotorVelocity'
                     obj.wakeCombinationModel = @quadratic_rotor_velocity;
+                case 'quadraticAmbientVelocity'
+                    obj.wakeCombinationModel = @quadratic_ambient_velocity;
                 otherwise
                     error('Wake combination model with name: "%s" is not defined', wakeCombinationModel);
             end
@@ -80,10 +82,11 @@ classdef model_definition
             wakeTurbulenceObj = obj.addedTurbulenceModel(obj.modelData, turbine, turbineCondition, turbineControl, turbineResult);
             
             % Pass all the created functions to the wake struct
+            wake.deficit_integral = @wakeVelDefObj.deficit_integral;
             wake.deficit = @(x, y, z) wakeVelDefObj.deficit(x, y, z);
             wake.boundary = @(x, y, z) wakeVelDefObj.boundary(x, y, z);
             wake.deflection = @(x) wakeDeflObj.deflection(x);
-            wake.added_TI = @(x, ti0) wakeTurbulenceObj.added_TI(x, ti0);
+            wake.added_TI = @(x, ti0) wakeTurbulenceObj.added_TI(x);
         end
     end
 end

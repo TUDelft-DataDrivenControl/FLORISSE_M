@@ -5,7 +5,7 @@
 
 Welcome to FLORISSE_M's documentation!
 ======================================
-This is the documentation for (FLORIS) which stands for FLOw Redirection and Induction in Steady State. This is a reduced order model focussed on modeling the wake interactions in wind farms in order to optimize the energy production.
+This is the documentation for (FLORIS) which stands for FLOw Redirection and Induction in Steady State. This is a reduced order model focussed on modeling the wakes and their interactions in wind farms in order to optimize the energy production.
 
 .. toctree::
    :maxdepth: 2
@@ -14,10 +14,6 @@ This is the documentation for (FLORIS) which stands for FLOw Redirection and Ind
    Background
    Architecture
    Classes
-   Turbines
-   DeflectionModels
-   VelocityModels
-   AmbientFlowClasses
    ForDevelopers
    IntroductionToTools
 
@@ -27,3 +23,11 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
+
+   .. Turbines
+   .. AddedTurbulenceModels
+   .. DeflectionModels
+   .. SummationModels
+   .. VelocityModels
+   .. AmbientFlowClasses

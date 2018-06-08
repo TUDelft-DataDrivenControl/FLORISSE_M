@@ -21,9 +21,9 @@ classdef ambient_inflow_uniform < ambient_inflow_interface
             obj.rho = 1.1716;
         end
         
-        function V = Vfun(obj, ~)
+        function V = Vfun(obj, Z)
             %VFUN describes the inflow velocity profile
-            V = obj.Vref;
+            V = Z*0+obj.Vref;
         end
     end
 end

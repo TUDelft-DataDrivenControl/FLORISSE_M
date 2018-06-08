@@ -13,7 +13,8 @@ classdef deflection_models_test < matlab.unittest.TestCase
             testCase.applyFixture(PathFixture('../FLORISSE_M/coreFunctions',...
                                               'IncludeSubfolders',true));
             testCase.applyFixture(PathFixture('../FLORISSE_M/layoutDefinitions'));
-            testCase.applyFixture(PathFixture('../FLORISSE_M/helperObjects'));
+            testCase.applyFixture(PathFixture('../FLORISSE_M/ambientFlowDefinitions'));
+            testCase.applyFixture(PathFixture('../FLORISSE_M/controlDefinitions'));
             testCase.applyFixture(PathFixture('../FLORISSE_M/turbineDefinitions',...
                                               'IncludeSubfolders',true));
             testCase.applyFixture(PathFixture('../FLORISSE_M/submodelDefinitions',...
@@ -37,17 +38,19 @@ classdef deflection_models_test < matlab.unittest.TestCase
     methods(Test)
         function test_jimenez_run(testCase)
             import matlab.unittest.constraints.IssuesNoWarnings
-            import matlab.unittest.constraints.IsEqualTo
+            import matlab.unittest.constraints.IsEqualTo;
+            import matlab.unittest.constraints.AbsoluteTolerance;
+            
             subModels = model_definition('deflectionModel', 'jimenez',...
                                          'velocityDeficitModel', 'selfSimilar',...
-                                         'wakeCombinationModel', 'quadratic',...
+                                         'wakeCombinationModel', 'quadraticRotorVelocity',...
                                          'addedTurbulenceModel', 'crespoHernandez');
             florisRunner = floris(testCase.generic6Turb, testCase.controlSet, subModels);
             function runner(); florisRunner.run; end
             testCase.verifyThat(@runner, IssuesNoWarnings)
             [dy, dz] = florisRunner.turbineResults(4).wake.deflection(150);
-            testCase.verifyThat(dy,IsEqualTo(-6))
-            testCase.verifyThat(dz,IsEqualTo(0))
+            testCase.assertThat(dy,IsEqualTo(-8.7983, 'Within', AbsoluteTolerance(1e-4)))
+            testCase.assertThat(dz,IsEqualTo(0))
         end
         
         function test_rans_run(testCase)
@@ -55,7 +58,7 @@ classdef deflection_models_test < matlab.unittest.TestCase
             import matlab.unittest.constraints.IsEqualTo
             subModels = model_definition('deflectionModel', 'rans',...
                                          'velocityDeficitModel', 'selfSimilar',...
-                                         'wakeCombinationModel', 'quadratic',...
+                                         'wakeCombinationModel', 'quadraticRotorVelocity',...
                                          'addedTurbulenceModel', 'crespoHernandez');
             florisRunner = floris(testCase.generic6Turb, testCase.controlSet, subModels);
             function runner(); florisRunner.run; end
