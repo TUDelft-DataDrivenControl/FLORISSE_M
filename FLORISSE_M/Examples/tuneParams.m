@@ -1,12 +1,12 @@
 % Instantiate a layout without ambientInflow conditions
 layout = generic_9_turb;
 
-% Use the heigth from the first turbine type as reference heigth for theinflow profile
-refHeigth = layout.uniqueTurbineTypes(1).hubHeight;
+% Use the height from the first turbine type as reference height for theinflow profile
+refheight = layout.uniqueTurbineTypes(1).hubHeight;
 
 % Define an inflow struct and use it in the layout, clwindcon9Turb
 layout.ambientInflow = ambient_inflow_log('PowerLawRefSpeed', 8, ...
-                                          'PowerLawRefHeight', refHeigth, ...
+                                          'PowerLawRefHeight', refheight, ...
                                           'windDirection', 0, ...
                                           'TI0', .05);
 

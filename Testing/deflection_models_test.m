@@ -22,11 +22,11 @@ classdef deflection_models_test < matlab.unittest.TestCase
             % Instantiate a layout object with 6 identical turbines
             testCase.generic6Turb = generic_6_turb;
 
-            % Use the heigth from the first turbine type as reference heigth for theinflow profile
-            refHeigth = testCase.generic6Turb.uniqueTurbineTypes(1).hubHeight;
+            % Use the height from the first turbine type as reference height for theinflow profile
+            refheight = testCase.generic6Turb.uniqueTurbineTypes(1).hubHeight;
             % Define an inflow struct and use it in the layout, clwindcon9Turb
             testCase.generic6Turb.ambientInflow = ambient_inflow_log('PowerLawRefSpeed', 8, ...
-                                                  'PowerLawRefHeight', refHeigth, ...
+                                                  'PowerLawRefHeight', refheight, ...
                                                   'windDirection', 0, ...
                                                   'TI0', .01);
 

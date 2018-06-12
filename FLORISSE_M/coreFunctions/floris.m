@@ -77,7 +77,7 @@ classdef floris < handle
             sumKed  = 0; % Sum of kinetic energy deficits (outer sum of Eq. 22)
             TiVec = obj.layout.ambientInflow.TI0; % Turbulence intensity vector
             locationDw = obj.layout.locWf(turbIfIndex, :);
-            Uhh = obj.layout.ambientInflow.Vfun(locationDw(3)); % Free-stream velocity at hub heigth
+            Uhh = obj.layout.ambientInflow.Vfun(locationDw(3)); % Free-stream velocity at hub height
 
             for turbNumAffector = obj.turbineResults(turbIfIndex).affectedBy.'
                 % Compute predicted deficit by turbNumAffector

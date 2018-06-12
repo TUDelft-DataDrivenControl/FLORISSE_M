@@ -13,7 +13,7 @@ classdef turbine_type < handle
         rotorRadius % Length of a single turbine blade
         rotorArea % Swept area of the rotor
         genEfficiency % Generator efficiency
-        hubHeight % Heigth of the turbine nacelle
+        hubHeight % height of the turbine nacelle
         pP % Fitting parameter to adjust CP down for a turbine angle
     end
     properties (SetAccess = immutable)

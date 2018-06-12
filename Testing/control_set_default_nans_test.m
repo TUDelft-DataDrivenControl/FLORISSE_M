@@ -19,11 +19,11 @@ classdef control_set_default_nans_test < matlab.unittest.TestCase
             % Instantiate a layout object with 9 identical turbines
             generic6Turb = generic_6_turb;
 
-            % Use the heigth us the first turbine type as reference heigth for theinflow profile
-            refHeigth = generic6Turb.uniqueTurbineTypes(1).hubHeight;
+            % Use the height us the first turbine type as reference height for theinflow profile
+            refheight = generic6Turb.uniqueTurbineTypes(1).hubHeight;
             % Define an inflow struct and use it in the layout, clwindcon9Turb
             generic6Turb.ambientInflow = ambient_inflow_log('PowerLawRefSpeed', 8, ...
-                                                          'PowerLawRefHeight', refHeigth, ...
+                                                          'PowerLawRefHeight', refheight, ...
                                                           'windDirection', pi/2, ...
                                                           'TI0', .01);
             testCase.layout = generic6Turb;

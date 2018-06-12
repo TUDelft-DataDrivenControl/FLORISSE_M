@@ -3,7 +3,7 @@ classdef ambient_inflow_log < ambient_inflow_interface
     
     properties
         Vref % Wind velocity
-        Href % Reference heigth for logarithmic velocity inflow profile
+        Href % Reference height for logarithmic velocity inflow profile
         windDirection % Wind direction in radians
         TI0 % Atmospheric turbulence intensity
         rho % Air density

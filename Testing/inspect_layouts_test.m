@@ -43,11 +43,11 @@ classdef inspect_layouts_test < matlab.unittest.TestCase
             testCase.assertLength(scaled2Turb.uniqueTurbineTypes, 1);
             testCase.assertEqual(scaled2Turb.nTurbs, 2);
         end
-        function test_two_heigths_6_turb(testCase)
-            % Check the two_heigths_6_turb layout
-            twoHeigths6Turb = two_heigths_6_turb;
-            testCase.assertLength(twoHeigths6Turb.uniqueTurbineTypes, 2);
-            testCase.assertEqual(twoHeigths6Turb.nTurbs, 6);
+        function test_two_heights_6_turb(testCase)
+            % Check the two_heights_6_turb layout
+            twoheights6Turb = two_heights_6_turb;
+            testCase.assertLength(twoheights6Turb.uniqueTurbineTypes, 2);
+            testCase.assertEqual(twoheights6Turb.nTurbs, 6);
         end
     end
 end

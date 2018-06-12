@@ -21,11 +21,11 @@ classdef power_test < matlab.unittest.TestCase
             % Instantiate a layout object with 6 identical turbines
             layout = tester_6_turb_5D;
 
-            % Use the heigth from the first turbine type as reference heigth for theinflow profile
-            refHeigth = layout.uniqueTurbineTypes(1).hubHeight;
+            % Use the height from the first turbine type as reference height for theinflow profile
+            refheight = layout.uniqueTurbineTypes(1).hubHeight;
             % Define an inflow struct and use it in the layout, clwindcon9Turb
             layout.ambientInflow = ambient_inflow_log('PowerLawRefSpeed', 8, ...
-                                                  'PowerLawRefHeight', refHeigth, ...
+                                                  'PowerLawRefHeight', refheight, ...
                                                   'windDirection', 0, ...
                                                   'TI0', .01);
 
