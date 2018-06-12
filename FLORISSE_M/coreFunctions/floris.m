@@ -1,6 +1,7 @@
 classdef floris < handle
-    %FLORIS Summary of this class goes here
-    %   Detailed explanation goes here
+    %FLORIS This is the main class of the FLORIS program
+    %   This class iterated through all the turbines and determines their
+    %   production and the behaviour of their wakes
     
     properties
         layout
@@ -123,9 +124,7 @@ classdef floris < handle
                                                 obj.turbineConditions(turbNum), ...
                                                 obj.controlSet.turbineControls(turbNum), ...
                                                 obj.turbineResults(turbNum));
-%             if turbNum == 1
-%                 keyboard
-%             end
+            
             % Create the wake for this turbine according to the specified model
             obj.turbineResults(turbNum).wake = obj.model.create_wake(...
                                                 obj.layout.turbines(turbNum), ...
