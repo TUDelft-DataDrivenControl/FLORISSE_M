@@ -1,6 +1,16 @@
+%
+% CONTROLOPTIMIZATIONSIMPLE.M
+% Summary: This script demonstrates how one could optimize turbine control
+% settings offline or in real time for the FLORIS model using a known
+% ambient condition (wind speed, direction, TI). In this example case,
+% first the yaw angles are optimized under greedy torque control, and
+% secondly the yaw angles are optimized in combination with the turbine 
+% axial induction factors.
+%
+
 % Instantiate a layout without ambientInflow conditions
 layout = generic_9_turb;
-% layout = generic_1_turb;
+
 % Use the height from the first turbine type as reference height for theinflow profile
 refheight = layout.uniqueTurbineTypes(1).hubHeight;
 
@@ -18,17 +28,20 @@ subModels = model_definition('deflectionModel',      'rans',...
                              'velocityDeficitModel', 'selfSimilar',...
                              'wakeCombinationModel', 'quadraticRotorVelocity',...
                              'addedTurbulenceModel', 'crespoHernandez');
+
+% Run the baseline case                         
 florisRunner = floris(layout, controlSet, subModels);
-% florisRunner.layout.ambientInflow.windDirection = pi/2;
-florisRunner.run
+florisRunner.run 
 display([florisRunner.turbineResults.power])
 
-optimizeControl(florisRunner, 'Yaw Optimizer', 1, ...
-                              'Pitch Optimizer', 0, ...
-                              'Axial induction Optimizer', 0)
-optimizeControl(florisRunner, 'Yaw Optimizer', 1, ...
-                              'Pitch Optimizer', 0, ...
-                              'Axial induction Optimizer', 1)
+% Optimize the control variables
+optimizeControlSettings(florisRunner, 'Yaw Optimizer', 1, ...
+                                      'Pitch Optimizer', 0, ...
+                                      'Axial induction Optimizer', 0)
+optimizeControlSettings(florisRunner, 'Yaw Optimizer', 1, ...
+                                      'Pitch Optimizer', 0, ...
+                                      'Axial induction Optimizer', 1)
 
+% Visualize the outputs                          
 visTool = visualizer(florisRunner);
 visTool.plot2dWF()
