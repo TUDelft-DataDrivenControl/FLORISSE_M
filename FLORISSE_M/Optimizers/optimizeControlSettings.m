@@ -1,6 +1,10 @@
-function [xopt] = optimizeControl(florisRunner, ~, yawOpt, ~, pitchOpt, ~, axialOpt)
-%OPTIMIZECONTROL Summary of this function goes here
-%   Detailed explanation goes here
+function [xopt] = optimizeControlSettings(florisRunner, ~, yawOpt, ~, pitchOpt, ~, axialOpt)
+%OPTIMIZECONTROLSETTINGS Turbine control optimization algorithm
+%
+%   This function is an example case of how to optimize the yaw and/or
+%   blade pitch angles/axial induction factors of the turbines inside the
+%   wind farm using the FLORIS model.
+%
 nTurbs = florisRunner.layout.nTurbs;
 x0 = []; lb = []; ub = [];
 
