@@ -6,6 +6,9 @@ function [xopt,P_bl,P_opt] = optimizeControlSettings(florisRunner, ~, yawOpt, ~,
 %   wind farm using the FLORIS model.
 %
 
+% In this code, WD_std = 5 [deg] is set, but it is not used in the actual
+% code. For stability issues, it has to be set to a nonzero value. It does
+% not affect the actual outcome.
 if nargin <= 7
     [xopt,P_bl,P_opt] = optimizeControlSettingsRobust(florisRunner, ' ', yawOpt, ' ',...
                         pitchOpt, ' ', axialOpt, 5*pi/180, 1);

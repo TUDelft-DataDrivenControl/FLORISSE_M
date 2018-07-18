@@ -16,6 +16,6 @@ locIf = {[300,    100.0];
 % Put all the turbines in a struct array
 turbines = struct('turbineType', NREL5MWTurbType , ...
                       'locIf',         locIf);
-layout_obj = layout_class(turbines, 'generic_6_turb');
+layout_obj = layout_class(turbines, 'generic_9_turb');
 end
 
