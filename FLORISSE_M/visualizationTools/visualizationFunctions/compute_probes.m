@@ -1,4 +1,4 @@
-function [uProbe] = compute_probes(florisObj,x,y,z,fixYaw);
+function [uProbe] = compute_probes(florisObj,xIF,yIF,z,fixYaw);
 %
 % This function computes the flow velocity at a (vector of) location(s)
 % (x,y,z) in the wind farm. For a rectangular grid, one should use the
@@ -14,6 +14,9 @@ function [uProbe] = compute_probes(florisObj,x,y,z,fixYaw);
     yawAngles            = florisObj.controlSet.yawAngles;
     avgWs                = [florisObj.turbineConditions.avgWS];
     wakeCombinationModel = florisObj.model.wakeCombinationModel;
+    [probeLocationsWF]   = frame_IF2WF(layout.ambientInflow.windDirection,[xIF(:), yIF(:), z(:)]);
+    xWF                  = probeLocationsWF(:,1);
+    yWF                  = probeLocationsWF(:,2);
     
     if nargin < 5
         fixYaw = false;
@@ -21,9 +24,9 @@ function [uProbe] = compute_probes(florisObj,x,y,z,fixYaw);
     
     % Calculate velocity for a 1x1x1 "flow field" for every probe location
     Uin    = layout.ambientInflow.Vfun(z);
-    uProbe = zeros(size(x));
-    for i = 1:length(x)
-        flowField = struct('X',x(i),'Y',y(i),'Z',z(i),'U',Uin(i));
+    uProbe = zeros(size(xIF));
+    for i = 1:length(xIF)
+        flowField = struct('X',xWF(i),'Y',yWF(i),'Z',z(i),'U',Uin(i));
         flowField = compute_flow_field(flowField, layout, turbineResults, ...
                                            yawAngles, avgWs, fixYaw, wakeCombinationModel);
         uProbe(i) = flowField.U;
