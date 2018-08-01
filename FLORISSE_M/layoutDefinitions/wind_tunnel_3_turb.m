@@ -2,7 +2,7 @@ function layout_obj = wind_tunnel_3_turb()
 %scaled_2_turb Summary of this class goes here
 %   Detailed explanation goes here
 
-MWT12TurbType = mwt12;
+MWT12TurbType = mwt12();
 
 % Wind turbine location in inertial frame [x, y], multiplied with D
 locIf = {[0,  0];

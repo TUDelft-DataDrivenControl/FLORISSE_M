@@ -13,7 +13,7 @@ locIf = cellfun(@(loc) D*loc, locIf, 'UniformOutput', false);
 turbines = struct('turbineType', DTU10mwTurbType , ...
                   'locIf',       locIf);
 
-layout_obj = layout_class(turbines, 'clwindcon_9_turb');
+layout_obj = layout_class(turbines, 'clwindcon_3_turb');
 end
 
 
