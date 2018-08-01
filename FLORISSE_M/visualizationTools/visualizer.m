@@ -63,9 +63,12 @@ classdef visualizer < handle
                                'W',       {[]});
         end
         
-        function plot2dWF(obj)
+        function plot2dWF(obj,plotFig)
         %This function plots a 2D slice of the velocity field oriented
         %with the X-axis along the wind direction
+            if nargin < 2
+                plotFig = true; % Default option
+            end
             % Start by checking if the mainFlowField has the relevant
             % information, otherwise get it
             if isempty(obj.flowfieldMain.U)
@@ -87,12 +90,17 @@ classdef visualizer < handle
                     obj.flowFieldWF.(field) = reshape(obj.flowfieldMain.(field)(mask), 1+xIdMax-xIdMin ,[]);
                 end
             end
-            plot_2d_field(obj.layout.turbines, obj.layout.locWf, obj.flowFieldWF, obj.yawAngles)
+            if plotFig
+                plot_2d_field(obj.layout.turbines, obj.layout.locWf, obj.flowFieldWF, obj.yawAngles)
+            end
         end
         
-        function plot2dIF(obj)
+        function plot2dIF(obj,plotFig)
         %This function plots a 2D slice of the velocity field oriented
         %with the X-axis identical to the inertial frame
+            if nargin < 2
+                plotFig = true; % Default option
+            end        
             % Start by checking if the mainFlowField has the relevant
             % information, otherwise get it
             if isempty(obj.flowfieldMain.U)
@@ -113,13 +121,18 @@ classdef visualizer < handle
                     obj.flowfieldMain.Y, obj.flowfieldMain.U, targetGrid(:,1),...
                     targetGrid(:,2)), size(obj.flowFieldIF.X));
             end
-            plot_2d_field(obj.layout.turbines, obj.layout.locIf, obj.flowFieldIF, ...
-                          obj.yawAngles+ obj.layout.ambientInflow.windDirection)
+            if plotFig
+                plot_2d_field(obj.layout.turbines, obj.layout.locIf, obj.flowFieldIF, ...
+                              obj.yawAngles+ obj.layout.ambientInflow.windDirection)
+            end
         end
         
-        function plot3dWF(obj)
+        function plot3dWF(obj,plotFig)
         %This function starts the volumeVisualization app and shows the
         %velocity field oriented with the X-axis along the wind direction
+            if nargin < 2
+                plotFig = true; % Default option
+            end
             % Start by checking if the mainFlowField has the relevant
             % information, otherwise get it
             if ismatrix(obj.flowfieldMain.U)
@@ -140,13 +153,18 @@ classdef visualizer < handle
                                                       1+xIdMax-xIdMin, 1+yIdMax-yIdMin, []);
                 end
             end
-            volvisApp(obj.flowFieldWF.X, obj.flowFieldWF.Y,...
-                      obj.flowFieldWF.Z, obj.flowFieldWF.U)
+            if plotFig
+                volvisApp(obj.flowFieldWF.X, obj.flowFieldWF.Y,...
+                          obj.flowFieldWF.Z, obj.flowFieldWF.U)
+            end
         end
         
-        function plot3dIF(obj)
+        function plot3dIF(obj,plotFig)
         %This function starts the volumeVisualization app and shows the
         %velocity field oriented with the X-axis identical to the inertial frame
+            if nargin < 2
+                plotFig = true; % Default option
+            end        
             % Start by checking if the mainFlowField has the relevant
             % information, otherwise get it
             if ismatrix(obj.flowfieldMain.U)
@@ -161,8 +179,10 @@ classdef visualizer < handle
                     obj.flowfieldMain.Y, obj.flowfieldMain.Z, obj.flowfieldMain.U, ...
                     targetGrid(:,1), targetGrid(:,2), targetGrid(:,3)), size(obj.flowFieldIF.X));
             end
-            volvisApp(obj.flowFieldIF.X, obj.flowFieldIF.Y,...
-                      obj.flowFieldIF.Z, obj.flowFieldIF.U)
+            if plotFig
+                volvisApp(obj.flowFieldIF.X, obj.flowFieldIF.Y,...
+                          obj.flowFieldIF.Z, obj.flowFieldIF.U)
+            end
         end
         
         function plot_layout(obj)
