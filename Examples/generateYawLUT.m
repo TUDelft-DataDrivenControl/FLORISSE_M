@@ -1,3 +1,12 @@
+%
+% GENERATEYAWLUT.M
+% Summary: This script demonstrates how one could use FLORIS to generate a
+% set of optimal yaw settings of each turbine, for a range of ambient
+% conditions. In this specific example, the yaw angles are optimized for a
+% 2-turbine case over a range of wind directions and wind speeds. The
+% results are saved to a .csv "look-up table" (LUT) style file.
+%
+
 clear all; close all; clc;
 addpath(genpath('../FLORISSE_M'));
 
