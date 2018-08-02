@@ -33,43 +33,7 @@ for i = 1:length(yawAngleRange)
     measurementSet{i}.U.stdev  = [  1.0,    1.0];
 end
 
-% Set up cost function
-costFun = @(x) costWeightedRMSE(x,florisObjSet,measurementSet);
-
-% Evaluate initial cost
 % x0 = [2.32,.154,.3837,.0037];
 x0 = [2.72,.274,.8107,.2037];
-J0 = costFun(x0);
-
-% Optimize using Parallel Computing
-% options = gaoptimset('PopulationSize', popsize, 'Generations', gensize, 'Display', 'off', 'TolFun', 1e-2,'UseParallel', true);
-options = gaoptimset('TolFun', 1e-3,'UseParallel', true);
-[xopt,fval,exitFlag,output,population,scores] = ga(costFun,4, [], [], [], [], [], [], [], [], options);
-Jopt = costFun(xopt);
-
-function [J] = costWeightedRMSE(x,florisObjSet,measurementSet);
-    Jset = zeros(1,length(florisObjSet));
-    for i = 1:length(florisObjSet)
-        florisObjTmp = copy(florisObjSet{i});
-        florisObjTmp.model.modelData.alpha = x(1);
-        florisObjTmp.model.modelData.beta  = x(2);
-        florisObjTmp.model.modelData.ka    = x(3);
-        florisObjTmp.model.modelData.kb    = x(4);
-        florisObjTmp.run(); % Execute
-        
-        % Calculate weighted power RMSE, if applicable
-        if any(ismember(fields(measurementSet{i}),'P'))
-            powerError = [florisObjTmp.turbineResults.power] - measurementSet{i}.P.values;
-            Jset(i)    = Jset(i) + rms(powerError ./ measurementSet{i}.P.stdev);
-        end  
-        
-        % Calculate weighted flow RMSE, if applicable
-        if any(ismember(fields(measurementSet{i}),'U'))
-            fixYaw  = false;
-            uProbes = compute_probes(florisObjTmp,measurementSet{1}.U.x,measurementSet{1}.U.y,measurementSet{1}.U.z,fixYaw);
-            flowError = uProbes - measurementSet{i}.U.values;
-            Jset(i)   = Jset(i) + rms(flowError ./ measurementSet{i}.U.stdev);
-        end  
-    end
-    J = sum(Jset);
-end
+estTool = estimator({'alpha','beta','ka','kb'},florisObjSet,measurementSet);
+xopt = estTool.gaEstimation(x0); % Use genetic algorithms for estimation
