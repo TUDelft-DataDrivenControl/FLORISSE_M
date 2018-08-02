@@ -1,4 +1,4 @@
-classdef floris < handle
+classdef floris < matlab.mixin.Copyable%handle
     %FLORIS This is the main class of the FLORIS program
     %   This class iterated through all the turbines and determines their
     %   production and the behaviour of their wakes
@@ -9,6 +9,21 @@ classdef floris < handle
         model
         turbineConditions
         turbineResults
+    end
+    
+    methods (Static)
+        function s = saveobj(obj)
+            s = obj;
+        end
+        
+        function obj = loadobj(s)
+            obj = s;
+            
+            for i = 1:length(s.layout.turbines)
+                obj.layout.turbines(i).turbineType.controlMethod = ...
+                    obj.controlSet.controlMethod;
+            end
+        end
     end
     
     methods
