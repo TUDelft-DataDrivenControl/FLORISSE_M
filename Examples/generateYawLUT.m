@@ -39,14 +39,14 @@ if exist(databaseOutput,'file')
     
     % Remove all duplicate runs from test queue
     [dataArray,noLinesInit] = readPastLUTData(databaseOutput);
-    prevRuns = ismember(xTests,dataArray(:,[3 4]),'rows');
+    prevRuns = ismember(xTests,dataArray(:,[1 2]),'rows');
     xTests = xTests(~prevRuns,:); % Exclude all pre-existing tests
     disp(['Skipping ' num2str(sum(prevRuns)) ' cases (already existent in database).']);
     clear  dataArray    
 else
     noLinesInit = 1;
     disp(['Creating new database output file with name ''' databaseOutput '''.']);
-    dlmwrite(databaseOutput,sprintf('Pbl(W) \t Popt(W) \t WD(deg) \t WS(m/s) \t xopt(deg)'),'delimiter','','newline','pc');
+    dlmwrite(databaseOutput,sprintf('WD(deg) \t WS(m/s) \t Pbl(W) \t Popt(W) \t xopt(deg)'),'delimiter','','newline','pc');
 end
 
 % Perform actual runs (in parallel, if possible)
@@ -83,7 +83,7 @@ parfor i = 1:N
     end
         
     % Write output to the csv
-    dlmwrite(databaseOutput,[Pbl Popt xTests(i,:) xopt*180/pi],'delimiter','\t','newline','pc','-append');
+    dlmwrite(databaseOutput,[xTests(i,:) Pbl Popt xopt*180/pi],'delimiter','\t','newline','pc','-append');
 end
 disp([datestr(rem(now,1)) ' __ Finished ' num2str(N) ' runs. Terminating LUT generation.']);
 
