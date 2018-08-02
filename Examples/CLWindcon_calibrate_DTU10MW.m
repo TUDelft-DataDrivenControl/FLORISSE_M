@@ -1,3 +1,12 @@
+%
+% CLWINDCON_CALIBRATE_DTU10MW.M
+% Summary: This script demonstrates how to tune a subset of model
+% parameters to high-fidelity simulation or experimental data. In this
+% example, we are tuning 4 tuning parameters to flow measurements for a
+% single-turbine wind farm case. It should be straight-forward to extend
+% this to multiple wind farm simulations, layouts, ambient conditions, and
+% measurements (power and/or flow).
+%
 clear all; close all; clc;
 
 %% Initialize FLORIS objects for the cases used for model calibration (should match the measurementSet)
@@ -32,15 +41,16 @@ costFun = @(x) costWeightedRMSE(x,florisObjSet,measurementSet);
 x0 = [2.72,.274,.8107,.2037];
 J0 = costFun(x0);
 
-% Optimize
-xopt = ga(costFun,4); % Genetic algorithm optimization
+% Optimize using Parallel Computing
+% options = gaoptimset('PopulationSize', popsize, 'Generations', gensize, 'Display', 'off', 'TolFun', 1e-2,'UseParallel', true);
+options = gaoptimset('TolFun', 1e-3,'UseParallel', true);
+[xopt,fval,exitFlag,output,population,scores] = ga(costFun,4, [], [], [], [], [], [], [], [], options);
 Jopt = costFun(xopt);
 
 function [J] = costWeightedRMSE(x,florisObjSet,measurementSet);
     Jset = zeros(1,length(florisObjSet));
     for i = 1:length(florisObjSet)
-        clear florisObjTmp
-        florisObjTmp = florisObjSet{i};
+        florisObjTmp = copy(florisObjSet{i});
         florisObjTmp.model.modelData.alpha = x(1);
         florisObjTmp.model.modelData.beta  = x(2);
         florisObjTmp.model.modelData.ka    = x(3);
