@@ -3,62 +3,81 @@ classdef estimator < handle
     %   Detailed explanation goes here
     
     properties
-        estimationParams
+        estimParamsAll
         florisObjSet
         measurementSet
     end
     
     methods
-        function obj = estimator(estimationParams,florisObjSet,measurementSet)
+        function obj = estimator(florisObjSet,measurementSet)
             % Store the relevant properties from the FLORIS object
-            obj.estimationParams = estimationParams;
-            obj.florisObjSet     = florisObjSet;
+            obj.florisObjSet   = florisObjSet;
+            obj.measurementSet = measurementSet;
             
-            if nargin < 3
-                % Generate empty measurement set
-                obj.measurementSet   = cell(size(obj.florisObjSet));
-            else
-                obj.measurementSet = measurementSet;
+            if length(measurementSet) ~= length(florisObjSet)
+                error('The measurementSet dimensions should match that of the florisObjSet.');
             end
+            
+            % Determine the collective set of estimation parameters
+            estimParamsAll = {};
+            for i = 1:length(measurementSet)
+                estimParamsAll = {estimParamsAll{:} measurementSet{i}.estimParams{:}};
+            end
+            obj.estimParamsAll = unique(estimParamsAll);
+            disp(['Collective param. estimation set: [' strjoin(obj.estimParamsAll,', ') ']'])
         end
         
-        function [xopt,Jopt] = gaEstimation(obj,x0)
-            costFun = @(x) obj.costWeightedRMSE(x);
-            
-            lb = x0/5;   % Condition lb <= x <= ub
-            ub = x0*5;   % Condition lb <= x <= ub
-            ga_A = [];   % Condition A * x <= b
-            ga_b = [];   % Condition A * x <= b
+        function [xopt,Jopt] = gaEstimation(obj,x0)           
+            if nargin < 2
+                disp('Starting unconstrained parameter estimation using the GA toolbox...');
+                lb = [];   % Condition lb <= x <= ub
+                ub = [];   % Condition lb <= x <= ub
+            else
+                disp('Starting constrained parameter estimation using the GA toolbox...');
+                if length(x0) ~= length(obj.estimParamsAll)
+                    error(['The variable [x0] has to be of equal length as [estimationParams], which is ' num2str(length(obj.estimParamsAll)) '.']);
+                end                
+                lb = min([x0/2. ; x0*2.]) % Condition lb <= x <= ub
+                ub = max([x0/2. ; x0*2.]) % Condition lb <= x <= ub
+            end
+            ga_A   = []; % Condition A * x <= b
+            ga_b   = []; % Condition A * x <= b
             ga_Aeq = []; % Condition Aeq * x == beq
             ga_beq = []; % Condition Aeq * x == beq
-            J0 = costFun(x0);
-           
+            
+            costFun = @(x) obj.costWeightedRMSE(x);
+            
             % Optimize using Parallel Computing
-            disp('Starting parameter estimation using the GA toolbox...');
-           
-            % options = gaoptimset('PopulationSize', popsize, 'Generations', gensize, 'Display', 'off', 'TolFun', 1e-2,'UseParallel', true);
+                % options = gaoptimset('PopulationSize', popsize, 'Generations', gensize, 'Display', 'off', 'TolFun', 1e-2,'UseParallel', true);
+            nVars = length(obj.estimParamsAll);
             options = gaoptimset('Display','iter', 'TolFun', 1e-3,'UseParallel', true);
-            [xopt,Jopt,exitFlag,output,population,scores] = ga(costFun, length(lb), ga_A, ga_b, ga_Aeq, ga_beq, lb, ub, [], options);
+            [xopt,Jopt,exitFlag,output,population,scores] = ga(costFun, nVars, ga_A, ga_b, ga_Aeq, ga_beq, lb, ub, [], options);
         end
-            
-            
+    end
+    
+    methods (Hidden)
         function [J] = costWeightedRMSE(obj,x);
             florisObjSet     = obj.florisObjSet;
             measurementSet   = obj.measurementSet;
-            estimationParams = obj.estimationParams;
+            estimParamsAll = obj.estimParamsAll;
             
-            if length(x) ~= length(estimationParams)
+            if length(x) ~= length(estimParamsAll)
                 error('The variable [x] has to be of equal length as [estimationParams].');
             end
             
-            Jset = zeros(1,length(florisObjSet));
+            % Update the parameters with [x] of each floris object, if required
             for i = 1:length(florisObjSet)
                 florisObjTmp = copy(florisObjSet{i});
-                for ji = 1:length(estimationParams)
-                    % Overwrite the model parameter ji
-                    florisObjTmp.model.modelData.(estimationParams{ji}) = x(ji);
+                for ji = 1:length(estimParamsAll)
+                    % Update parameter iff is tuned for measurement set [i]
+                    if ismember(estimParamsAll{ji},measurementSet{i}.estimParams)
+                        florisObjTmp.model.modelData.(estimParamsAll{ji}) = x(ji);
+                    end
                 end
-                florisObjTmp.run(); % Execute
+                
+                % Reset cost function and execute FLORIS with [x]
+                Jset = zeros(1,length(florisObjSet));
+                florisObjTmp.run();
                 
                 % Calculate weighted power RMSE, if applicable
                 if any(ismember(fields(measurementSet{i}),'P'))
@@ -74,6 +93,8 @@ classdef estimator < handle
                     Jset(i)   = Jset(i) + rms(flowError ./ measurementSet{i}.U.stdev);
                 end
             end
+            
+            % Final cost
             J = sum(Jset);
         end
     end

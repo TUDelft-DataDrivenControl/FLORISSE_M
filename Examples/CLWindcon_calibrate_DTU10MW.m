@@ -26,14 +26,24 @@ end
 for i = 1:length(yawAngleRange)
     % measurementSet{i}.P.values  = [1e6]; % Power measurements not relevant for 1-turbine model fitting
     % measurementSet{i}.P.stdev     = [2e5]; % Power measurements not relevant for 1-turbine model fitting
-    measurementSet{i}.U.x      = [100.0, 1000.0];
+    measurementSet{i}.U.x      = [300.0, 1000.0];
     measurementSet{i}.U.y      = [  0.0,    0.0];
     measurementSet{i}.U.z      = [ 90.0,   90.0];
-    measurementSet{i}.U.values = [  8.0,    8.0];
+    measurementSet{i}.U.values = [  5.0,    6.0];
     measurementSet{i}.U.stdev  = [  1.0,    1.0];
+    measurementSet{i}.estimParams = {'alpha','beta','ka','kb'};
 end
 
-% x0 = [2.32,.154,.3837,.0037];
-x0 = [2.72,.274,.8107,.2037];
-estTool = estimator({'alpha','beta','ka','kb'},florisObjSet,measurementSet);
-xopt = estTool.gaEstimation(x0); % Use genetic algorithms for estimation
+% Optional: only estimate some parameters for some situations
+measurementSet{1}.estimParams = {'beta','ka','kb'};
+measurementSet{5}.estimParams = {'bd'};
+
+% Create an estimation object with the right inputs
+estTool = estimator(florisObjSet,measurementSet);
+
+% Constrained optimization, with  x0/2 <= x_opt <= x0*2
+x0 = [2.32,.154,.3837,.0037,-0.01];
+xopt_con = estTool.gaEstimation(x0); % Use genetic algorithms for constrained optimization
+
+% Unconstrained optimization
+% xopt_uncon = estTool.gaEstimation();   % Use genetic algorithms for unconstrained optimization
