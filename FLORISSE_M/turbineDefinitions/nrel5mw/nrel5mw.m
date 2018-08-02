@@ -16,8 +16,8 @@ turbineType = turbine_type(126.4/2., 0.944, 90.0, 1.88, ...
 
 end
 
-% This function is compatible with C-compilation
-function Path = getFileLocation()
-    filePath = mfilename('fullpath');
-    Path = filePath(1:end-1-length(mfilename()));
-end
+% % This function is compatible with C-compilation
+% function Path = getFileLocation()
+%     filePath = mfilename('fullpath');
+%     Path = filePath(1:end-1-length(mfilename()));
+% end

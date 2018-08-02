@@ -6,6 +6,8 @@ classdef nrel5mw_cpct < handle
     end
     
     methods
+        
+        % Initialization of the Cp-Ct mapping (LUTs)
         function obj = nrel5mw_cpct(controlMethod)
             %TURBINE_TYPE Construct an instance of this class
             %   The turbine characters are saved as properties
@@ -61,6 +63,8 @@ classdef nrel5mw_cpct < handle
             obj.structLUT = structLUT;
         end
         
+        
+        % Initial values when initializing the turbines
         function [pitch,TSR,axInd] = initialValues(obj)
             switch obj.controlMethod
                 case {'pitch'}
@@ -76,6 +80,8 @@ classdef nrel5mw_cpct < handle
             end
         end
         
+        
+        % Interpolation functions to go from LUT to actual values
         function [cp,ct,adjustCpCtYaw] = calculateCpCt(obj,condition,turbineControl)
             controlMethod = obj.controlMethod;
             structLUT     = obj.structLUT;
