@@ -16,12 +16,12 @@ classdef turbine_type < handle
         hubHeight % height of the turbine nacelle
         pP % Fitting parameter to adjust CP down for a turbine angle
         cpctMapObj
+        allowableControlMethods
     end
     properties (SetAccess = immutable)
         description % Short description of the turbine
     end
     properties (Access = private)
-        allowableControlMethods
         cpctMapFunc
         structLUT
     end

@@ -51,6 +51,48 @@ classdef turbine_type_test < matlab.unittest.TestCase
             function runner(); testCase.florisRunner.run; end
             testCase.assertError(@runner, 'cPcTpower:valueError')
         end
+        
+        function test_all_turbines(testCase)
+            import matlab.unittest.constraints.IssuesNoWarnings
+            function runner();
+                turbTypes{1} = nrel5mw();
+                turbTypes{2} = dtu10mw();
+                turbTypes{3} = mwt12();
+                turbTypes{4} = tum_g1();
+                
+                locIf = {[300,    100.0]; [1000,   100.0]};
+                
+                % Define subModels
+                subModels = model_definition('deflectionModel','rans',...
+                    'velocityDeficitModel', 'selfSimilar',...
+                    'wakeCombinationModel', 'quadraticRotorVelocity',...
+                    'addedTurbulenceModel', 'crespoHernandez');
+                
+                for i = 1:length(turbTypes)
+                    %     disp(['Running with turbTypes{' num2str(i) '}']);
+                    clear turbines layout
+                    
+                    turbines = struct('turbineType', turbTypes{i}, 'locIf',   locIf);
+                    layout = layout_class(turbines, ['testTurbineTypes_' num2str(i)]);
+                    
+                    % Define an inflow struct and use it in the layout, wind_tunnel_3_turb
+                    layout.ambientInflow = ambient_inflow_uniform('windSpeed', 5, ...
+                        'windDirection', pi/2, 'TI0', .01);
+                    
+                    for ji = 1:length(turbTypes{i}.allowableControlMethods);
+                        clear controlSet florisRunner
+                        controlSet = control_set(layout, turbTypes{i}.allowableControlMethods{ji});
+                        
+                        % Initialize the FLORIS object and run the simulation
+                        florisRunner = floris(layout, controlSet, subModels);
+                        florisRunner.run;
+                    end
+                end
+                
+            end
+            testCase.verifyThat(@runner, IssuesNoWarnings)
+        end
+      
     end
 end
 
