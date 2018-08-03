@@ -147,36 +147,23 @@ classdef control_set < handle
                 turbine.controlMethod = obj.controlMethod;
             end
             
+            % The default control variables for 'axialInduction' are
+            % defined as follows
             if strcmp(obj.controlMethod,'axialInduction')
                 obj.pitchAngles_     = nan*ones(1,obj.layout.nTurbs); % Blade pitch angles are set to NaN
                 obj.tipSpeedRatios_  = nan*ones(1,obj.layout.nTurbs); % Lambdas  are set to NaN
                 obj.axialInductions_ = 1/3*ones(1,obj.layout.nTurbs); % Axial induction factors, by default set to greedy
             else
+                % If the controlMethod deviates from 'axialInduction', then
+                % the user has to have manually specified the initial
+                % conditions in the cpctMapObj object, according to the
+                % function 'cpctMapObj.initialValues'.
                 [pitch,TSR,axInd]    = turbine.cpctMapObj.initialValues; % Initial values from file
                 obj.pitchAngles_     = pitch * ones(1,obj.layout.nTurbs); % Blade pitch angles, by default set to greedy
                 obj.tipSpeedRatios_  = TSR   * ones(1,obj.layout.nTurbs); % Lambdas  are set to NaN
                 obj.axialInductions_ = axInd * ones(1,obj.layout.nTurbs); % Axial inductions  are set to NaN
             end
-%             switch obj.controlMethod
-%                 case {'pitch'}
-%                     obj.pitchAngles_     = zeros(1,obj.layout.nTurbs);    % Blade pitch angles, by default set to greedy
-%                     obj.tipSpeedRatios_  = nan*ones(1,obj.layout.nTurbs); % Lambdas  are set to NaN
-%                     obj.axialInductions_ = nan*ones(1,obj.layout.nTurbs); % Axial inductions  are set to NaN
-%                 case {'greedy'}
-%                     obj.pitchAngles_     = nan*ones(1,obj.layout.nTurbs); % Blade pitch angles are set to NaN
-%                     obj.tipSpeedRatios_  = nan*ones(1,obj.layout.nTurbs); % Lambdas  are set to NaN
-%                     obj.axialInductions_ = nan*ones(1,obj.layout.nTurbs); % Axial inductions  are set to NaN
-%                 case {'tipSpeedRatio'}
-%                     obj.pitchAngles_     = nan*ones(1,obj.layout.nTurbs); % Blade pitch angles, by default set to greedy
-%                     obj.tipSpeedRatios_  = 4.5*ones(1,obj.layout.nTurbs); % Lambdas  are set to NaN
-%                     obj.axialInductions_ = nan*ones(1,obj.layout.nTurbs); % Axial inductions  are set to NaN
-%                 case {'axialInduction'}
-%                     obj.pitchAngles_     = nan*ones(1,obj.layout.nTurbs); % Blade pitch angles are set to NaN
-%                     obj.tipSpeedRatios_  = nan*ones(1,obj.layout.nTurbs); % Lambdas  are set to NaN
-%                     obj.axialInductions_ = 1/3*ones(1,obj.layout.nTurbs); % Axial induction factors, by default set to greedy
-%                 otherwise
-%                     error(['Control methodology with name: "' obj.controlMethod '" not defined']);
-%             end
+
             for i = 1:obj.layout.nTurbs
                 obj.turbineControls_(i).pitchAngle = obj.pitchAngles_(i);
                 obj.turbineControls_(i).tipSpeedRatio = obj.tipSpeedRatios_(i);

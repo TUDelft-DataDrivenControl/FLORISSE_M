@@ -69,35 +69,9 @@ classdef turbine_type < handle
                       obj.dataPath, controlMethod)
             end
             
+            % Load the function that defines the cp and ct mappings
             obj.controlMethod = controlMethod;
             obj.cpctMapObj    = obj.cpctMapFunc(controlMethod);
-            
-%             [obj.structLUT] = obj.cpctInitFunc(controlMethod);
-%             switch controlMethod
-%                 % use pitch angles and Cp-Ct LUTs for pitch and WS,
-%                 case {'pitch'}
-%                 % Load the lookup tables for cp and ct as a function of
-%                 % windspeed and pitch
-%                     obj.lutCp = csvread([obj.dataPath '/cpPitch.csv']);
-%                     obj.lutCt = csvread([obj.dataPath '/ctPitch.csv']);
-%                 % The lookup tables are formatted in this way:
-%                 % Wind speed in LUT in m/s
-%                 % lut_ws    = lut(1,2:end);
-%                 % Blade pitch angle in LUT in radians
-%                 % lut_pitch = deg2rad(lut(2:end,1));
-%                 % Values of Cp/Ct [dimensionless]
-%                 % lut_value = lut(2:end,2:end);
-%                 case {'greedy'}
-%                 % Load the lookup table for cp and ct as a function of windspeed
-%                     obj.lutGreedy = csvread([obj.dataPath '/cpctgreedy.csv']);
-%                 case {'tipSpeedRatio'}
-%                 % Load the lookup table for cp and ct as a function of lambda
-%                     obj.lutLambda = csvread([obj.dataPath '/cpctlambda.csv']);
-%                 case {'axialInduction'}
-%                 % No preparation needed
-%                 otherwise
-%                     error('Control methodology with name: "%s" not defined', controlMethod);
-%             end
         end
         
         function turbineResult = cPcTpower(obj, condition, turbineControl, turbineResult)
@@ -105,35 +79,11 @@ classdef turbine_type < handle
             %   Computes the power coefficient for this turbine depending
             %   on the condition at the rotor area and the controlset of
             %   the turbine
-            
-%             [obj.structLUT] = nrel5mw_initLUTs(obj.controlMethod);
-%             switch obj.controlMethod
-%                 case {'pitch'}
-%                     turbineResult.cp = interp2(obj.lutCp(1,2:end), deg2rad(obj.lutCp(2:end,1)), obj.lutCp(2:end,2:end), ...
-%                                                condition.avgWS, turbineControl.pitchAngle);
-%                     turbineResult.ct = interp2(obj.lutCt(1,2:end), deg2rad(obj.lutCt(2:end,1)), obj.lutCt(2:end,2:end), ...
-%                                                condition.avgWS, turbineControl.pitchAngle);
-%                     turbineResult = obj.adjust_cp_ct_for_yaw(turbineControl, turbineResult);
-%                     turbineResult.axialInduction = obj.calc_axial_induction(turbineResult.ct);
-%                 case {'greedy'}
-%                     turbineResult.cp = interp1(obj.lutGreedy(1,:), obj.lutGreedy(2,:), condition.avgWS);
-%                     turbineResult.ct = interp1(obj.lutGreedy(1,:), obj.lutGreedy(3,:), condition.avgWS);
-%                     turbineResult = obj.adjust_cp_ct_for_yaw(turbineControl, turbineResult);
-%                     turbineResult.axialInduction = obj.calc_axial_induction(turbineResult.ct);
-%                 case {'tipSpeedRatio'}
-%                     turbineResult.cp = interp1(obj.lutLambda(1,:), obj.lutLambda(2,:), turbineControl.tipSpeedRatio);
-%                     turbineResult.ct = interp1(obj.lutLambda(1,:), obj.lutLambda(3,:), turbineControl.tipSpeedRatio);
-%                     turbineResult = obj.adjust_cp_ct_for_yaw(turbineControl, turbineResult);
-%                     turbineResult.axialInduction = obj.calc_axial_induction(turbineResult.ct);
-%                 case {'axialInduction'}
-%                     turbineResult.axialInduction = turbineControl.axialInduction;
-%                     turbineResult.ct = 4*turbineControl.axialInduction*(1-turbineControl.axialInduction);
-%                     turbineResult.cp = 4*turbineControl.axialInduction*(1-turbineControl.axialInduction)^2;
-%                     turbineResult = obj.adjust_cp_ct_for_yaw(turbineControl, turbineResult);
-%                 otherwise
-%                     error('Control methodology with name: "%s" not defined', obj.controlMethod);
-%             end
-            
+   
+            % The axialInduction control method is available for all
+            % turbines by default. If a different control method is
+            % specified, it should have been defined in the corresponding
+            % cp-ct mapping object as a function, "cpctMapObj.calculateCpCt".
             if strcmp(obj.controlMethod,'axialInduction')
                 turbineResult.axialInduction = turbineControl.axialInduction;
                 turbineResult.ct = 4*turbineControl.axialInduction*(1-turbineControl.axialInduction);
@@ -152,6 +102,7 @@ classdef turbine_type < handle
             end
             turbineResult.power = (0.5*condition.rho*obj.rotorArea*turbineResult.cp)*(condition.avgWS^3.0)*obj.genEfficiency;
         end
+        
         function turbineResult = adjust_cp_ct_for_yaw(obj, turbineControl, turbineResult)
             % Correct Cp and Ct for rotor misallignment
             turbineResult.ct = turbineResult.ct * cos(turbineControl.thrustAngle)^2;
