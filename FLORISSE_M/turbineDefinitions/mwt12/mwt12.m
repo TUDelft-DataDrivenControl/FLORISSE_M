@@ -6,14 +6,18 @@ function turbineType = mwt12()
 
 % Available control methods
 availableControl = {'tipSpeedRatio', 'axialInduction'};
+
+% Function definitions for the calculation of Cp and Ct                       
+cpctMapFunc   = @mwt12_cpct;
+
 % Instantiate turbine with the correct dimensions and characteristics
 % obj = turbine_type(rotorRadius, genEfficiency, hubHeight, pP, ...
 turbineType = turbine_type((12*10^-2)/2., 1, .2, 1.88, ...
-                           getFileLocation(), availableControl, 'Miniature wind turbine 12 cm');
+                           cpctMapFunc, availableControl, 'Miniature wind turbine 12 cm');
 end
 
-% This function is compatible with C-compilation
-function Path = getFileLocation()
-    filePath = mfilename('fullpath');
-    Path = filePath(1:end-1-length(mfilename()));
-end
+% % This function is compatible with C-compilation
+% function Path = getFileLocation()
+%     filePath = mfilename('fullpath');
+%     Path = filePath(1:end-1-length(mfilename()));
+% end

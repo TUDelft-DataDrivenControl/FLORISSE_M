@@ -12,8 +12,6 @@ cpctMapFunc   = @nrel5mw_cpct;
 % obj = turbine_type(rotorRadius, genEfficiency, hubHeight, pP, ...
 turbineType = turbine_type(126.4/2., 0.944, 90.0, 1.88, ...
                            cpctMapFunc, availableControl, 'NREL5MW reference turbine');
-                       
-
 end
 
 % % This function is compatible with C-compilation
