@@ -1,11 +1,17 @@
-function [] = showFit(timeAvgData,florisObj)
+function [] = showFit(timeAvgData,florisObj,florisObjOpt)
 
 if nargin < 2
-    florisObj  = [];
     plotFloris = false;
 else
     plotFloris = true;
 end
+
+if nargin < 3
+    plotFlorisOpt = false;
+else
+    plotFlorisOpt = true;
+end
+
 
 %% Plotting time-averaged flow slices
 for i = 1:length(timeAvgData)
@@ -27,21 +33,34 @@ for i = 1:length(timeAvgData)
     
     tri = delaunay(xData,yData);
     
-    
-    if plotFloris 
+    if plotFlorisOpt
+        uFLORISOld = compute_probes(florisObj,timeAvgData(i).cellCenters(:,1),...
+                                              timeAvgData(i).cellCenters(:,2),...
+                                              timeAvgData(i).cellCenters(:,3),true);         
+        uFLORISOpt = compute_probes(florisObjOpt,timeAvgData(i).cellCenters(:,1),...
+                                                 timeAvgData(i).cellCenters(:,2),...
+                                                 timeAvgData(i).cellCenters(:,3),true);        
+        dataArray = {timeAvgData(i).UData; timeAvgData(i).UData; uFLORISOld; uFLORISOpt; ...
+                     timeAvgData(i).UData-uFLORISOld; timeAvgData(i).UData-uFLORISOpt};
+        nameArray = {'SOWFA';'SOWFA';'FLORIS_old';'FLORIS_opt';...
+                     'SOWFA-FLORIS_old'; 'SOWFA-FLORIS_opt'};
+        nCols = 2;
+    elseif plotFloris 
         uFLORIS = compute_probes(florisObj,timeAvgData(i).cellCenters(:,1),...
                                            timeAvgData(i).cellCenters(:,2),...
                                            timeAvgData(i).cellCenters(:,3),true);        
         dataArray = {timeAvgData(i).UData;uFLORIS;timeAvgData(i).UData-uFLORIS};
         nameArray = {'SOWFA','FLORIS','SOWFA-FLORIS'};
+        nCols = 1;
     else
         dataArray = {timeAvgData(i).UData};
         nameArray = {'SOWFA'};
+        nCols = 1;
     end
     
     figure;
     for si = 1:length(dataArray)
-        subplot(length(dataArray),1,si); hold all;
+        subplot(length(dataArray)/nCols,nCols,si); hold all;
         trisurf(tri, xData, yData, dataArray{si});
         lighting none; shading flat; colorbar;
         light('Position',[-50 -15 29]); view(0,90);
