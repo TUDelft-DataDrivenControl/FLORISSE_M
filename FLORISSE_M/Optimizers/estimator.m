@@ -50,12 +50,11 @@ classdef estimator < handle
             % Optimize using Parallel Computing
                 % options = gaoptimset('PopulationSize', popsize, 'Generations', gensize, 'Display', 'off', 'TolFun', 1e-2,'UseParallel', true);
             nVars = length(obj.estimParamsAll);
-            options = gaoptimset('Display','iter', 'TolFun', 1e-3,'UseParallel', true);
+%             options = gaoptimset('Display','iter', 'TolFun', 1e-3,'UseParallel', true);
+            options = gaoptimset('Display','iter', 'TolFun', 1e-3,'UseParallel', false);
             [xopt,Jopt,exitFlag,output,population,scores] = ga(costFun, nVars, ga_A, ga_b, ga_Aeq, ga_beq, lb, ub, [], options);
         end
-    end
-    
-    methods (Hidden)
+        
         function [J] = costWeightedRMSE(obj,x);
             florisObjSet     = obj.florisObjSet;
             measurementSet   = obj.measurementSet;
@@ -64,6 +63,9 @@ classdef estimator < handle
             if length(x) ~= length(estimParamsAll)
                 error('The variable [x] has to be of equal length as [estimationParams].');
             end
+            
+            % Reset cost function 
+            Jset = zeros(1,length(florisObjSet));
             
             % Update the parameters with [x] of each floris object, if required
             for i = 1:length(florisObjSet)
@@ -75,8 +77,8 @@ classdef estimator < handle
                     end
                 end
                 
-                % Reset cost function and execute FLORIS with [x]
-                Jset = zeros(1,length(florisObjSet));
+
+                % Execute FLORIS with [x]
                 florisObjTmp.run();
                 
                 % Calculate weighted power RMSE, if applicable
@@ -88,7 +90,7 @@ classdef estimator < handle
                 % Calculate weighted flow RMSE, if applicable
                 if any(ismember(fields(measurementSet{i}),'U'))
                     fixYaw  = false;
-                    uProbes = compute_probes(florisObjTmp,measurementSet{1}.U.x,measurementSet{1}.U.y,measurementSet{1}.U.z,fixYaw);
+                    uProbes = compute_probes(florisObjTmp,measurementSet{i}.U.x,measurementSet{i}.U.y,measurementSet{i}.U.z,fixYaw);
                     flowError = uProbes - measurementSet{i}.U.values;
                     Jset(i)   = Jset(i) + rms(flowError ./ measurementSet{i}.U.stdev);
                 end
@@ -97,6 +99,11 @@ classdef estimator < handle
             % Final cost
             J = sum(Jset);
         end
+        
+    end
+    
+    methods (Hidden)
+        %
     end
 end
 
