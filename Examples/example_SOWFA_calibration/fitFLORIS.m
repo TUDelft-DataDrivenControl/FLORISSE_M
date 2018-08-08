@@ -1,5 +1,6 @@
 clear all; close all; clc;
 
+addpath(genpath('../../FLORISSE_M'));
 fileNames = {'processedData/yaw-20.mat'; 'processedData/yaw+0.mat'; ...
              'processedData/yaw+10.mat'; 'processedData/yaw+30.mat' };
 

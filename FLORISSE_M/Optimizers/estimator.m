@@ -50,8 +50,7 @@ classdef estimator < handle
             % Optimize using Parallel Computing
                 % options = gaoptimset('PopulationSize', popsize, 'Generations', gensize, 'Display', 'off', 'TolFun', 1e-2,'UseParallel', true);
             nVars = length(obj.estimParamsAll);
-%             options = gaoptimset('Display','iter', 'TolFun', 1e-3,'UseParallel', true);
-            options = gaoptimset('Display','iter', 'TolFun', 1e-3,'UseParallel', false);
+            options = gaoptimset('Display','iter', 'TolFun', 1e-3,'UseParallel', true);
             [xopt,Jopt,exitFlag,output,population,scores] = ga(costFun, nVars, ga_A, ga_b, ga_Aeq, ga_beq, lb, ub, [], options);
         end
         
