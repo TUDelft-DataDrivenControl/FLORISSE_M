@@ -42,7 +42,7 @@ controlSet{4}.yawAngles = deg2rad([30.0]);  % Overwrite yaw angle
 
 for i = 1:length(fileNames)
     florisObjSet{i} = floris(layout{i}, controlSet{i}, subModels);
-    showFit(timeAvgData{i},florisObjSet{i})
+%     showFit(timeAvgData{i},florisObjSet{i})
 end
 
 
@@ -51,11 +51,14 @@ end
 disp('Using genetic algorithms to minimize the error between LES and FLORIS.');
 estTool = estimator(florisObjSet,measurementSet);
 
-parpool(parpoolSize);
-x0   = [2.32, 0.154, 0.3837, 0.0037];
+if isempty(gcp('nocreate'))
+    parpool(parpoolSize)
+end
+
+% x0   = [2.32, 0.154, 0.3837, 0.0037];
 % xopt = estTool.gaEstimation(x0)  % Use GA for constrained optimization
-% xopt = estTool.gaEstimation(); % Use GA for unconstrained optimization
-xopt = [2.3428    0.2754    0.1918    0.0022];
+xopt = estTool.gaEstimation(); % Use GA for unconstrained optimization
+% xopt = [2.3428    0.2754    0.1918    0.0022];
 toc
 
 % Generate a FLORIS object set with optimal x-settings

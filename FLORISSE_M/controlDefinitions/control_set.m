@@ -117,8 +117,8 @@ classdef control_set < handle
                 obj.turbineControls_(i).tipSpeedRatio = obj.tipSpeedRatios_(i);
             end
         end
-        function pitches = get.tipSpeedRatios(obj)
-            pitches = obj.tipSpeedRatios_;
+        function tsrs = get.tipSpeedRatios(obj)
+            tsrs = obj.tipSpeedRatios_;
         end
         
         function set.axialInductions(obj, array)
