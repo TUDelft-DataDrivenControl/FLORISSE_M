@@ -65,16 +65,12 @@ classdef nrel5mw_cpct < handle
         
         
         % Initial values when initializing the turbines
-        function [pitch,TSR,axInd] = initialValues(obj)
+        function [out] = initialValues(obj)
             switch obj.controlMethod
                 case {'pitch'}
-                    pitch = 0;   % Blade pitch angles, by default set to greedy
-                    TSR   = nan; % Lambdas  are set to NaN
-                    axInd = nan; % Axial inductions  are set to NaN
+                    out = struct('pitchAngles', 0);  % Blade pitch angles, by default set to greedy
                 case {'greedy'}
-                    pitch = nan; % Blade pitch angles are set to NaN
-                    TSR   = nan; % Lambdas  are set to NaN
-                    axInd = nan; % Axial inductions  are set to NaN
+                    out = struct(); % Do nothing: leave all variables as NaN
                 otherwise
                     error(['Control methodology with name: "' obj.controlMethod '" not defined']);
             end

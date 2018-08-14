@@ -48,7 +48,7 @@ classdef control_set < handle
             obj.layout = layout;
             obj.yawAngles_ = zeros(1, obj.layout.nTurbs);
             obj.tiltAngles_ = zeros(1, obj.layout.nTurbs);
-            % initStruct is the struct that is send to the CP/CT function of a turbine
+            % controlStruct is the struct that is send to the CP/CT function of a turbine
             controlStruct = struct('yawAngle',        {0} , ...
                                    'tiltAngle',       {0} , ...
                                    'thrustDirection', {[0; 0; 0]} , ...
@@ -57,6 +57,7 @@ classdef control_set < handle
                                    'pitchAngle',      {nan} , ...
                                    'tipSpeedRatio',   {nan} , ...
                                    'axialInduction',  {nan});
+                               
             % The turbineControls property wil hold a struct array with one struct per turbine.
             obj.turbineControls_ = repmat(controlStruct, obj.layout.nTurbs, 1);
             
@@ -143,31 +144,52 @@ classdef control_set < handle
             % The turbinetypes are handle objects and due to this they do
             % not have to be returned to the layout to be changed, they can
             % simply be set to the correct controlType
+            
+            verbose = 0; % verbose=1 for debugging/understanding the code
+            
             for turbine = obj.layout.uniqueTurbineTypes
                 turbine.controlMethod = obj.controlMethod;
+            end
+            
+            % Initialize all control variables by default as NaN
+            propertiesList = properties(obj);
+            propertiesList(strcmp(propertiesList,'controlMethod'))  =[]; % Exclude
+            propertiesList(strcmp(propertiesList,'layout'))         =[]; % Exclude
+            propertiesList(strcmp(propertiesList,'turbineControls'))=[]; % Exclude
+            propertiesList(strcmp(propertiesList,'yawAngles'))      =[]; % Exclude
+            propertiesList(strcmp(propertiesList,'tiltAngles'))     =[]; % Exclude
+            for i = 1:length(propertiesList)
+                if verbose; disp(['Initialized ''' propertiesList{i} '_'' as NaN.']); end;
+                obj.([propertiesList{i} '_']) = nan*ones(1,obj.layout.nTurbs);
             end
             
             % The default control variables for 'axialInduction' are
             % defined as follows
             if strcmp(obj.controlMethod,'axialInduction')
-                obj.pitchAngles_     = nan*ones(1,obj.layout.nTurbs); % Blade pitch angles are set to NaN
-                obj.tipSpeedRatios_  = nan*ones(1,obj.layout.nTurbs); % Lambdas  are set to NaN
-                obj.axialInductions_ = 1/3*ones(1,obj.layout.nTurbs); % Axial induction factors, by default set to greedy
+                obj.axialInductions_ = 1/3*ones(1,obj.layout.nTurbs); % Axial induction factors, by default set to greedy\
+                if verbose; disp(['Initialized '' axialInductions_ '' as NaN.']); end
             else
                 % If the controlMethod deviates from 'axialInduction', then
                 % the user has to have manually specified the initial
                 % conditions in the cpctMapObj object, according to the
                 % function 'cpctMapObj.initialValues'.
-                [pitch,TSR,axInd]    = turbine.cpctMapObj.initialValues; % Initial values from file
-                obj.pitchAngles_     = pitch * ones(1,obj.layout.nTurbs); % Blade pitch angles, by default set to greedy
-                obj.tipSpeedRatios_  = TSR   * ones(1,obj.layout.nTurbs); % Lambdas  are set to NaN
-                obj.axialInductions_ = axInd * ones(1,obj.layout.nTurbs); % Axial inductions  are set to NaN
+                [initValStruct] = turbine.cpctMapObj.initialValues; % Initial values from function
+                tmpFieldNames = fieldnames(initValStruct);
+                for i = 1:length(tmpFieldNames)
+                    obj.([tmpFieldNames{i} '_']) = initValStruct.(tmpFieldNames{i}) * ones(1,obj.layout.nTurbs);
+                    if verbose; disp(['Overwritten ''' tmpFieldNames{i} '_'' as ' num2str(initValStruct.(tmpFieldNames{i})) '.']); end
+                end
             end
 
-            for i = 1:obj.layout.nTurbs
-                obj.turbineControls_(i).pitchAngle = obj.pitchAngles_(i);
-                obj.turbineControls_(i).tipSpeedRatio = obj.tipSpeedRatios_(i);
-                obj.turbineControls_(i).axialInduction = obj.axialInductions_(i);
+            % Enforce dependencies between obj.turbineControls_.* and obj.*
+            for i = 1:length(propertiesList)
+                for ji = 1:obj.layout.nTurbs
+                    % Assumed all plural names have single letter (.e.g, 's') at end
+                    pluralName   = propertiesList{i}; 
+                    singularName = propertiesList{i}(1:end-1);
+                    obj.turbineControls_(ji).(singularName) = obj.([pluralName '_'])(ji);
+                end
+                if verbose; disp(['Linked turbineControls_.' singularName ' to ' pluralName '.']); end
             end
         end
         

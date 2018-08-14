@@ -35,14 +35,10 @@ classdef mwt12_cpct < handle
         
         
         % Initial values when initializing the turbines
-        function [pitch,TSR,axInd] = initialValues(obj)
+        function [out] = initialValues(obj)
             switch obj.controlMethod
-                
                 case {'tipSpeedRatio'}
-                    pitch = nan; % Blade pitch angles, set to NaN
-                    TSR   = 4.5; % Lambdas (TSR)  are set to 4.5
-                    axInd = nan; % Axial inductions  are set to NaN
-                    
+                    out = struct('tipSpeedRatios',4.5);
                 otherwise
                     error(['Control methodology with name: "' obj.controlMethod '" not defined']);
             end
