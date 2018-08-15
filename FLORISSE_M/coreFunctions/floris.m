@@ -59,8 +59,7 @@ classdef floris < matlab.mixin.Copyable%handle
             %RUN Iterate through the turbines and compute the flow and powers
             %   Detailed explanation goes here
             if has_run(obj)
-                warning('floris.run has already been triggered, aborting new run')
-                return
+                error('floris.run has already been triggered. Aborting new run.')
             end
             for turbWfIndex = 1:obj.layout.nTurbs
                 turbIfIndex = obj.layout.idWf(turbWfIndex);

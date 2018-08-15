@@ -26,13 +26,13 @@ classdef dtu10mw_cpct < handle
                     
                     % Format to monotonically increasing relPowerSetpoint
                     structLUT.setpointRange = structLUT.setpointRange(end:-1:1);
-                    lutCp = structLUT.lutCp(:,end:-1:1,:);
-                    lutCt = structLUT.lutCt(:,end:-1:1,:);
+                    structLUT.lutCp = structLUT.lutCp(:,end:-1:1,:);
+                    structLUT.lutCt = structLUT.lutCt(:,end:-1:1,:);
                     
                     % Create interpolants
                     [X,Y,Z] = ndgrid(structLUT.wsRange,structLUT.setpointRange,structLUT.yawRange);
-                    structLUT.cpFun = griddedInterpolant(X,Y,Z, structLUT.lutCp);
-                    structLUT.ctFun = griddedInterpolant(X,Y,Z, structLUT.lutCt);
+                    structLUT.cpFun = griddedInterpolant(X,Y,Z, structLUT.lutCp,'linear','none'); % Linear interpolation, no extrapolation
+                    structLUT.ctFun = griddedInterpolant(X,Y,Z, structLUT.lutCt,'linear','none'); % Linear interpolation, no extrapolation
                     
                 case {'axialInduction'}
                     % No preparation needed
@@ -66,6 +66,11 @@ classdef dtu10mw_cpct < handle
                 case {'yawAndRelPowerSetpoint'}
                     cp = structLUT.cpFun(condition.avgWS,turbineControl.relPowerSetpoint,turbineControl.yawAngle);
                     ct = structLUT.ctFun(condition.avgWS,turbineControl.relPowerSetpoint,turbineControl.yawAngle);
+                    
+                    if ct >= 1
+                        disp(['WARNING: According to LUT, Ct = ' num2str(ct) '. Thresholding at Ct = 1.']);
+                        ct = 1.0;
+                    end
                     adjustCpCtYaw = false; % do function call 'adjust_cp_ct_for_yaw' after this func.
                     
                 otherwise
