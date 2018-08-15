@@ -16,11 +16,13 @@ classdef dtu10mw_cpct < handle
             % Initialize LUTs
             switch controlMethod
                 
-%                 case {'greedy'}
-%                     % Load the lookup table for cp and ct as a function of windspeed
-%                     structLUT.wsRange = [...];
-%                     structLUT.lutCp   = [...];
-%                     structLUT.lutCt   = [...];
+                case {'yawAndPowerDerating'}
+                    loadedData = load('dtu10mw_database.mat');
+                    structLUT.wsRange    = loadedData.wind;
+                    structLUT.yawRange   = deg2rad(loadedData.yaw);
+                    structLUT.servoRange = loadedData.servo; % Percentage of power extraction
+                    structLUT.lutCp      = loadedData.mean_Cp;
+                    structLUT.lutCt      = loadedData.mean_Ct;
                                     
                 case {'axialInduction'}
                     % No preparation needed
@@ -37,10 +39,8 @@ classdef dtu10mw_cpct < handle
         % Initial values when initializing the turbines
         function [pitch,TSR,axInd] = initialValues(obj)
             switch obj.controlMethod
-%                 case {'greedy'}
-%                     pitch = nan; % Blade pitch angles are set to NaN
-%                     TSR   = nan; % Lambdas  are set to NaN
-%                     axInd = nan; % Axial inductions  are set to NaN
+                case {'yawAndPowerDerating'}
+                    out = struct(); % Do nothing
                 otherwise
                     error(['Control methodology with name: "' obj.controlMethod '" not defined']);
             end
@@ -53,10 +53,12 @@ classdef dtu10mw_cpct < handle
             structLUT     = obj.structLUT;
             
             switch controlMethod                     
-%                 case {'greedy'}
-%                     cp = interp1(structLUT.wsRange, structLUT.lutCp, condition.avgWS);
-%                     ct = interp1(structLUT.wsRange, structLUT.lutCt, condition.avgWS);
-%                     adjustCpCtYaw = true; % do function call 'adjust_cp_ct_for_yaw' after this func.
+                case {'yawAndPowerDerating'}
+                    cp = interp3(structLUT.wsRange, structLUT.servoRange, structLUT.yawRange, structLUT.lutCp, ...
+                                 condition.avgWS, turbineControl.servoSetpoint  ,turbineControl.yawAngle);
+                    ct = interp3(structLUT.wsRange, structLUT.servoRange, structLUT.yawRange, structLUT.lutCt, ...
+                                 condition.avgWS, turbineControl.servoSetpoint  ,turbineControl.yawAngle);
+                    adjustCpCtYaw = false; % do function call 'adjust_cp_ct_for_yaw' after this func.
                     
                 otherwise
                     error('Control methodology with name: "%s" not defined', obj.controlMethod);

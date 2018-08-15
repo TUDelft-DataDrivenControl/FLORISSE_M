@@ -68,7 +68,7 @@ classdef nrel5mw_cpct < handle
         function [out] = initialValues(obj)
             switch obj.controlMethod
                 case {'pitch'}
-                    out = struct('pitchAngles', 0);  % Blade pitch angles, by default set to greedy
+                    out = struct('pitchAngle', 0);  % Blade pitch angles, by default set to greedy
                 case {'greedy'}
                     out = struct(); % Do nothing: leave all variables as NaN
                 otherwise

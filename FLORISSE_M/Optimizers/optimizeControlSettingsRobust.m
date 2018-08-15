@@ -21,7 +21,7 @@ if nargin <= 9 % Add silence/verbose option
 end
 
 if yawOpt
-    x0 = [x0; florisRunner.controlSet.yawAngles];
+    x0 = [x0; florisRunner.controlSet.yawAngleArray];
     lb = [lb; deg2rad(-45)*ones(nTurbs,1)];
     ub = [ub; deg2rad(+45)*ones(nTurbs,1)];
 end
@@ -37,7 +37,7 @@ if axialOpt
     if ~strcmp(florisRunner.controlSet.controlMethod, 'axialInduction')
         error('Tried to optimize axial inductions but controlMethod is set to %s', florisRunner.controlSet.controlMethod)
     end
-    x0 = [x0; florisRunner.controlSet.axialInductions];
+    x0 = [x0; florisRunner.controlSet.axialInductionArray];
     lb = [lb; 0.0*ones(nTurbs,1)];
     ub = [ub; 1/3*ones(nTurbs,1)];
 end
@@ -132,12 +132,12 @@ function J = costFunctionDeterministic(x, florisRunner)
     % yaw angles and/or blade pitch angles back from x, before
     % we trial them in a FLORIS simulation. That is what we do next:
     if yawOpt
-        florisRunner.controlSet.yawAngles = x(1,:);
+        florisRunner.controlSet.yawAngleArray = x(1,:);
         if pitchOpt; florisRunner.controlSet.pitchAngles = x(2,:); end
-        if axialOpt; florisRunner.controlSet.axialInductions = x(2,:); end
+        if axialOpt; florisRunner.controlSet.axialInductionArray = x(2,:); end
     else
         if pitchOpt; florisRunner.controlSet.pitchAngles = x(1,:); end
-        if axialOpt; florisRunner.controlSet.axialInductions = x(1,:); end
+        if axialOpt; florisRunner.controlSet.axialInductionArray = x(1,:); end
     end
     % Then, we simulate FLORIS and determine the cost J(x)
     florisRunner.clearOutput();

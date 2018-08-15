@@ -6,7 +6,7 @@ classdef visualizer < handle
         layout
         turbineResults
         wakeCombinationModel
-        yawAngles
+        yawAngleArray
         avgWs
         flowFieldWF
         flowFieldIF
@@ -26,7 +26,7 @@ classdef visualizer < handle
             obj.layout = florisRunner.layout;
             obj.turbineResults = florisRunner.turbineResults;
             obj.wakeCombinationModel = florisRunner.model.wakeCombinationModel;
-            obj.yawAngles = florisRunner.controlSet.yawAngles;
+            obj.yawAngleArray = florisRunner.controlSet.yawAngleArray;
             obj.avgWs = [florisRunner.turbineConditions.avgWS];
             
             % Make flowfields for both the Inertial and Wind Direction frame
@@ -91,7 +91,7 @@ classdef visualizer < handle
                 end
             end
             if plotFig
-                plot_2d_field(obj.layout.turbines, obj.layout.locWf, obj.flowFieldWF, obj.yawAngles)
+                plot_2d_field(obj.layout.turbines, obj.layout.locWf, obj.flowFieldWF, obj.yawAngleArray)
             end
         end
         
@@ -123,7 +123,7 @@ classdef visualizer < handle
             end
             if plotFig
                 plot_2d_field(obj.layout.turbines, obj.layout.locIf, obj.flowFieldIF, ...
-                              obj.yawAngles+ obj.layout.ambientInflow.windDirection)
+                              obj.yawAngleArray+ obj.layout.ambientInflow.windDirection)
             end
         end
         
@@ -226,7 +226,7 @@ classdef visualizer < handle
 
                 % Compute the flowfield velocity at every voxel(3D) or pixel(2D)
                 obj.flowfieldMain = compute_flow_field(obj.flowfieldMain, obj.layout, obj.turbineResults, ...
-                    obj.yawAngles, obj.avgWs, true, obj.wakeCombinationModel);
+                    obj.yawAngleArray, obj.avgWs, true, obj.wakeCombinationModel);
             end
         end
     end

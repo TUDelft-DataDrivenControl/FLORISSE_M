@@ -47,7 +47,7 @@ classdef tum_g1_cpct < handle
         function [out] = initialValues(obj)
             switch obj.controlMethod
                 case {'pitch'}
-                    out = struct('pitchAngles',0);
+                    out = struct('pitchAngle',0);
                 case {'greedy'}
                     out = struct(); % Do nothing
                 otherwise

@@ -35,10 +35,10 @@ for i = 1:length(fileNames)
     layout{i}.ambientInflow = ambient_inflow_myfunc('Interpolant', inflowCurve{i},'HH',90,'windDirection', 0, 'TI0', .05);
     controlSet{i} = control_set(layout{i}, 'greedy');
 end
-controlSet{1}.yawAngles = deg2rad([-20.0]); % Overwrite yaw angle
-controlSet{2}.yawAngles = deg2rad([0.0]);   % Overwrite yaw angle
-controlSet{3}.yawAngles = deg2rad([10.0]);  % Overwrite yaw angle
-controlSet{4}.yawAngles = deg2rad([30.0]);  % Overwrite yaw angle
+controlSet{1}.yawAngleArray = deg2rad([-20.0]); % Overwrite yaw angle
+controlSet{2}.yawAngleArray = deg2rad([0.0]);   % Overwrite yaw angle
+controlSet{3}.yawAngleArray = deg2rad([10.0]);  % Overwrite yaw angle
+controlSet{4}.yawAngleArray = deg2rad([30.0]);  % Overwrite yaw angle
 
 for i = 1:length(fileNames)
     florisObjSet{i} = floris(layout{i}, controlSet{i}, subModels);

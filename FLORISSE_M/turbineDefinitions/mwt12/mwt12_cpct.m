@@ -38,7 +38,7 @@ classdef mwt12_cpct < handle
         function [out] = initialValues(obj)
             switch obj.controlMethod
                 case {'tipSpeedRatio'}
-                    out = struct('tipSpeedRatios',4.5);
+                    out = struct('tipSpeedRatio',4.5);
                 otherwise
                     error(['Control methodology with name: "' obj.controlMethod '" not defined']);
             end
