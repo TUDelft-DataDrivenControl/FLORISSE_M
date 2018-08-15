@@ -34,6 +34,7 @@ classdef control_set < handle
         pitchAngleArray_
         tipSpeedRatioArray_
         axialInductionArray_
+        relPowerSetpointArray_
         % ... Append here to add more. Do not forget to add .set and .get
         % functions for newly defined derating variables
     end
@@ -49,7 +50,9 @@ classdef control_set < handle
         pitchAngleArray % An array with the pitchAngles for each turbine
         tipSpeedRatioArray % An array with the tipSpeedRatios for each turbine
         axialInductionArray % An array with the axialInductions for each turbine
-        % ... Append here to add more
+        relPowerSetpointArray % An array with the relative power setpoints (P/Pgreedy) for each turbine
+        % ... Append here to add more Do not forget to add .set and .get
+        % functions for newly defined derating variables
     end
     
     methods
@@ -153,6 +156,19 @@ classdef control_set < handle
         end
         function tsrs = get.tipSpeedRatioArray(obj)
             tsrs = obj.tipSpeedRatioArray_;
+        end
+        
+        function set.relPowerSetpointArray(obj, array)
+            if any(array < 0) || any(array > 1)
+                error('Relative power setpoint should be within range [0, 1].');
+            end
+            obj.relPowerSetpointArray_ = array;
+            for i = 1:obj.layout.nTurbs
+                obj.turbineControls_(i).relPowerSetpoint = obj.relPowerSetpointArray_(i);
+            end
+        end
+        function setpoints = get.relPowerSetpointArray(obj)
+            setpoints = obj.relPowerSetpointArray_;
         end
         
         function set.axialInductionArray(obj, array)

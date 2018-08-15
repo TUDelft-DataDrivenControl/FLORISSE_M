@@ -65,8 +65,7 @@ classdef turbine_type < handle
             % If the desired controlMethod is not available for this
             % turbine, throw an error.
             if ~any(strcmp(obj.allowableControlMethods, controlMethod))
-                error('The turbine_type defined in \n%s,\ndoes not support the control method: "%s".',...
-                      obj.dataPath, controlMethod)
+                error('This turbine_type does not support the control method: "%s".', controlMethod)
             end
             
             % Load the function that defines the cp and ct mappings

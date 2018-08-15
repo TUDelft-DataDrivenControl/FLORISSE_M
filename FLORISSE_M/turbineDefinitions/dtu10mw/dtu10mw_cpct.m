@@ -16,14 +16,24 @@ classdef dtu10mw_cpct < handle
             % Initialize LUTs
             switch controlMethod
                 
-                case {'yawAndPowerDerating'}
+                case {'yawAndRelPowerSetpoint'}
                     loadedData = load('dtu10mw_database.mat');
-                    structLUT.wsRange    = loadedData.wind;
-                    structLUT.yawRange   = deg2rad(loadedData.yaw);
-                    structLUT.servoRange = loadedData.servo; % Percentage of power extraction
-                    structLUT.lutCp      = loadedData.mean_Cp;
-                    structLUT.lutCt      = loadedData.mean_Ct;
-                                    
+                    structLUT.wsRange       = loadedData.wind;
+                    structLUT.yawRange      = deg2rad(loadedData.yaw);
+                    structLUT.setpointRange = loadedData.servo/100; % Ratio of power extraction (1=greedy)
+                    structLUT.lutCp         = loadedData.mean_Cp;
+                    structLUT.lutCt         = loadedData.mean_Ct;
+                    
+                    % Format to monotonically increasing relPowerSetpoint
+                    structLUT.setpointRange = structLUT.setpointRange(end:-1:1);
+                    lutCp = structLUT.lutCp(:,end:-1:1,:);
+                    lutCt = structLUT.lutCt(:,end:-1:1,:);
+                    
+                    % Create interpolants
+                    [X,Y,Z] = ndgrid(structLUT.wsRange,structLUT.setpointRange,structLUT.yawRange);
+                    structLUT.cpFun = griddedInterpolant(X,Y,Z, structLUT.lutCp);
+                    structLUT.ctFun = griddedInterpolant(X,Y,Z, structLUT.lutCt);
+                    
                 case {'axialInduction'}
                     % No preparation needed
                     structLUT = struct();
@@ -37,10 +47,10 @@ classdef dtu10mw_cpct < handle
         
         
         % Initial values when initializing the turbines
-        function [pitch,TSR,axInd] = initialValues(obj)
+        function [out] = initialValues(obj)
             switch obj.controlMethod
-                case {'yawAndPowerDerating'}
-                    out = struct(); % Do nothing
+                case {'yawAndRelPowerSetpoint'}
+                    out = struct('yawAngle',0,'relPowerSetpoint',1); % Initialize default values
                 otherwise
                     error(['Control methodology with name: "' obj.controlMethod '" not defined']);
             end
@@ -53,11 +63,9 @@ classdef dtu10mw_cpct < handle
             structLUT     = obj.structLUT;
             
             switch controlMethod                     
-                case {'yawAndPowerDerating'}
-                    cp = interp3(structLUT.wsRange, structLUT.servoRange, structLUT.yawRange, structLUT.lutCp, ...
-                                 condition.avgWS, turbineControl.servoSetpoint  ,turbineControl.yawAngle);
-                    ct = interp3(structLUT.wsRange, structLUT.servoRange, structLUT.yawRange, structLUT.lutCt, ...
-                                 condition.avgWS, turbineControl.servoSetpoint  ,turbineControl.yawAngle);
+                case {'yawAndRelPowerSetpoint'}
+                    cp = structLUT.cpFun(condition.avgWS,turbineControl.relPowerSetpoint,turbineControl.yawAngle);
+                    ct = structLUT.ctFun(condition.avgWS,turbineControl.relPowerSetpoint,turbineControl.yawAngle);
                     adjustCpCtYaw = false; % do function call 'adjust_cp_ct_for_yaw' after this func.
                     
                 otherwise

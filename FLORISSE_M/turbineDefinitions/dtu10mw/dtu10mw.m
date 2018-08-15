@@ -3,7 +3,7 @@ function turbineType = dtu10mw()
 %    More information can be found in :cite:`Christian2013`.
 
 % Available control methods
-availableControl = {'axialInduction'};
+availableControl = {'axialInduction','yawAndRelPowerSetpoint'};
 
 % Function definitions for the calculation of Cp and Ct                       
 cpctMapFunc   = @dtu10mw_cpct;
