@@ -1,8 +1,2 @@
-rawData
-rawData/*
-rawData/**
-processedData
-processedData/*
-processedData/**
 *.csv
 *.mat
