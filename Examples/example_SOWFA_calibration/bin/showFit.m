@@ -41,16 +41,16 @@ for i = 1:length(timeAvgData)
                                                  timeAvgData(i).cellCenters(:,2),...
                                                  timeAvgData(i).cellCenters(:,3),true);        
         dataArray = {timeAvgData(i).UData; timeAvgData(i).UData; uFLORISOld; uFLORISOpt; ...
-                     timeAvgData(i).UData-uFLORISOld; timeAvgData(i).UData-uFLORISOpt};
+                     abs(timeAvgData(i).UData-uFLORISOld); abs(timeAvgData(i).UData-uFLORISOpt)};
         nameArray = {'SOWFA';'SOWFA';'FLORIS_old';'FLORIS_opt';...
-                     'SOWFA-FLORIS_old'; 'SOWFA-FLORIS_opt'};
+                     'abs(SOWFA-FLORIS_old)'; 'abs(SOWFA-FLORIS_opt)'};
         nCols = 2;
     elseif plotFloris 
         uFLORIS = compute_probes(florisObj,timeAvgData(i).cellCenters(:,1),...
                                            timeAvgData(i).cellCenters(:,2),...
                                            timeAvgData(i).cellCenters(:,3),true);        
-        dataArray = {timeAvgData(i).UData;uFLORIS;timeAvgData(i).UData-uFLORIS};
-        nameArray = {'SOWFA','FLORIS','SOWFA-FLORIS'};
+        dataArray = {timeAvgData(i).UData;uFLORIS;abs(timeAvgData(i).UData-uFLORIS)};
+        nameArray = {'SOWFA','FLORIS','abs(SOWFA-FLORIS)'};
         nCols = 1;
     else
         dataArray = {timeAvgData(i).UData};
