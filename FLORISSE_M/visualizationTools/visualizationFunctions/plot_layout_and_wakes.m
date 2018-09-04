@@ -4,8 +4,8 @@ function [ ] = plot_layout_and_wakes(obj)
     D      = 2 * obj.layout.turbines(1).turbineType.rotorRadius;
     turbIF = [obj.layout.locIf];
     turbWF = [obj.layout.locWf];
-    YawIfs = ambientInflow.windDirection+obj.yawAngles;
-    YawWfs = obj.yawAngles;
+    YawIfs = ambientInflow.windDirection+obj.yawAngleArray;
+    YawWfs = obj.yawAngleArray;
     Nt     = size(turbWF,1);
     
     inputData.uInfIf = cos(ambientInflow.windDirection)*ambientInflow.Vref;

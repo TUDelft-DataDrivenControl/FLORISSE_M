@@ -8,6 +8,7 @@ classdef control_set < handle
     
     properties
         controlMethod % ControlMethod used in layout
+        verbose
     end
     % The layout can be set during construction but is not allowed to be
     % changed afterwards. (SetAccess = immutable)
@@ -18,45 +19,81 @@ classdef control_set < handle
     % The pattern used in this object is explained here:
     % https://blogs.mathworks.com/loren/2012/03/26/considering-performance-in-object-oriented-matlab-code/
     % There is a private variable that actually holds the data, the
-    % publicly accesable properties are dependent variables that have
+    % publicly accessable properties are dependent variables that have
     % getter and setter functions defined. Since turbineControls should be
     % fully dependent it only has a getter method
     properties (Access = private)
+        deratingPropertiesList
         turbineControls_
-        yawAngles_
-        tiltAngles_
-        pitchAngles_
-        tipSpeedRatios_
-        axialInductions_
+        
+        % Properties for redirection control: must append with 'Array_' (!)
+        yawAngleArray_
+        tiltAngleArray_
+        
+        % Properties for turbine derating: must append with 'Array_' (!)
+        pitchAngleArray_
+        tipSpeedRatioArray_
+        axialInductionArray_
+        relPowerSetpointArray_
+        % ... Append here to add more. Do not forget to add .set and .get
+        % functions for newly defined derating variables
     end
     
     properties (Dependent)
         turbineControls % A struct array with the controlsettings ordered per turbine
-        yawAngles % An array with the yawAngles for each turbine
-        tiltAngles % An array with the tiltAngles for each turbine
-        pitchAngles % An array with the pitchAngles for each turbine
-        tipSpeedRatios % An array with the tipSpeedRatios for each turbine
-        axialInductions % An array with the axialInductions for each turbine
+        
+        % Properties for redirection control: must append with 'Array_' (!)
+        yawAngleArray % An array with the yawAngles for each turbine
+        tiltAngleArray % An array with the tiltAngles for each turbine
+        
+        % Properties for turbine derating: must append with 'Array' (!)
+        pitchAngleArray % An array with the pitchAngles for each turbine
+        tipSpeedRatioArray % An array with the tipSpeedRatios for each turbine
+        axialInductionArray % An array with the axialInductions for each turbine
+        relPowerSetpointArray % An array with the relative power setpoints (P/Pgreedy) for each turbine
+        % ... Append here to add more Do not forget to add .set and .get
+        % functions for newly defined derating variables
     end
     
     methods
-        function obj = control_set(layout, controlMethod)
+        function obj = control_set(layout, controlMethod, verbose)
             % CONTROL_SET constructs the function by instantiating the yaw
             % and tilt angles for each turbine at 0. And creating an empty
             % struct that will hold all relevant control settings for each
             % turbine
-            obj.layout = layout;
-            obj.yawAngles_ = zeros(1, obj.layout.nTurbs);
-            obj.tiltAngles_ = zeros(1, obj.layout.nTurbs);
-            % initStruct is the struct that is send to the CP/CT function of a turbine
+            
+            if nargin < 3 
+                verbose = 0; 
+            end
+            
+            obj.verbose = verbose;
+            obj.layout  = layout;
+            obj.yawAngleArray_  = zeros(1, obj.layout.nTurbs);
+            obj.tiltAngleArray_ = zeros(1, obj.layout.nTurbs);
+            
+            % Collect all properties that are used for derating control
+            derPropList = properties(obj);
+            nonArrayIndxs = cellfun('isempty',regexp(derPropList,regexptranslate('wildcard','*Array')));
+            derPropList(nonArrayIndxs) =[]; % Exclude all variables that do not end with 'Array'
+            derPropList(strcmp(derPropList,'yawAngleArray'))  =[]; % Exclude yawAngleArray for derating control
+            derPropList(strcmp(derPropList,'tiltAngleArray')) =[]; % Exclude tiltAngleArray for derating control
+            if verbose; disp(['Variables in control_set.m for derating control: ' strjoin(derPropList,', ') ]); end
+            obj.deratingPropertiesList = derPropList;
+            
+            % controlStruct is the struct that is send to the CP/CT function of a turbine
             controlStruct = struct('yawAngle',        {0} , ...
                                    'tiltAngle',       {0} , ...
                                    'thrustDirection', {[0; 0; 0]} , ...
                                    'thrustAngle',     {0} , ...
-                                   'wakeNormal',      {[0; 0; 0]} , ...
-                                   'pitchAngle',      {nan} , ...
-                                   'tipSpeedRatio',   {nan} , ...
-                                   'axialInduction',  {nan});
+                                   'wakeNormal',      {[0; 0; 0]});
+            
+            % Set all turbine derating variables to NaN by default
+            for i = 1:length(obj.deratingPropertiesList)
+                fullPropertiesName = obj.deratingPropertiesList{i};
+                singleEntryName    = fullPropertiesName(1:end-5); % Exclude last 5 letters ('Array') from string
+                controlStruct.(singleEntryName) = {nan};
+            end
+                               
             % The turbineControls property wil hold a struct array with one struct per turbine.
             obj.turbineControls_ = repmat(controlStruct, obj.layout.nTurbs, 1);
             
@@ -75,61 +112,74 @@ classdef control_set < handle
 
         % Define setter and getter methods with value checking and
         % controlstruct updating
-        function set.yawAngles(obj, array)
+        function set.yawAngleArray(obj, array)
             obj.check_doubles_array(array)
             obj.check_angles_in_rad(array)
-            obj.yawAngles_ = array;
+            obj.yawAngleArray_ = array;
             % The orientation of the turbine changed so the dependent
             % properties need to be updated
             obj.update_wake_thrust_direction()
         end
-        function yaws = get.yawAngles(obj)
-            yaws = obj.yawAngles_;
+        function yaws = get.yawAngleArray(obj)
+            yaws = obj.yawAngleArray_;
         end
         
-        function set.tiltAngles(obj, array)
+        function set.tiltAngleArray(obj, array)
             obj.check_doubles_array(array)
             obj.check_angles_in_rad(array)
-            obj.tiltAngles_ = array;
+            obj.tiltAngleArray_ = array;
             % The orientation of the turbine changed so the dependent
             % properties need to be updated
             obj.update_wake_thrust_direction()
         end
-        function tilts = get.tiltAngles(obj)
-            tilts = obj.tiltAngles_;
+        function tilts = get.tiltAngleArray(obj)
+            tilts = obj.tiltAngleArray_;
         end
         
-        function set.pitchAngles(obj, array)
+        function set.pitchAngleArray(obj, array)
             obj.check_doubles_array(array)
-            obj.pitchAngles_ = array;
+            obj.pitchAngleArray_ = array;
             for i = 1:obj.layout.nTurbs
-                obj.turbineControls_(i).pitchAngle = obj.pitchAngles_(i);
+                obj.turbineControls_(i).pitchAngle = obj.pitchAngleArray_(i);
             end
         end
-        function pitches = get.pitchAngles(obj)
-            pitches = obj.pitchAngles_;
+        function pitches = get.pitchAngleArray(obj)
+            pitches = obj.pitchAngleArray_;
         end
         
-        function set.tipSpeedRatios(obj, array)
+        function set.tipSpeedRatioArray(obj, array)
             obj.check_doubles_array(array)
-            obj.tipSpeedRatios_ = array;
+            obj.tipSpeedRatioArray_ = array;
             for i = 1:obj.layout.nTurbs
-                obj.turbineControls_(i).tipSpeedRatio = obj.tipSpeedRatios_(i);
+                obj.turbineControls_(i).tipSpeedRatio = obj.tipSpeedRatioArray_(i);
             end
         end
-        function pitches = get.tipSpeedRatios(obj)
-            pitches = obj.tipSpeedRatios_;
+        function tsrs = get.tipSpeedRatioArray(obj)
+            tsrs = obj.tipSpeedRatioArray_;
         end
         
-        function set.axialInductions(obj, array)
-            obj.check_doubles_array(array)
-            obj.axialInductions_ = array;
+        function set.relPowerSetpointArray(obj, array)
+            if any(array < 0) || any(array > 1)
+                error('Relative power setpoint should be within range [0, 1].');
+            end
+            obj.relPowerSetpointArray_ = array;
             for i = 1:obj.layout.nTurbs
-                obj.turbineControls_(i).axialInduction = obj.axialInductions_(i);
+                obj.turbineControls_(i).relPowerSetpoint = obj.relPowerSetpointArray_(i);
             end
         end
-        function ais = get.axialInductions(obj)
-            ais = obj.axialInductions_;
+        function setpoints = get.relPowerSetpointArray(obj)
+            setpoints = obj.relPowerSetpointArray_;
+        end
+        
+        function set.axialInductionArray(obj, array)
+            obj.check_doubles_array(array)
+            obj.axialInductionArray_ = array;
+            for i = 1:obj.layout.nTurbs
+                obj.turbineControls_(i).axialInduction = obj.axialInductionArray_(i);
+            end
+        end
+        function ais = get.axialInductionArray(obj)
+            ais = obj.axialInductionArray_;
         end
         
         function td = get.turbineControls(obj)
@@ -138,39 +188,50 @@ classdef control_set < handle
     end
     
     methods (Access = protected)
-        
         function instantiate_control_variables(obj)
             % The turbinetypes are handle objects and due to this they do
             % not have to be returned to the layout to be changed, they can
             % simply be set to the correct controlType
+            
+            verbose = obj.verbose; % verbose=1 for debugging/understanding the code
+            
             for turbine = obj.layout.uniqueTurbineTypes
                 turbine.controlMethod = obj.controlMethod;
             end
             
-            switch obj.controlMethod
-                case {'pitch'}
-                    obj.pitchAngles_     = zeros(1,obj.layout.nTurbs);    % Blade pitch angles, by default set to greedy
-                    obj.tipSpeedRatios_  = nan*ones(1,obj.layout.nTurbs); % Lambdas  are set to NaN
-                    obj.axialInductions_ = nan*ones(1,obj.layout.nTurbs); % Axial inductions  are set to NaN
-                case {'greedy'}
-                    obj.pitchAngles_     = nan*ones(1,obj.layout.nTurbs); % Blade pitch angles are set to NaN
-                    obj.tipSpeedRatios_  = nan*ones(1,obj.layout.nTurbs); % Lambdas  are set to NaN
-                    obj.axialInductions_ = nan*ones(1,obj.layout.nTurbs); % Axial inductions  are set to NaN
-                case {'tipSpeedRatio'}
-                    obj.pitchAngles_     = nan*ones(1,obj.layout.nTurbs); % Blade pitch angles, by default set to greedy
-                    obj.tipSpeedRatios_  = 4.5*ones(1,obj.layout.nTurbs); % Lambdas  are set to NaN
-                    obj.axialInductions_ = nan*ones(1,obj.layout.nTurbs); % Axial inductions  are set to NaN
-                case {'axialInduction'}
-                    obj.pitchAngles_     = nan*ones(1,obj.layout.nTurbs); % Blade pitch angles are set to NaN
-                    obj.tipSpeedRatios_  = nan*ones(1,obj.layout.nTurbs); % Lambdas  are set to NaN
-                    obj.axialInductions_ = 1/3*ones(1,obj.layout.nTurbs); % Axial induction factors, by default set to greedy
-                otherwise
-                    error(['Control methodology with name: "' obj.controlMethod '" not defined']);
+            % Initialize all derating control variables by default as NaN
+            for i = 1:length(obj.deratingPropertiesList)
+                obj.([obj.deratingPropertiesList{i} '_']) = nan*ones(1,obj.layout.nTurbs);
+                if verbose; disp(['Initialized ''' obj.deratingPropertiesList{i} '_'' as NaN.']); end;
             end
-            for i = 1:obj.layout.nTurbs
-                obj.turbineControls_(i).pitchAngle = obj.pitchAngles_(i);
-                obj.turbineControls_(i).tipSpeedRatio = obj.tipSpeedRatios_(i);
-                obj.turbineControls_(i).axialInduction = obj.axialInductions_(i);
+            
+            % The default control variables for 'axialInduction' are
+            % defined as follows
+            if strcmp(obj.controlMethod,'axialInduction')
+                obj.axialInductionArray_ = 1/3*ones(1,obj.layout.nTurbs); % Axial induction factors, by default set to greedy\
+                if verbose; disp(['Initialized '' axialInductionArray_ '' as NaN.']); end
+            else
+                % If the controlMethod deviates from 'axialInduction', then
+                % the user has to have manually specified the initial
+                % conditions in the cpctMapObj object, according to the
+                % function 'cpctMapObj.initialValues'.
+                [initValStruct] = turbine.cpctMapObj.initialValues; % Initial values from function
+                propsToOverwrite = fieldnames(initValStruct);
+                for i = 1:length(propsToOverwrite)
+                    obj.([propsToOverwrite{i} 'Array_']) = initValStruct.(propsToOverwrite{i}) * ones(1,obj.layout.nTurbs);
+                    if verbose; disp(['Overwritten ''' propsToOverwrite{i} 'Array_'' as ' num2str(initValStruct.(propsToOverwrite{i})) '.']); end
+                end
+            end
+
+            % Enforce dependencies between obj.turbineControls_.* and obj.*
+            for i = 1:length(obj.deratingPropertiesList)
+                for ji = 1:obj.layout.nTurbs
+                    % Assumed all plural names have single letter (.e.g, 's') at end
+                    pluralName   = obj.deratingPropertiesList{i}; 
+                    singularName = pluralName(1:end-5); % Remove 'Array' from end
+                    obj.turbineControls_(ji).(singularName) = obj.([pluralName '_'])(ji);
+                end
+                if verbose; disp(['Linked turbineControls_.' singularName ' to ' pluralName '.']); end
             end
         end
         
@@ -180,9 +241,9 @@ classdef control_set < handle
             % For each turbine compute the new wake direction and update
             % the controls struct
             for i = 1:obj.layout.nTurbs
-                obj.turbineControls_(i).yawAngle = obj.yawAngles(i);
-                obj.turbineControls_(i).tiltAngle = obj.tiltAngles(i);
-                obj.turbineControls_(i).thrustDirection = floris_eul2rotm(-[obj.yawAngles(i) obj.tiltAngles(i) 0],'ZYZ')*-[1;0;0];
+                obj.turbineControls_(i).yawAngle = obj.yawAngleArray(i);
+                obj.turbineControls_(i).tiltAngle = obj.tiltAngleArray(i);
+                obj.turbineControls_(i).thrustDirection = floris_eul2rotm(-[obj.yawAngleArray(i) obj.tiltAngleArray(i) 0],'ZYZ')*-[1;0;0];
                 obj.turbineControls_(i).thrustAngle = acos(dot(obj.turbineControls_(i).thrustDirection,-[1;0;0]));
 
                 % Determine the unit vector orthogonal to the mean wake plane
