@@ -27,19 +27,7 @@ classdef estimator < handle
             disp(['Collective param. estimation set: [' strjoin(obj.estimParamsAll,', ') ']'])
         end
         
-        function [xopt,Jopt] = gaEstimation(obj,x0)           
-            if nargin < 2
-                disp('Starting unconstrained parameter estimation using the GA toolbox...');
-                lb = [];   % Condition lb <= x <= ub
-                ub = [];   % Condition lb <= x <= ub
-            else
-                disp('Starting constrained parameter estimation using the GA toolbox...');
-                if length(x0) ~= length(obj.estimParamsAll)
-                    error(['The variable [x0] has to be of equal length as [estimationParams], which is ' num2str(length(obj.estimParamsAll)) '.']);
-                end                
-                lb = min([x0/2. ; x0*2.]) % Condition lb <= x <= ub
-                ub = max([x0/2. ; x0*2.]) % Condition lb <= x <= ub
-            end
+        function [xopt,Jopt] = gaEstimation(obj,lb,ub)           
             ga_A   = []; % Condition A * x <= b
             ga_b   = []; % Condition A * x <= b
             ga_Aeq = []; % Condition Aeq * x == beq
@@ -55,8 +43,8 @@ classdef estimator < handle
         end
         
         function [J] = costWeightedRMSE(obj,x);
-            florisObjSet     = obj.florisObjSet;
-            measurementSet   = obj.measurementSet;
+            florisObjSet   = obj.florisObjSet;
+            measurementSet = obj.measurementSet;
             estimParamsAll = obj.estimParamsAll;
             
             if length(x) ~= length(estimParamsAll)
@@ -72,7 +60,11 @@ classdef estimator < handle
                 for ji = 1:length(estimParamsAll)
                     % Update parameter iff is tuned for measurement set [i]
                     if ismember(estimParamsAll{ji},measurementSet{i}.estimParams)
-                        florisObjTmp.model.modelData.(estimParamsAll{ji}) = x(ji);
+                        if ismember(estimParamsAll{ji},{'Vref','TI0','windDirection'})
+                            florisObjTmp.layout.ambientInflow.(estimParamsAll{ji}) = x(ji);
+                        else
+                            florisObjTmp.model.modelData.(estimParamsAll{ji}) = x(ji);
+                        end
                     end
                 end
                 
