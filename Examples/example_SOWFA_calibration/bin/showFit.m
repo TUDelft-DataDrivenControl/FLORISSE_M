@@ -42,7 +42,7 @@ for i = 1:length(timeAvgData)
                                                  timeAvgData(i).cellCenters(:,3),true);        
         dataArray = {timeAvgData(i).UData; timeAvgData(i).UData; uFLORISOld; uFLORISOpt; ...
                      abs(timeAvgData(i).UData-uFLORISOld); abs(timeAvgData(i).UData-uFLORISOpt)};
-        nameArray = {'SOWFA';'SOWFA';'FLORIS_old';'FLORIS_opt';...
+        nameArray = {['SOWFA (' timeAvgData(i).name ')'];'SOWFA';'FLORIS_old';'FLORIS_opt';...
                      'abs(SOWFA-FLORIS_old)'; 'abs(SOWFA-FLORIS_opt)'};
         nCols = 2;
     elseif plotFloris 
@@ -50,11 +50,11 @@ for i = 1:length(timeAvgData)
                                            timeAvgData(i).cellCenters(:,2),...
                                            timeAvgData(i).cellCenters(:,3),true);        
         dataArray = {timeAvgData(i).UData;uFLORIS;abs(timeAvgData(i).UData-uFLORIS)};
-        nameArray = {'SOWFA','FLORIS','abs(SOWFA-FLORIS)'};
+        nameArray = {['SOWFA (' timeAvgData(i).name ')'],'FLORIS','abs(SOWFA-FLORIS)'};
         nCols = 1;
     else
         dataArray = {timeAvgData(i).UData};
-        nameArray = {'SOWFA'};
+        nameArray = {['SOWFA (' timeAvgData(i).name ')']};
         nCols = 1;
     end
     

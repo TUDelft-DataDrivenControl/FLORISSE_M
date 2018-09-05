@@ -47,8 +47,12 @@ end
 
 %% Plotting time-averaged flow slices
 disp('4. Plotting results (if applicable).');
-if plotFigures
+if strcmp(plotFigures,'all')
     showFit(timeAvgData);
+elseif strcmp(plotFigures,'hor')
+    horIndx = find(~cellfun('isempty',regexp({timeAvgData.name},...
+                   regexptranslate('wildcard','*horiz*'))));
+    showFit(timeAvgData(horIndx));
 end
 
 

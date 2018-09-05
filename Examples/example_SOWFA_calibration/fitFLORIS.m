@@ -1,12 +1,21 @@
 function [xopt] = fitFLORIS(parpoolSize)
+% % USER SETTINGS
+plotFigures = 'none';
+fileNames = {};
+dirList = [dir('processedData/uniformInflow/pitch*.mat');...
+           dir('processedData/uniformInflow/yaw*.mat');...
+		   dir('processedData/turbInflow/pitch*.mat');...
+		   dir('processedData/turbInflow/yaw*.mat')];
+for i = 1:length(dirList)
+    fileNames{end+1} = [dirList(i).folder filesep dirList(i).name];
+end
 
-tic;
 
+% Set-up
+format long
 addpath(genpath('../../FLORISSE_M'));
 addpath('bin');
-
-fileNames = {'processedData/yaw-20.mat'; 'processedData/yaw+0.mat'; ...
-             'processedData/yaw+10.mat'; 'processedData/yaw+30.mat' };
+tic;
 
 % Load measurements
 disp('Setting up measurements and FLORIS objects.');
@@ -15,7 +24,14 @@ for i = 1:length(fileNames)
     timeAvgData{i} = loadedData.timeAvgData;
     inflowCurve{i} = loadedData.inflowCurve;
     measurementSet{i} = loadedData.measurementSet;
-    measurementSet{i}.estimParams = {'alpha','beta','ka','kb'};
+end
+
+for i = 1:11
+	measurementSet{i}.estimParams = {'ad','bd','beta','kb'};
+end
+
+for i = 12:22
+	measurementSet{i}.estimParams = {'ad','bd','alpha','ka'};
 end
 
 % Initialize FLORIS objects
@@ -27,20 +43,43 @@ subModels = model_definition('deflectionModel','rans',...
 turbines = struct('turbineType', nrel5mw() , ...
                       'locIf', {[1000, 1500]});
 
-for i = 1:length(fileNames)
+for i = 1:11
     layout{i} = layout_class(turbines, 'fitting_1turb');
-    layout{i}.ambientInflow = ambient_inflow_myfunc('Interpolant', inflowCurve{i},...
-                                                    'HH',90,'windDirection', 0, 'TI0', .05);
-    controlSet{i} = control_set(layout{i}, 'greedy');
+    layout{i}.ambientInflow = ambient_inflow_uniform('windSpeed', 8., ...
+                                              'windDirection', 0.0, ...
+                                              'TI0', .00);    
+    controlSet{i} = control_set(layout{i}, 'pitch');
 end
-controlSet{1}.yawAngleArray = deg2rad([-20.0]); % Overwrite yaw angle
-controlSet{2}.yawAngleArray = deg2rad([0.0]);   % Overwrite yaw angle
-controlSet{3}.yawAngleArray = deg2rad([10.0]);  % Overwrite yaw angle
-controlSet{4}.yawAngleArray = deg2rad([30.0]);  % Overwrite yaw angle
+for i = 12:22
+    layout{i} = layout_class(turbines, 'fitting_1turb'); 
+    layout{i}.ambientInflow = ambient_inflow_myfunc('Interpolant', inflowCurve{i},...
+													'HH',90,'windDirection', 0, 'TI0', .06);
+    controlSet{i} = control_set(layout{i}, 'pitch');
+end
+
+for i = [1 12]
+	controlSet{i}.pitchAngleArray = deg2rad([1.0]); i=i+1;
+	controlSet{i}.pitchAngleArray = deg2rad([2.0]); i=i+1;
+	controlSet{i}.pitchAngleArray = deg2rad([3.0]); i=i+1;
+	controlSet{i}.pitchAngleArray = deg2rad([4.0]); i=i+1;
+	controlSet{i}.yawAngleArray  = deg2rad([-10.0]); i=i+1;
+	controlSet{i}.yawAngleArray = deg2rad([-20.0]); i=i+1;
+	controlSet{i}.yawAngleArray = deg2rad([-30.0]); i=i+1;
+	controlSet{i}.yawAngleArray = deg2rad([0.0]); i=i+1;
+	controlSet{i}.yawAngleArray = deg2rad([10.0]); i=i+1;
+	controlSet{i}.yawAngleArray = deg2rad([20.0]); i=i+1;
+	controlSet{i}.yawAngleArray = deg2rad([30.0]);
+end
 
 for i = 1:length(fileNames)
     florisObjSet{i} = floris(layout{i}, controlSet{i}, subModels);
-%     showFit(timeAvgData{i},florisObjSet{i})
+    if strcmp(plotFigures,'all')
+        showFit(timeAvgData{i},florisObjSet{i});
+    elseif strcmp(plotFigures,'hor')
+        horIndx = find(~cellfun('isempty',regexp({timeAvgData{i}.name},...
+            regexptranslate('wildcard','*horiz*'))));
+        showFit(timeAvgData{i}(horIndx),florisObjSet{i});
+    end
 end
 
 
@@ -57,11 +96,14 @@ if isempty(gcp('nocreate'))
     end
 end
 
-% x0   = [1.5 0.1 0.7 0.002]; %[2.32, 0.154, 0.3837, 0.0037];
-% xopt = estTool.gaEstimation(x0)  % Use GA for constrained optimization
-xopt = estTool.gaEstimation(); % Use GA for unconstrained optimization
-% xopt = [-1.3008    0.9587   -1.3700    0.0755]; % unconstrained
-% xopt = [2.3428    0.2754    0.1918    0.0022]; % constrained
+x0 = [-4.5/126.4,  2.32, -0.01, .154, .3837, .0037];
+lb = min([x0/4; x0*4]);
+ub = max([x0/4; x0*4]);
+ub(1) =  1.0; 
+lb(1) = -1.0;
+disp(lb); disp(ub)
+
+xopt_con = estTool.gaEstimation(lb, ub)  % Use GA for constrained optimization
 toc
 
 % Generate a FLORIS object set with optimal x-settings
@@ -106,9 +148,4 @@ for i = 1:length(fileNames)
         title([ num2str(DD_array(DDi)) 'D, yaw = ' num2str(rad2deg(controlSet{i}.yawAngleArray)) ' deg']);
     end
 end
-
-
-% Compare fit using horizontal plane
-
-
 end

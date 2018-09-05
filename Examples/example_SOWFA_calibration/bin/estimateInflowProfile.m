@@ -2,7 +2,7 @@ function [curveFit,fitGoodness] = estimateInflowProfile(cellCenters,UData,plotFi
 
 % Default option: do not plot figures
 if nargin < 3
-    plotFigures = false;
+    plotFigures = 'none';
 end
 
 %% Extract vertical inflow profile
@@ -32,7 +32,7 @@ meanVertProfile = [0; meanVertProfile];
 [curveFit,fitGoodness] = fit(zVec,meanVertProfile,'linearinterp');
 vertProfileFit = curveFit(zVec);
 
-if plotFigures
+if strcmp(plotFigures,'all')
     figure; hold all;
     for i = 1:nSamples(1)
         plot(UGrid(:,i),zVec(2:end),'color',.85+[0 0 0],'HandleVisibility','off');

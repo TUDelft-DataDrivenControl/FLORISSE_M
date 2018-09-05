@@ -1,4 +1,4 @@
-function [dataType,cellCenters,cellData] = importVTK_ADMR(file)
+function [dataType,cellCenters,cellData] = importVTK(file)
 %IMPORTVTK imports standard SOWFA vtk files
 % [dataType,cellCenters,cellData] = importVTK(file);
 % 
