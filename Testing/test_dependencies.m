@@ -1,4 +1,4 @@
-function [] = test_dependencies(functionsPath,doRecursively)
+function [out] = test_dependencies(functionsPath,doRecursively)
 
 % Setup folders to look into
 if doRecursively
@@ -9,6 +9,7 @@ else
 end
 
 % Cycle through all folders
+dependencyArray = {};
 for jdir = 1:length(dirList)
     folderName = dirList{jdir};
     fileNames = dir(folderName);
@@ -21,11 +22,23 @@ for jdir = 1:length(dirList)
         
         % Check dependencies
         [names, ~] = dependencies.toolboxDependencyAnalysis({inputFile});
-        disp(['Filename: ' folderName filesep fileNames(jFile).name '. Dependencies: ' strjoin(names,', ')])
+        disp(['Dependencies: ' strjoin(names,', ') '. [' folderName filesep fileNames(jFile).name ']'])
+        dependencyArray={dependencyArray{:} names{:}};
     end
+end
+
+% Unique dependencies
+disp(' ');
+disp('Overview:')
+[uniqueArray,~,ic] = unique(dependencyArray);
+for i = 1:length(uniqueArray)
+    disp([num2str(i) '. Dependency: ' uniqueArray{i} ' (' num2str(sum(ic == i))  'x).']);
 end
 
 % Make a compatibility report (only for newest MATLAB 2017b)
 if exist('codeCompatibilityReport') ~= 0
     codeCompatibilityReport(functionsPath);
+end
+
+out = uniqueArray; % Output is the unique list of toolbox dependencies
 end
