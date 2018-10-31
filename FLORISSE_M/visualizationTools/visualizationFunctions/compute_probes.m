@@ -1,9 +1,7 @@
 function [uProbe] = compute_probes(florisObj,xIF,yIF,zIF,fixYaw,nInterpBuffer);
 %
-% This function computes the flow velocity at a (vector of) location(s)
-% (x,y,z) in the wind farm. For a rectangular grid, one should use the
-% compute_flow_field.m function. For a small number or an arbitrary
-% selection of flow measurements (e.g., probes), one can use this function.
+% This function computes the flow velocity at a set of arbitrary probe
+% locations (x,y,z) in the wind farm. Structure is exploited when possible.
 %
 % By: Bart Doekemeijer
 %
@@ -57,7 +55,7 @@ function [uProbe] = compute_probes(florisObj,xIF,yIF,zIF,fixYaw,nInterpBuffer);
     end
     
     if interpField
-        disp('Calculating probes using linear interpolation...')
+        disp('Accelerating compute_probes.m using a structured flowfield and linear interpolation. To disable, set nInterpBuffer = Inf.')
         
         % Interpolation using structured evaluation
         flowField.U = layout.ambientInflow.Vfun(flowField.Z);
@@ -97,7 +95,6 @@ function [uProbe] = compute_probes(florisObj,xIF,yIF,zIF,fixYaw,nInterpBuffer);
         end
         
     else
-        disp('Calculating probes one-by-one analytically.')
         % Calculate velocity field one-by-one (for every probe location)
         Uin = layout.ambientInflow.Vfun(zWF);
         uProbe = zeros(size(xIF));

@@ -7,9 +7,7 @@ addpath('bin');
 tic;
 
 % Load measurements
-validationCase = 2; % 1 or 2
-
-loadedData = load(['processedData/9turb_varyingYaw_validation_' num2str(validationCase) '.mat']);
+loadedData = load(['processedData/9turb_varyingYaw_validation.mat']);
 timeAvgData = loadedData.timeAvgData;
 inflowCurve = loadedData.inflowCurve;
 measurementSet = loadedData.measurementSet;
@@ -21,9 +19,9 @@ subModels = model_definition('deflectionModel','rans',...
                              'addedTurbulenceModel', 'crespoHernandez');
 
 turbines = struct('turbineType', nrel5mw() , ...
-                      'locIf', {[921.5, 1141.3]; [0877.6 1390.3]; [0833.7 1639.2]; ...
-                                [1543.9 1251.0]; [1500.0 1500.0]; [1456.1 1749.0];...
-                                [2166.3 1360.8]; [2122.4 1609.7]; [2078.5 1858.7]});
+                      'locIf', {[868.0  1120.8]; [868.0  1500.0]; [868.0  1879.2]; ...
+                                [1500.0 1120.8]; [1500.0 1500.0]; [1500.0 1879.2];...
+                                [2132.0 1120.8]; [2132.0 1500.0]; [2132.0 1879.2]});
 
 
 layout = layout_class(turbines, 'fitting_9turb'); 
@@ -32,11 +30,7 @@ layout.ambientInflow = ambient_inflow_myfunc('Interpolant', ...
 controlSet = control_set(layout, 'pitch');
 
 controlSet.pitchAngleArray = zeros(1,9);
-if validationCase == 1
-    controlSet.yawAngleArray = deg2rad(270.0-[282.6 256.7 271.5 261.8 274.6 261.0 277.3 281.1 295.7]);
-else
-    controlSet.yawAngleArray = deg2rad(270.0-[267.1 237.9 257.4 290.3 253.9 284.4 271.9 291.6 240.6]);
-end
+controlSet.yawAngleArray = deg2rad(270.0-[282.6 256.7 271.5 261.8 274.6 261.0 277.3 281.1 295.7]);
 
 % Compare initial fit (x0) and optimal fit (xopt)
 tmpInterpolant = scatteredInterpolant(timeAvgData(1).cellCenters(:,1),...
@@ -59,19 +53,21 @@ florisObjSetOpt = {florisOpt};
 % Show vertical cut-throughs of all SOWFA data: detailed plots
 % showFit(timeAvgData,florisInit,florisOpt)
 showFit(timeAvgData(1),florisOpt)
-hold all; 
-for i = 1:length(turbines)
-  gamma = controlSet.yawAngleArray(i);
-  xTurb = layout.locIf(i,1);
-  yTurb = layout.locIf(i,2);
-  R     = layout.turbines(i).turbineType.rotorRadius;
-  plot3(xTurb + R*[sin(-gamma) sin(gamma)], ...
-        yTurb + R*[cos(gamma) -cos(gamma)],[500 500],'k','lineWidth',1.5)
-  text(xTurb-200,yTurb,500,['T' num2str(i)]);
+for ii = 1:3
+    subplot(3,1,ii); hold all;
+    for i = 1:length(turbines)
+        gamma = controlSet.yawAngleArray(i);
+        xTurb = layout.locIf(i,1);
+        yTurb = layout.locIf(i,2);
+        R     = layout.turbines(i).turbineType.rotorRadius;
+        plot3(xTurb + R*[sin(-gamma) sin(gamma)], ...
+            yTurb + R*[cos(gamma) -cos(gamma)],[500 500],'k','lineWidth',1.5)
+        text(xTurb-200,yTurb,500,['T' num2str(i)]);
+    end
+    axis equal;
+    xlim([500 2950]);
+    ylim([750 2250]);
 end
-axis equal;
-xlim([500 2950]);
-ylim([750 2250]);
 
 % Downstream slices at hub height
 Yq = [500:5:2500];
