@@ -36,10 +36,30 @@ classdef estimator < handle
             costFun = @(x) obj.costWeightedRMSE(x);
             
             % Optimize using Parallel Computing
-                % options = gaoptimset('PopulationSize', popsize, 'Generations', gensize, 'Display', 'off', 'TolFun', 1e-2,'UseParallel', true);
             nVars = length(obj.estimParamsAll);
-            options = gaoptimset('Display','iter', 'TolFun', 1e-3,'UseParallel', true);
+%             options = gaoptimset('Display','iter', 'TolFun', 1e-3,'UseParallel', true); No plotting
+            options = gaoptimset('Display','iter', 'TolFun', 1e-3,'UseParallel', true,'PlotFcns',{@plotfun1}); % with plot
             [xopt,Jopt,exitFlag,output,population,scores] = ga(costFun, nVars, ga_A, ga_b, ga_Aeq, ga_beq, lb, ub, [], options);
+            
+            function state = plotfun1(options,state,flag)
+                subplot(2,1,1);
+                [~,idx]=min(state.Score);
+                optSettings=state.Population(idx,:);
+                bar([100*(optSettings(1)) optSettings(2:end)]);
+                ylabel('Value');
+                xlabel('Estimation variables');
+                grid on; box on;
+                
+                subplot(2,1,2);
+                plot(1:length(state.Best),state.Best,'kd','MarkerFaceColor',[1 0 1]);
+                ylabel('Cost');
+                xlim([0 20]);
+                xlabel('Generation');
+                grid on; box on;
+               
+%                 set(gcf,'color','w');
+%                 export_fig(['estimationOutputs/kOut/' num2str(state.Generation) '.png'],'-m2');
+            end
         end
         
         function [J] = costWeightedRMSE(obj,x);
@@ -75,7 +95,7 @@ classdef estimator < handle
                 % Calculate weighted power RMSE, if applicable
                 if any(ismember(fields(measurementSet{i}),'P'))
                     powerError = [florisObjTmp.turbineResults.power] - measurementSet{i}.P.values;
-                    Jset(i)    = Jset(i) + rms(powerError ./ measurementSet{i}.P.stdev);
+                    Jset(i)    = Jset(i) + sqrt(mean((powerError ./ measurementSet{i}.P.stdev).^2));
                 end
                 
                 % Calculate weighted flow RMSE, if applicable
@@ -83,7 +103,7 @@ classdef estimator < handle
                     fixYaw  = false;
                     uProbes = compute_probes(florisObjTmp,measurementSet{i}.U.x,measurementSet{i}.U.y,measurementSet{i}.U.z,fixYaw);
                     flowError = uProbes - measurementSet{i}.U.values;
-                    Jset(i)   = Jset(i) + rms(flowError ./ measurementSet{i}.U.stdev);
+                    Jset(i)   = Jset(i) + sqrt(mean((flowError ./ measurementSet{i}.U.stdev).^2));
                 end
             end
             
