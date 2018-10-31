@@ -23,7 +23,7 @@ end
 if yawOpt
     x0 = [x0; florisRunner.controlSet.yawAngleArray];
     lb = [lb; deg2rad(-45)*ones(1,nTurbs)];
-    ub = [ub; deg2rad(+45)*ones(1,nTurbs)];    
+    ub = [ub; deg2rad(+45)*ones(1,nTurbs)];
 end
 if pitchOpt
     if ~strcmp(florisRunner.controlSet.controlMethod, 'pitch')
@@ -32,7 +32,7 @@ if pitchOpt
     x0 = [x0; florisRunner.controlSet.pitchAngleArray];
     lb = [lb; deg2rad(0.0)*ones(1,nTurbs)];
     ub = [ub; deg2rad(5.0)*ones(1,nTurbs)];
-
+    
 end
 if axialOpt
     if ~strcmp(florisRunner.controlSet.controlMethod, 'axialInduction')
@@ -71,8 +71,8 @@ plotDist = false;
 if plotDist
     figure;
     xPl = linspace(-3*WD_std,3*WD_std,101);
-    yPl = fx(xPl); 
-    plot(xPl,yPl,'k'); grid on; hold on; 
+    yPl = fx(xPl);
+    plot(xPl,yPl,'k'); grid on; hold on;
     plot(WD_range,fx(WD_range),'ro');
     ylabel('Probability')
     xlabel('\Delta WD (rad)','Interpreter','tex');
@@ -84,18 +84,12 @@ clear fx
 % Define cost function
 cost = @(x)costFunctionRobust(x, florisRunner,WD_range,WD_probability);
 if optVerbose
-    options = optimset('Display','final','MaxFunEvals',1e4,'PlotFcns',{@optimplotx, @optimplotfval} ); % Display convergence
-    %options = optimset('Display','final','MaxFunEvals',1000 ); % Display nothing
-    %options = optimset('Algorithm','sqp','Display','final','MaxFunEvals',1000,'PlotFcns',{@optimplotx, @optimplotfval} ); % Display convergence
+    options = optimset('Display','final','MaxFunEvals',1e4,'PlotFcns',{@plotfun1;@plotfun2}); % Display convergence
 else
     options = optimset('Display','off','MaxFunEvals',1e4,'PlotFcns',{} );
 end
 
 xopt    = fmincon(cost,x0,[],[],[],[],lb,ub,[],options);
-
-% Simulated annealing
-%options = optimset('Display','iter','MaxFunEvals',1000,'PlotFcns',{@optimplotx, @optimplotfval} ); % Display convergence
-%xopt    = simulannealbnd(cost,self.inputData.axialInd,lb,ub,options);
 
 % Calculate improvements
 if nargout > 1 || optVerbose
@@ -111,38 +105,57 @@ if optVerbose
 end
 
 % Probablistic cost function (for a prob. dist. of wind directions)
-function J = costFunctionRobust(x, florisRunner,WD_range, WD_probability)
-    J = 0;
-    WD0 = florisRunner.layout.ambientInflow.windDirection; % Initial WD
-    
-    % Cover the range
-    for i = 1:length(WD_range)
-        florisRunner.layout.ambientInflow.windDirection = WD0 + WD_range(i);
-        J = J + WD_probability(i) * costFunctionDeterministic(x, florisRunner);
+    function J = costFunctionRobust(x, florisRunner,WD_range, WD_probability)
+        J = 0;
+        WD0 = florisRunner.layout.ambientInflow.windDirection; % Initial WD
+        
+        % Cover the range
+        for i = 1:length(WD_range)
+            florisRunner.layout.ambientInflow.windDirection = WD0 + WD_range(i);
+            J = J + WD_probability(i) * costFunctionDeterministic(x, florisRunner);
+        end
+        
+        % Restore to default wind direction
+        florisRunner.layout.ambientInflow.windDirection = WD0;
     end
-    
-    % Restore to default wind direction
-    florisRunner.layout.ambientInflow.windDirection = WD0;
-end
 
 % Deterministic cost function (for a single WD)
-function J = costFunctionDeterministic(x, florisRunner)
-    % 'x' contains the to-be-optimized control variables. This
-    % can be yaw angles, blade pitch angles, or both. Hence,
-    % depending on these choices, we have to first extract the
-    % yaw angles and/or blade pitch angles back from x, before
-    % we trial them in a FLORIS simulation. That is what we do next:
-    if yawOpt
-        florisRunner.controlSet.yawAngleArray = x(1,:);
-        if pitchOpt; florisRunner.controlSet.pitchAngleArray = x(2,:); end
-        if axialOpt; florisRunner.controlSet.axialInductionArray = x(2,:); end
-    else
-        if pitchOpt; florisRunner.controlSet.pitchAngleArray = x(1,:); end
-        if axialOpt; florisRunner.controlSet.axialInductionArray = x(1,:); end
+    function J = costFunctionDeterministic(x, florisRunner)
+        % 'x' contains the to-be-optimized control variables. This
+        % can be yaw angles, blade pitch angles, or both. Hence,
+        % depending on these choices, we have to first extract the
+        % yaw angles and/or blade pitch angles back from x, before
+        % we trial them in a FLORIS simulation. That is what we do next:
+        if yawOpt
+            florisRunner.controlSet.yawAngleArray = x(1,:);
+            if pitchOpt; florisRunner.controlSet.pitchAngleArray = x(2,:); end
+            if axialOpt; florisRunner.controlSet.axialInductionArray = x(2,:); end
+        else
+            if pitchOpt; florisRunner.controlSet.pitchAngleArray = x(1,:); end
+            if axialOpt; florisRunner.controlSet.axialInductionArray = x(1,:); end
+        end
+        % Then, we simulate FLORIS and determine the cost J(x)
+        florisRunner.clearOutput();
+        florisRunner.run;
+        J = -sum([florisRunner.turbineResults.power]);
     end
-    % Then, we simulate FLORIS and determine the cost J(x)
-    florisRunner.clearOutput();
-    florisRunner.run;
-    J = -sum([florisRunner.turbineResults.power]);
-end
+
+    % Visualization functions
+    function stop = plotfun1(x,optimValues,state)
+        stop=optimplotx(x,optimValues,state);
+        ylabel('Angle (rad)')
+        xlabel('Control variable');
+        grid on; box on;
+    end
+    function stop = plotfun2(x,optimValues,state)
+        optimValues.fval = -1e-6*optimValues.fval; 
+        stop = optimplotfval(x,optimValues,state);
+        ylabel('Expected power prod. (MW)')
+        grid on; box on;      
+        xlim([0 30]);
+        
+%         set(gcf,'color','w');
+%         export_fig(['optimizationOutputs/kOut/' num2str(optimValues.iteration+1) '.png'],'-m2');
+    end
+
 end

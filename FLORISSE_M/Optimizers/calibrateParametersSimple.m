@@ -24,6 +24,6 @@ function J = calibrationCostFunc(x, florisRunner, measuredPower)
     % Then, we simulate FLORIS and determine the cost J(..)
     florisRunner.clearOutput()
     florisRunner.run()
-    J = rms([florisRunner.turbineResults.power]-measuredPower);
+    J = sqrt(mean(([florisRunner.turbineResults.power]-measuredPower).^2));
 end
 end
