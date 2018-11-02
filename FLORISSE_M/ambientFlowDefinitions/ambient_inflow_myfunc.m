@@ -17,6 +17,7 @@ classdef ambient_inflow_myfunc < ambient_inflow_interface
                                              WDString, windDirection, ...
                                              TIString, TI0)
             %AMBIENT_INFLOW_LOG Construct an instance of this class
+            obj.check_angles_in_rad(windDirection);
             obj.windDirection = windDirection;
             obj.TI0    = TI0;
             obj.rho    = 1.1716;
@@ -29,4 +30,15 @@ classdef ambient_inflow_myfunc < ambient_inflow_interface
             V = reshape(obj.myFunc(Z(:)),size(Z));
         end
     end
+    
+    methods (Access = protected)
+        function check_angles_in_rad(obj, x)
+            % check_angles_in_rad is a function that checks if an array with
+            % control settings only holds values in between -90 and +90
+            % degrees in rad
+            if any(x<-2*pi) || any(x>2*pi)
+                error('check_angles_in_rad:valueError', 'Wind direction must be specified in radians, angle>pi/2 || angle<pi/2');
+            end
+        end
+    end        
 end
