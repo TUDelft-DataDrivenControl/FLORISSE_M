@@ -97,7 +97,7 @@ classdef turbine_type < handle
                 turbineResult.axialInduction = obj.calc_axial_induction(turbineResult.ct);
             end
             if isnan(turbineResult.ct) || isnan(turbineResult.cp)
-                error('cPcTpower:valueError', 'CT or CP is nan. This means that the windspeed (or pitchangle) dropped below the values listed in the lookup table of this turbine.');
+                error('cPcTpower:valueError', 'CT or CP is nan. This means that the windspeed (or pitchangle) dropped below the values listed in the lookup table of this turbine, and no extrapolation method has been selected.');
             end
             turbineResult.power = (0.5*condition.rho*obj.rotorArea*turbineResult.cp)*(condition.avgWS^3.0)*obj.genEfficiency;
         end

@@ -85,14 +85,14 @@ classdef nrel5mw_cpct < handle
             switch controlMethod
                 case {'pitch'}
                     cp = interp2(structLUT.wsRange, deg2rad(structLUT.pitchRange),...
-                        structLUT.lutCp, condition.avgWS, turbineControl.pitchAngle);
+                        structLUT.lutCp, condition.avgWS, turbineControl.pitchAngle,'linear',0.0);
                     ct = interp2(structLUT.wsRange, deg2rad(structLUT.pitchRange),...
-                        structLUT.lutCt, condition.avgWS, turbineControl.pitchAngle);
+                        structLUT.lutCt, condition.avgWS, turbineControl.pitchAngle,'linear',1e-5);
                     adjustCpCtYaw = true; % do function call 'adjust_cp_ct_for_yaw' after this func.
                     
                 case {'greedy'}
-                    cp = interp1(structLUT.wsRange, structLUT.lutCp, condition.avgWS);
-                    ct = interp1(structLUT.wsRange, structLUT.lutCt, condition.avgWS);
+                    cp = interp1(structLUT.wsRange, structLUT.lutCp, condition.avgWS,'linear',0.0);
+                    ct = interp1(structLUT.wsRange, structLUT.lutCt, condition.avgWS,'linear',1e-5);
                     adjustCpCtYaw = true; % do function call 'adjust_cp_ct_for_yaw' after this func.
                     
                 otherwise

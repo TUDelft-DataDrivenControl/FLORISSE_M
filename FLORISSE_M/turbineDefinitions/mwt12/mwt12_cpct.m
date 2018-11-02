@@ -52,8 +52,8 @@ classdef mwt12_cpct < handle
             
             switch controlMethod                     
                 case {'tipSpeedRatio'}
-                    cp = interp1(structLUT.tsrRange, structLUT.lutCp, turbineControl.tipSpeedRatio);
-                    ct = interp1(structLUT.tsrRange, structLUT.lutCt, turbineControl.tipSpeedRatio);
+                    cp = interp1(structLUT.tsrRange, structLUT.lutCp, turbineControl.tipSpeedRatio,'linear',0.00);
+                    ct = interp1(structLUT.tsrRange, structLUT.lutCt, turbineControl.tipSpeedRatio,'linear',1e-5);
                     adjustCpCtYaw = true;
                     
                 otherwise
