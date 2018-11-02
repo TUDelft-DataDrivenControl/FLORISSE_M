@@ -38,9 +38,9 @@ classdef control_set_test < matlab.unittest.TestCase
             %   there are 6 turbines in the layout
             
             % Check that yaw and tilt angles throw errors when setting
-            function set_yaw_angle_wrong(); testCase.controlSet.yawAngleArray(6) = 10; end
+            function set_yaw_angle_wrong(); testCase.controlSet.yawAngleWFArray(6) = 10; end
             testCase.assertError(@set_yaw_angle_wrong, 'check_angles_in_rad:valueError')
-            function set_yaw_angle_correct(); testCase.controlSet.yawAngleArray(6) = deg2rad(10); end
+            function set_yaw_angle_correct(); testCase.controlSet.yawAngleWFArray(6) = deg2rad(10); end
             testCase.assertWarningFree(@set_yaw_angle_correct)
         end
         function set_value_invalid_turbine(testCase)
@@ -49,7 +49,7 @@ classdef control_set_test < matlab.unittest.TestCase
             %   there are 6 turbines in the layout
 
             % Check that yaw and tilt angles throw errors when setting
-            function set_yaw_angle_turb_10(); testCase.controlSet.yawAngleArray(10) = deg2rad(5); end
+            function set_yaw_angle_turb_10(); testCase.controlSet.yawAngleWFArray(10) = deg2rad(5); end
             testCase.assertError(@set_yaw_angle_turb_10, 'check_doubles_array:valueError')
         end
         function test_control_struct(testCase)
@@ -60,8 +60,8 @@ classdef control_set_test < matlab.unittest.TestCase
             % The turbineControls struct should automatically mirror the
             % values set in the arrays holding control settings
             i = 5;
-            testCase.controlSet.yawAngleArray(i) = deg2rad(5);
-            testCase.assertEqual(testCase.controlSet.turbineControls(i).yawAngle, deg2rad(5))
+            testCase.controlSet.yawAngleWFArray(i) = deg2rad(5);
+            testCase.assertEqual(testCase.controlSet.turbineControls(i).yawAngleWF, deg2rad(5))
             
             testCase.controlSet.tiltAngleArray(i) = deg2rad(15);
             testCase.assertEqual(testCase.controlSet.turbineControls(i).tiltAngle, deg2rad(15))

@@ -42,15 +42,19 @@ classdef turbine_type_test < matlab.unittest.TestCase
         end
     end
     methods(Test)
-        function set_wind_direction_for_invalid_windspeed(testCase)
-            %testGeneric6Turb Test some attributes of a 6 turb layout
-            %   Test if there is only one unique turbine type and test that
-            %   there are 6 turbines in the layout
-            
-            % Check that yaw and tilt angles throw errors when setting
-            function runner(); testCase.florisRunner.run; end
-            testCase.assertError(@runner, 'cPcTpower:valueError')
-        end
+%         % The next function has been ommitted from testing due to recent 
+%         modifications that have increased robustness of the solver, by 
+%         defining a 'nearest' extrapolation method.
+%
+%         function set_wind_direction_for_invalid_windspeed(testCase)
+%             %testGeneric6Turb Test some attributes of a 6 turb layout
+%             %   Test if there is only one unique turbine type and test that
+%             %   there are 6 turbines in the layout
+%             
+%             % Check that yaw and tilt angles throw errors when setting
+%             function runner(); testCase.florisRunner.run; end
+%             testCase.assertError(@runner, 'cPcTpower:valueError')
+%         end
         
         function test_all_turbines(testCase)
             import matlab.unittest.constraints.IssuesNoWarnings

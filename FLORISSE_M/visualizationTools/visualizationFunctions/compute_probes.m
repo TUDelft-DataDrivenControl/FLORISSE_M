@@ -26,7 +26,7 @@ function [uProbe] = compute_probes(florisObj,xIF,yIF,zIF,fixYaw,nInterpBuffer);
     % Set-up the FLORIS object, exporting the variables of interest
     layout               = florisObj.layout;
     turbineResults       = florisObj.turbineResults;
-    yawAngles            = florisObj.controlSet.yawAngleArray;
+    yawAngles            = florisObj.controlSet.yawAngleWFArray;
     avgWs                = [florisObj.turbineConditions.avgWS];
     wakeCombinationModel = florisObj.model.wakeCombinationModel;
     

@@ -92,6 +92,10 @@ classdef estimator < handle
                         end
                     end
                 end
+                % if WD changed, we need to redefine which yaw angles
+                % we want maintain (WF or IF). Here, we enforce the
+                % consistent yaw angles in the INERTIAL frame.
+                florisObjTmp.controlSet.yawAngleIFArray = florisObjSet{i}.controlSet.yawAngleIFArray;
                 
 
                 % Execute FLORIS with [x]

@@ -38,7 +38,7 @@ classdef self_similar_gaussian_velocity < velocity_interface
             obj.C0 = 1-sqrt(1-obj.ct.*cos(obj.thrustAngle));
 
             % Rotation matrix R
-            R = floris_eul2rotm(-[turbineControl.yawAngle turbineControl.tiltAngle 0],'ZYZ');
+            R = floris_eul2rotm(-[turbineControl.yawAngleWF turbineControl.tiltAngle 0],'ZYZ');
             obj.C = R(2:3,2:3)*(R(2:3,2:3).'); % Ellipse covariance matrix
             obj.ellipseA = inv(obj.C*turbine.turbineType.rotorRadius.^2);
 

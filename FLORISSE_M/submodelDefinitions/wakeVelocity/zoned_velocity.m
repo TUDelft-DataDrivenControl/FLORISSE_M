@@ -24,7 +24,7 @@ classdef zoned_velocity < velocity_interface
 
             % Calculate mU, the zone multiplier for different wake zones
             if modelData.useaUbU
-                obj.mU = modelData.MU/cos(modelData.aU+modelData.bU*turbineControl.yawAngle);
+                obj.mU = modelData.MU/cos(modelData.aU+modelData.bU*turbineControl.yawAngleWF);
             else
                 obj.mU = modelData.MU;
             end

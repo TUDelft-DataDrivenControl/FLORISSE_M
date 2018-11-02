@@ -30,7 +30,7 @@ layout.ambientInflow = ambient_inflow_myfunc('Interpolant', ...
 controlSet = control_set(layout, 'pitch');
 
 controlSet.pitchAngleArray = zeros(1,9);
-controlSet.yawAngleArray = deg2rad(270.0-[282.6 256.7 271.5 261.8 274.6 261.0 277.3 281.1 295.7]);
+controlSet.yawAngleWFArray = deg2rad(270.0-[282.6 256.7 271.5 261.8 274.6 261.0 277.3 281.1 295.7]);
 
 % Compare initial fit (x0) and optimal fit (xopt)
 tmpInterpolant = scatteredInterpolant(timeAvgData(1).cellCenters(:,1),...
@@ -56,7 +56,7 @@ showFit(timeAvgData(1),florisOpt)
 for ii = 1:3
     subplot(3,1,ii); hold all;
     for i = 1:length(turbines)
-        gamma = controlSet.yawAngleArray(i);
+        gamma = controlSet.yawAngleWFArray(i);
         xTurb = layout.locIf(i,1);
         yTurb = layout.locIf(i,2);
         R     = layout.turbines(i).turbineType.rotorRadius;
@@ -92,6 +92,6 @@ for DDi = 1:length(DD_array) % Downstream distance in rotor diameters
     end
     grid on; ylim([3 9]);
     ylabel('Wind speed (m/s)','Interpreter','latex'); xlabel('y (m)','Interpreter','latex');
-%     title([ num2str(DD_array(DDi)) 'D, yaw = ' num2str(rad2deg(controlSet.yawAngleArray)) ' deg']);
+%     title([ num2str(DD_array(DDi)) 'D, yaw = ' num2str(rad2deg(controlSet.yawAngleWFArray)) ' deg']);
     title(['$x = ' num2str(Xq(1)) '$ m'],'Interpreter','latex');
 end

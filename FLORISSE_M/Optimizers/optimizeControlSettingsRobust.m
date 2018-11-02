@@ -21,7 +21,7 @@ if nargin <= 9 % Add silence/verbose option
 end
 
 if yawOpt
-    x0 = [x0; florisRunner.controlSet.yawAngleArray];
+    x0 = [x0; florisRunner.controlSet.yawAngleWFArray];
     lb = [lb; deg2rad(-45)*ones(1,nTurbs)];
     ub = [ub; deg2rad(+45)*ones(1,nTurbs)];
 end
@@ -127,7 +127,7 @@ end
         % yaw angles and/or blade pitch angles back from x, before
         % we trial them in a FLORIS simulation. That is what we do next:
         if yawOpt
-            florisRunner.controlSet.yawAngleArray = x(1,:);
+            florisRunner.controlSet.yawAngleWFArray = x(1,:);
             if pitchOpt; florisRunner.controlSet.pitchAngleArray = x(2,:); end
             if axialOpt; florisRunner.controlSet.axialInductionArray = x(2,:); end
         else
