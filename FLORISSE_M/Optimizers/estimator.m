@@ -21,10 +21,21 @@ classdef estimator < handle
             % Determine the collective set of estimation parameters
             estimParamsAll = {};
             for i = 1:length(measurementSet)
+                if ~checkArrayAlphOrder(measurementSet{i}.estimParams)
+                    error('Please specify measurementSet in alphabetical order.');
+                end
                 estimParamsAll = {estimParamsAll{:} measurementSet{i}.estimParams{:}};
             end
             obj.estimParamsAll = unique(estimParamsAll);
             disp(['Collective param. estimation set: [' strjoin(obj.estimParamsAll,', ') ']'])
+            
+            function bool = checkArrayAlphOrder(x)
+                if any(strcmp(unique(x),x)==0)
+                    bool = false;
+                else
+                    bool = true;
+                end
+            end
         end
         
         function [xopt,Jopt] = gaEstimation(obj,lb,ub)           
@@ -45,7 +56,8 @@ classdef estimator < handle
                 subplot(2,1,1);
                 [~,idx]=min(state.Score);
                 optSettings=state.Population(idx,:);
-                bar([100*(optSettings(1)) optSettings(2:end)]);
+                bar(optSettings);
+                text(1:length(optSettings),optSettings,num2str(optSettings'),'vert','bottom','horiz','center'); 
                 ylabel('Value');
                 xlabel('Estimation variables');
                 grid on; box on;
