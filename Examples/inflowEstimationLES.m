@@ -38,7 +38,8 @@ for i = 1:length(yawAnglesIFArray)
     disp(' ---------------------- ')
     disp([' OPTIMIZING CASE ' num2str(i) '.']);
     % Set up control settings
-    florisRunner.controlSet.yawAngleIFArray = yawAnglesIFArray{i};
+    florisRunner.controlSet.yawAngleIFArray = yawAnglesIFArray{i} + 0.05*randn(1,9); % Add noise on yaw angles
+    
     
     % Set up measurements
     measurementSet.P = struct('values',powerMeasurements{i},'stdev',[1 1 1 2 2 2 3 3 3]);
