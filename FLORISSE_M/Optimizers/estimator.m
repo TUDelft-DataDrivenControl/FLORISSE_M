@@ -20,22 +20,15 @@ classdef estimator < handle
             
             % Determine the collective set of estimation parameters
             estimParamsAll = {};
+            checkAlphabeticalOrder = @(x) any(strcmp(unique(x),x)==0);
             for i = 1:length(measurementSet)
-                if ~checkArrayAlphOrder(measurementSet{i}.estimParams)
-                    error('Please specify measurementSet in alphabetical order.');
+                if checkAlphabeticalOrder(measurementSet{i}.estimParams)
+                    error('Please specify measurementSet.estimParams in alphabetical order.');
                 end
                 estimParamsAll = {estimParamsAll{:} measurementSet{i}.estimParams{:}};
             end
             obj.estimParamsAll = unique(estimParamsAll);
             disp(['Collective param. estimation set: [' strjoin(obj.estimParamsAll,', ') ']'])
-            
-            function bool = checkArrayAlphOrder(x)
-                if any(strcmp(unique(x),x)==0)
-                    bool = false;
-                else
-                    bool = true;
-                end
-            end
         end
         
         function [xopt,Jopt] = gaEstimation(obj,lb,ub)           
