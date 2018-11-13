@@ -1,4 +1,4 @@
-classdef layout_class
+classdef layout_class < handle
     %LAYOUT_CLASS Defines wind farms layouts to use in FLORIS
     %   This class has 2 important properties, namely a struct with
     %   turbines and an ambientInflow object.

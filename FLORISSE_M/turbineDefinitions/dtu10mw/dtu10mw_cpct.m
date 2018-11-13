@@ -31,8 +31,8 @@ classdef dtu10mw_cpct < handle
                     
                     % Create interpolants
                     [X,Y,Z] = ndgrid(structLUT.wsRange,structLUT.setpointRange,structLUT.yawRange);
-                    structLUT.cpFun = griddedInterpolant(X,Y,Z, structLUT.lutCp,'linear','none'); % Linear interpolation, no extrapolation
-                    structLUT.ctFun = griddedInterpolant(X,Y,Z, structLUT.lutCt,'linear','none'); % Linear interpolation, no extrapolation
+                    structLUT.cpFun = griddedInterpolant(X,Y,Z, structLUT.lutCp,'linear','nearest'); % Linear interpolation, no extrapolation
+                    structLUT.ctFun = griddedInterpolant(X,Y,Z, structLUT.lutCt,'linear','nearest'); % Linear interpolation, no extrapolation
                     
                 case {'axialInduction'}
                     % No preparation needed
@@ -50,7 +50,7 @@ classdef dtu10mw_cpct < handle
         function [out] = initialValues(obj)
             switch obj.controlMethod
                 case {'yawAndRelPowerSetpoint'}
-                    out = struct('yawAngle',0,'relPowerSetpoint',1); % Initialize default values
+                    out = struct('yawAngleWF',0,'relPowerSetpoint',1); % Initialize default values
                 otherwise
                     error(['Control methodology with name: "' obj.controlMethod '" not defined']);
             end
@@ -64,8 +64,8 @@ classdef dtu10mw_cpct < handle
             
             switch controlMethod                     
                 case {'yawAndRelPowerSetpoint'}
-                    cp = structLUT.cpFun(condition.avgWS,turbineControl.relPowerSetpoint,turbineControl.yawAngle);
-                    ct = structLUT.ctFun(condition.avgWS,turbineControl.relPowerSetpoint,turbineControl.yawAngle);
+                    cp = structLUT.cpFun(condition.avgWS,turbineControl.relPowerSetpoint,turbineControl.yawAngleWF);
+                    ct = structLUT.ctFun(condition.avgWS,turbineControl.relPowerSetpoint,turbineControl.yawAngleWF);
                     
                     if ct >= 1
                         disp(['WARNING: According to LUT, Ct = ' num2str(ct) '. Thresholding at Ct = 1.']);

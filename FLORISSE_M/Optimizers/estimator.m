@@ -20,7 +20,11 @@ classdef estimator < handle
             
             % Determine the collective set of estimation parameters
             estimParamsAll = {};
+            checkAlphabeticalOrder = @(x) any(strcmp(unique(x),x)==0);
             for i = 1:length(measurementSet)
+                if checkAlphabeticalOrder(measurementSet{i}.estimParams)
+                    error('Please specify measurementSet.estimParams in alphabetical order.');
+                end
                 estimParamsAll = {estimParamsAll{:} measurementSet{i}.estimParams{:}};
             end
             obj.estimParamsAll = unique(estimParamsAll);
@@ -45,7 +49,8 @@ classdef estimator < handle
                 subplot(2,1,1);
                 [~,idx]=min(state.Score);
                 optSettings=state.Population(idx,:);
-                bar([100*(optSettings(1)) optSettings(2:end)]);
+                bar(optSettings);
+                text(1:length(optSettings),optSettings,num2str(optSettings'),'vert','bottom','horiz','center'); 
                 ylabel('Value');
                 xlabel('Estimation variables');
                 grid on; box on;
@@ -87,6 +92,10 @@ classdef estimator < handle
                         end
                     end
                 end
+                % if WD changed, we need to redefine which yaw angles
+                % we want maintain (WF or IF). Here, we enforce the
+                % consistent yaw angles in the INERTIAL frame.
+                florisObjTmp.controlSet.yawAngleIFArray = florisObjTmp.controlSet.yawAngleIFArray;
                 
 
                 % Execute FLORIS with [x]

@@ -38,7 +38,7 @@ for atmoType = {'uniform','boundary'}
 
                     controlSet = control_set(layout, controlType{1});
                     controlSet.tiltAngleArray = deg2rad([0 10 0 0 -10 0 10 0 0]);
-                    controlSet.yawAngleArray = deg2rad([-30 10 -10 -30 -20 -15 0 10 0]);
+                    controlSet.yawAngleWFArray = deg2rad([-30 10 -10 -30 -20 -15 0 10 0]);
 
                     % Define subModels
                     subModels = model_definition('deflectionModel',      deflType{1},...

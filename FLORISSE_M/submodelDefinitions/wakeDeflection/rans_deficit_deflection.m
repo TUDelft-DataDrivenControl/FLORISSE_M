@@ -33,7 +33,7 @@ classdef rans_deficit_deflection < deflection_interface
             %   the DEFLECTION function.
             
             % Rotation matrix R
-            R = floris_eul2rotm(-[turbineControl.yawAngle turbineControl.tiltAngle 0],'ZYZ');
+            R = floris_eul2rotm(-[turbineControl.yawAngleWF turbineControl.tiltAngle 0],'ZYZ');
             % Ellipse covariance matrix
             obj.C = R(2:3,2:3)*(R(2:3,2:3).');
             

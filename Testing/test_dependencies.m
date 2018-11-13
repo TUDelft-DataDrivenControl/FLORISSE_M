@@ -1,5 +1,12 @@
 function [out] = test_dependencies(functionsPath,doRecursively)
 
+if nargin < 1
+    functionsPath = '../FLORISSE_M';
+end
+if nargin < 2
+    doRecursively = 1;
+end
+
 % Setup folders to look into
 if doRecursively
     dirList = strsplit(genpath(functionsPath),';'); % Find directories recursively

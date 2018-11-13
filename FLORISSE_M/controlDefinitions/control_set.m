@@ -27,7 +27,8 @@ classdef control_set < handle
         turbineControls_
         
         % Properties for redirection control: must append with 'Array_' (!)
-        yawAngleArray_
+        yawAngleWFArray_
+        yawAngleIFArray_
         tiltAngleArray_
         
         % Properties for turbine derating: must append with 'Array_' (!)
@@ -43,7 +44,8 @@ classdef control_set < handle
         turbineControls % A struct array with the controlsettings ordered per turbine
         
         % Properties for redirection control: must append with 'Array_' (!)
-        yawAngleArray % An array with the yawAngles for each turbine
+        yawAngleWFArray % An array with the yawAngles for each turbine (wind frame)
+        yawAngleIFArray % An array with the yawAngles for each turbine (inertial frame)
         tiltAngleArray % An array with the tiltAngles for each turbine
         
         % Properties for turbine derating: must append with 'Array' (!)
@@ -68,20 +70,23 @@ classdef control_set < handle
             
             obj.verbose = verbose;
             obj.layout  = layout;
-            obj.yawAngleArray_  = zeros(1, obj.layout.nTurbs);
+            obj.yawAngleWFArray_  = zeros(1, obj.layout.nTurbs);
+            obj.yawAngleIFArray_  = layout.ambientInflow.windDirection*ones(1, obj.layout.nTurbs);
             obj.tiltAngleArray_ = zeros(1, obj.layout.nTurbs);
             
             % Collect all properties that are used for derating control
             derPropList = properties(obj);
             nonArrayIndxs = cellfun('isempty',regexp(derPropList,regexptranslate('wildcard','*Array')));
             derPropList(nonArrayIndxs) =[]; % Exclude all variables that do not end with 'Array'
-            derPropList(strcmp(derPropList,'yawAngleArray'))  =[]; % Exclude yawAngleArray for derating control
+            derPropList(strcmp(derPropList,'yawAngleWFArray'))  =[]; % Exclude yawAngleWFArray for derating control
+            derPropList(strcmp(derPropList,'yawAngleIFArray'))  =[]; % Exclude yawAngleIFArray for derating control
             derPropList(strcmp(derPropList,'tiltAngleArray')) =[]; % Exclude tiltAngleArray for derating control
             if verbose; disp(['Variables in control_set.m for derating control: ' strjoin(derPropList,', ') ]); end
             obj.deratingPropertiesList = derPropList;
             
             % controlStruct is the struct that is send to the CP/CT function of a turbine
-            controlStruct = struct('yawAngle',        {0} , ...
+            controlStruct = struct('yawAngleWF',      {0} , ...
+                                   'yawAngleIF',      {layout.ambientInflow.windDirection},...
                                    'tiltAngle',       {0} , ...
                                    'thrustDirection', {[0; 0; 0]} , ...
                                    'thrustAngle',     {0} , ...
@@ -112,17 +117,31 @@ classdef control_set < handle
 
         % Define setter and getter methods with value checking and
         % controlstruct updating
-        function set.yawAngleArray(obj, array)
+        function set.yawAngleWFArray(obj, array)
             obj.check_doubles_array(array)
             obj.check_angles_in_rad(array)
-            obj.yawAngleArray_ = array;
+            obj.yawAngleWFArray_ = array;
+            obj.yawAngleIFArray_ = array+obj.layout.ambientInflow.windDirection;
             % The orientation of the turbine changed so the dependent
             % properties need to be updated
             obj.update_wake_thrust_direction()
         end
-        function yaws = get.yawAngleArray(obj)
-            yaws = obj.yawAngleArray_;
+        function yawsWF = get.yawAngleWFArray(obj)
+            yawsWF = obj.yawAngleWFArray_;
         end
+        
+        function set.yawAngleIFArray(obj, array)
+            obj.check_doubles_array(array)
+            obj.yawAngleIFArray_ = array;
+            obj.yawAngleWFArray_ = rem(array-obj.layout.ambientInflow.windDirection,2*pi);
+            obj.check_angles_in_rad(obj.yawAngleWFArray_)
+            % The orientation of the turbine changed so the dependent
+            % properties need to be updated
+            obj.update_wake_thrust_direction()
+        end
+        function yawsIF = get.yawAngleIFArray(obj)
+            yawsIF = obj.yawAngleIFArray_;
+        end        
         
         function set.tiltAngleArray(obj, array)
             obj.check_doubles_array(array)
@@ -241,9 +260,10 @@ classdef control_set < handle
             % For each turbine compute the new wake direction and update
             % the controls struct
             for i = 1:obj.layout.nTurbs
-                obj.turbineControls_(i).yawAngle = obj.yawAngleArray(i);
+                obj.turbineControls_(i).yawAngleWF = obj.yawAngleWFArray(i);
+                obj.turbineControls_(i).yawAngleIF = obj.yawAngleIFArray(i);
                 obj.turbineControls_(i).tiltAngle = obj.tiltAngleArray(i);
-                obj.turbineControls_(i).thrustDirection = floris_eul2rotm(-[obj.yawAngleArray(i) obj.tiltAngleArray(i) 0],'ZYZ')*-[1;0;0];
+                obj.turbineControls_(i).thrustDirection = floris_eul2rotm(-[obj.yawAngleWFArray(i) obj.tiltAngleArray(i) 0],'ZYZ')*-[1;0;0];
                 obj.turbineControls_(i).thrustAngle = acos(dot(obj.turbineControls_(i).thrustDirection,-[1;0;0]));
 
                 % Determine the unit vector orthogonal to the mean wake plane

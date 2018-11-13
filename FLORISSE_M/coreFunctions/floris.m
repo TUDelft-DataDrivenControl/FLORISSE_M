@@ -61,6 +61,15 @@ classdef floris < matlab.mixin.Copyable%handle
             if has_run(obj)
                 error('floris.run has already been triggered. Aborting new run.')
             end
+            % check angle consistency between WD, yaw (IF) and yaw (WF)
+            if max(abs((obj.controlSet.yawAngleWFArray + ...
+                    obj.layout.ambientInflow.windDirection - ...
+                    obj.controlSet.yawAngleIFArray))) > 1e-5
+                error(['The variables ''layout.ambientInflow.windDirection'', ''controlSet.yawAngleIFArray'' and ' ...
+                    '''controlSet.yawAngleWFArray'' are inconsistent. Have you changed your wind direction? ' ...
+                    'Please (re)specify your desired yawAngles in controlSet before execution.'])
+            end
+            % Do core operations
             for turbWfIndex = 1:obj.layout.nTurbs
                 turbIfIndex = obj.layout.idWf(turbWfIndex);
                 % Compute the conditions at the rotor of this turbine

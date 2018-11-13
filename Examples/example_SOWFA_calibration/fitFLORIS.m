@@ -62,13 +62,13 @@ for i = [1 12]
 	controlSet{i}.pitchAngleArray = deg2rad([2.0]); i=i+1;
 	controlSet{i}.pitchAngleArray = deg2rad([3.0]); i=i+1;
 	controlSet{i}.pitchAngleArray = deg2rad([4.0]); i=i+1;
-	controlSet{i}.yawAngleArray  = deg2rad([-10.0]); i=i+1;
-	controlSet{i}.yawAngleArray = deg2rad([-20.0]); i=i+1;
-	controlSet{i}.yawAngleArray = deg2rad([-30.0]); i=i+1;
-	controlSet{i}.yawAngleArray = deg2rad([0.0]); i=i+1;
-	controlSet{i}.yawAngleArray = deg2rad([10.0]); i=i+1;
-	controlSet{i}.yawAngleArray = deg2rad([20.0]); i=i+1;
-	controlSet{i}.yawAngleArray = deg2rad([30.0]);
+	controlSet{i}.yawAngleWFArray  = deg2rad([-10.0]); i=i+1;
+	controlSet{i}.yawAngleWFArray = deg2rad([-20.0]); i=i+1;
+	controlSet{i}.yawAngleWFArray = deg2rad([-30.0]); i=i+1;
+	controlSet{i}.yawAngleWFArray = deg2rad([0.0]); i=i+1;
+	controlSet{i}.yawAngleWFArray = deg2rad([10.0]); i=i+1;
+	controlSet{i}.yawAngleWFArray = deg2rad([20.0]); i=i+1;
+	controlSet{i}.yawAngleWFArray = deg2rad([30.0]);
 end
 
 for i = 1:length(fileNames)
@@ -145,7 +145,7 @@ for i = 1:length(fileNames)
         legend('SOWFA','FLORIS_{old}','FLORIS_{opt}','Location','se');
         grid on; ylim([3 9]);
         ylabel('Wind speed (m/s)'); xlabel('y (m)');
-        title([ num2str(DD_array(DDi)) 'D, yaw = ' num2str(rad2deg(controlSet{i}.yawAngleArray)) ' deg']);
+        title([ num2str(DD_array(DDi)) 'D, yaw = ' num2str(rad2deg(controlSet{i}.yawAngleWFArray)) ' deg']);
     end
 end
 end
