@@ -47,10 +47,19 @@ function [dataType,cellCenters,cellData] = importVTK(file)
        
         if strncmpi(inputText,'POLYGONS',8)
             nPolygons  = sscanf(inputText,'POLYGONS %d %d');
-            nEdgesCell = nPolygons(2)/nPolygons(1)-1;
+%             nEdgesCell = nPolygons(2)/nPolygons(1)-1;
             nPolygons  = nPolygons(1);
 %             polygons = cell2mat(textscan(file,'3 %d %d %d',nPolygons));
-            polygons = cell2mat(textscan(file,[num2str(nEdgesCell) ' %d %d %d %d'],nPolygons));
+%             polygons = cell2mat(textscan(file,[num2str(nEdgesCell) ' %d %d %d %d'],nPolygons));
+            polygons = cell2mat(textscan(file,['%d %d %d %d %d %d %d %d %d %d %d'],nPolygons));
+            nEdgesCell = polygons(:,1);
+            
+            if(length(unique(nEdgesCell)) == 1)
+                nEdgesCell = nEdgesCell(1);
+                polygons = polygons(:,2:nEdgesCell+1);
+            else
+                polygons = polygons(:,2:end);
+            end
         end
         
         if strncmpi(inputText,'CELL_DATA',9)
@@ -72,19 +81,19 @@ function [dataType,cellCenters,cellData] = importVTK(file)
     
     % cell to point data
     
-%     % Slow loop, inefficient way of doing things, but clear:
-%     for i = 1:size(cellData{1},1)
-%         for j = 1:nEdgesCell
-%             tmp_cellPositions(j,:) = pointsXYZ(polygons(i,j)+1,:);
-%         end
-%         cellCenters_inefficient(i,:) = mean(tmp_cellPositions,1);
-%     end
-
-    % Efficient way of doing things
-    cellCenters = [mean(reshape((pointsXYZ(polygons+1,1)),[],nEdgesCell),2),...
-                   mean(reshape((pointsXYZ(polygons+1,2)),[],nEdgesCell),2),...
-                   mean(reshape((pointsXYZ(polygons+1,3)),[],nEdgesCell),2)];
-      
+    if length(nEdgesCell) > 1
+        % Slow loop, inefficient way of doing things, but clear:
+        cellCenters = zeros(nPolygons,3);
+        for i = 1:nPolygons
+            tmp_cellPositions = pointsXYZ(polygons(i,1:nEdgesCell(i))+1,:);
+            cellCenters(i,:) = mean(tmp_cellPositions,1);
+        end
+    else
+        % Efficient way of doing things
+        cellCenters = [mean(reshape((pointsXYZ(polygons+1,1)),[],nEdgesCell),2),...
+            mean(reshape((pointsXYZ(polygons+1,2)),[],nEdgesCell),2),...
+            mean(reshape((pointsXYZ(polygons+1,3)),[],nEdgesCell),2)];
+    end
     cellData = cell2mat(cellData);
     
     fclose(file);

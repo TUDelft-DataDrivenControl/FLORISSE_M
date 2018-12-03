@@ -31,8 +31,8 @@ classdef dtu10mw_cpct < handle
                     
                     % Create interpolants
                     [X,Y,Z] = ndgrid(structLUT.wsRange,structLUT.setpointRange,structLUT.yawRange);
-                    structLUT.cpFun = griddedInterpolant(X,Y,Z, structLUT.lutCp,'linear','nearest'); % Linear interpolation, no extrapolation
-                    structLUT.ctFun = griddedInterpolant(X,Y,Z, structLUT.lutCt,'linear','nearest'); % Linear interpolation, no extrapolation
+                    structLUT.cpFun = griddedInterpolant(X,Y,Z, structLUT.lutCp,'linear','none'); % Linear interpolation, no extrapolation
+                    structLUT.ctFun = griddedInterpolant(X,Y,Z, structLUT.lutCt,'linear','none'); % Linear interpolation, no extrapolation
                     
                 case {'axialInduction'}
                     % No preparation needed
