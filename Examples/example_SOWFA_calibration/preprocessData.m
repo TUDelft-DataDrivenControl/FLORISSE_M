@@ -23,9 +23,9 @@ sampleStruct.virtTurb.powerFunc = @(u) interp1(loadedData.wind,loadedData.mean_C
 % Initialize empty cell arrays
 sourceFolders = {};
 outputFiles = {};
-
 sourceFolders{end+1} = 'C:\Users\bmdoekemeijer\Downloads\sliceDataAvg';
-outputFiles{end+1}   = './processedData_10MW/uniformInflow/yaw230.mat';
+% sourceFolders{end+1} = 'W:\OpenFOAM\bmdoekemeijer-2.4.0\simulationCases\WE2019\runs\wps_yaw270\postProcessing\sliceDataAvg';
+outputFiles{end+1}   = './processedData_10MW/turbInflow/tmp.mat';
 
 % Post-processing folders, shell command:
 %  for i in {230..310..10}; do for j in {400..1000..5}; do mv piso_yaw$i/postProcessing/sliceDataInstantaneous/$j piso_yaw$i/postProcessing/sliceDataAvg/.; done; done
