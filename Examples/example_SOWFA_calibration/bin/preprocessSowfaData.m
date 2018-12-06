@@ -8,18 +8,6 @@ zCutOff = sampleStruct.zCutOff;
 vertSlice_Y = sampleStruct.vertSlice_Y;
 vertSlice_Z = sampleStruct.vertSlice_Z;
 
-% sourceFolder = './rawData/yaw-30';
-% outputFile   = 'yaw-30.mat';
-% 
-% % Show time-averaged slices
-% plotFigures = false;
-% xCutOff     = [-Inf Inf];  % [-Inf Inf]
-% yCutOff     = [1000 2000]; % [-Inf Inf]
-% zCutOff     = [0 200];     % [-Inf Inf]
-% 
-% % Sampling for downstream slices
-% [vertSlice_Y,vertSlice_Z] = meshgrid(1250:25:1750,25:25:200);
-
 %% Importing VTK files
 disp(['1. Loading and time-averaging raw VTK data for .' sourceFolder]);
 [rawData,timeAvgData] = importVTKfolder(sourceFolder,xCutOff,yCutOff,zCutOff);
