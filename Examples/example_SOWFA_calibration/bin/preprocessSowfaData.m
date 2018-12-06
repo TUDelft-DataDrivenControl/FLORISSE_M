@@ -63,7 +63,7 @@ if sampleStruct.sampleVirtualTurbine
         HH = sampleStruct.virtTurb.HH;
         Drotor = sampleStruct.virtTurb.Drotor;     
         nPoints = sampleStruct.virtTurb.sqrtNrPoints;
-        [UAvg,virtPower] = deal(zeros(1,length(yRange)));
+        UAvg = zeros(1,length(yRange));
         for ii = 1:length(yRange);
             yTurb = sampleStruct.virtTurb.yRange(ii);
             [yPts,zPts] = meshgrid(yTurb+Drotor*linspace(-.5,.5,nPoints),...
@@ -72,9 +72,8 @@ if sampleStruct.sampleVirtualTurbine
             yPts = yPts(idxInsideCircle); zPts = zPts(idxInsideCircle);
 %             figure; plot(yPts(:),zPts(:),'.'); axis equal
             UAvg(ii) = mean(F(yPts,zPts));
-            virtPower(ii) = 0.5*1.225*(.25*pi*Drotor^2)*UAvg(ii)^3*sampleStruct.virtTurb.powerFunc(UAvg(ii));
+%             virtPower(ii) = 0.5*1.225*(.25*pi*Drotor^2)*UAvg(ii)^3*sampleStruct.virtTurb.powerFunc(UAvg(ii));
         end
-        timeAvgData(i).virtTurb.P = virtPower;
         timeAvgData(i).virtTurb.UAvg = UAvg;
         timeAvgData(i).virtTurb.Drotor = Drotor;
         timeAvgData(i).virtTurb.Locs = [timeAvgData(i).cellCenters(1,1)*ones(size(yRange))',...
@@ -110,14 +109,17 @@ if sampleStruct.sampleFlow
 end
 
 if sampleStruct.sampleVirtualTurbine
-    measurementSet.virtP = struct('x',[],'y',[],'z',[],'Drotor',[],'values',[]);
+    measurementSet.virtTurb = struct('x',[],'y',[],'z',[],'Drotor',[],'yPts',[],'zPts',[],'UAvg',[]);
     for i = vertSlices
-        measurementSet.virtP.x      = [measurementSet.virtP.x timeAvgData(i).virtTurb.Locs(:,1)'];
-        measurementSet.virtP.y      = [measurementSet.virtP.y timeAvgData(i).virtTurb.Locs(:,2)'];
-        measurementSet.virtP.z      = [measurementSet.virtP.z timeAvgData(i).virtTurb.Locs(:,3)'];
-        measurementSet.virtP.values = [measurementSet.virtP.values timeAvgData(i).virtTurb.P];
+        measurementSet.virtTurb.x      = [measurementSet.virtTurb.x; timeAvgData(i).virtTurb.Locs(:,1)'];
+        measurementSet.virtTurb.y      = [measurementSet.virtTurb.y; timeAvgData(i).virtTurb.Locs(:,2)'];
+        measurementSet.virtTurb.z      = [measurementSet.virtTurb.z; timeAvgData(i).virtTurb.Locs(:,3)'];
+%         measurementSet.virtTurb.values = [measurementSet.virtP.values timeAvgData(i).virtTurb.P];
+        measurementSet.virtTurb.UAvg   = [measurementSet.virtTurb.UAvg; timeAvgData(i).virtTurb.UAvg];
     end
-    measurementSet.virtP.Drotor = timeAvgData(i).virtTurb.Drotor;
+    measurementSet.virtTurb.Drotor = timeAvgData(i).virtTurb.Drotor;
+    measurementSet.virtTurb.yPts = yPts-mean(yPts);
+    measurementSet.virtTurb.zPts = zPts-mean(zPts);
 end
 
 if strcmp(outputFile,'') == false
