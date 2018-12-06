@@ -21,16 +21,17 @@ for i = 1:length(fileNames)
     timeAvgData{i} = loadedData.timeAvgData;
     inflowCurve{i} = loadedData.inflowCurve;
     measurementSet{i} = loadedData.measurementSet;
-    measurementSet{i}.stdev = [2 2 1 1]; % 10D, 3D, 5D, 7D
-end
-
-for i = 1:length(fileNames)
-	measurementSet{i}.estimParams = {'ad','alpha','bd','beta','ka','kb'};
+    measurementSet{i}.virtTurb.stdev = [2 2 1 1]; % 10D, 3D, 5D, 7D
+    
+    measurementSet{i}.estimParams = {'ad','alpha','bd','beta','ka','kb'};
 end
 
 % Initialize FLORIS objects
-subModels = model_definition('','rans','', 'selfSimilar','','quadraticRotorVelocity','','crespoHernandez');
-turbines = struct('turbineType',dtu10mw_we2019(),'locIf', {[1000, 1500]});
+subModels = model_definition('deflectionModel','rans',...
+                             'velocityDeficitModel', 'selfSimilar',...
+                             'wakeCombinationModel', 'quadraticRotorVelocity',...
+                             'addedTurbulenceModel', 'crespoHernandez');
+turbines = struct('turbineType',dtu10mw_v2(),'locIf', {[1000, 1500]});
 
 for i = 1:7
     layout{i} = layout_class(turbines, 'fitting_1turb'); 
@@ -64,9 +65,8 @@ for i = 1:length(fileNames)
             regexptranslate('wildcard','*horiz*'))));
         showFit(timeAvgData{i}(horIndx),florisObjSet{i});
     end
+    florisObjSet{i}.clearOutput
 end
-
-
 
 % Estimate parameters
 disp('Using genetic algorithms to minimize the error between LES and FLORIS.');
@@ -80,14 +80,14 @@ if isempty(gcp('nocreate'))
     end
 end
 
-x0 = [-4.5/126.4,  2.32, -0.01, .154, .3837, .0037];
-lb = min([x0/4; x0*4]);
-ub = max([x0/4; x0*4]);
-ub(1) =  1.0; 
-lb(1) = -1.0;
-disp(lb); disp(ub)
+% measurementSet{i}.estimParams = {'ad','alpha','bd','beta','ka','kb'};
+%    [ad    alpha   bd          beta    ka       kb    ]
+lb = [-1    5e-1    -4e-2       3.8e-2  9.6e-2   9.2e-4]
+ub = [+1    9.3     -2.5e-3     6.2e-1  1.6      1.5e-2]
 
+format long
 xopt_con = estTool.gaEstimation(lb, ub)  % Use GA for constrained optimization
+format short
 toc
 
 % Generate a FLORIS object set with optimal x-settings

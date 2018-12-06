@@ -1,18 +1,17 @@
-function [xopt] = fitFLORIS(parpoolSize)
+function [xopt] = fitFLORIS_5MW(parpoolSize)
 % % USER SETTINGS
 plotFigures = 'none';
 fileNames = {};
-dirList = [dir('processedData/uniformInflow/pitch*.mat');...
-           dir('processedData/uniformInflow/yaw*.mat');...
-		   dir('processedData/turbInflow/pitch*.mat');...
-		   dir('processedData/turbInflow/yaw*.mat')];
+dirList = [dir('processedData_5MW/uniformInflow/pitch*.mat');...
+           dir('processedData_5MW/uniformInflow/yaw*.mat');...
+		   dir('processedData_5MW/turbInflow/pitch*.mat');...
+		   dir('processedData_5MW/turbInflow/yaw*.mat')];
 for i = 1:length(dirList)
     fileNames{end+1} = [dirList(i).folder filesep dirList(i).name];
 end
 
 
 % Set-up
-format long
 addpath(genpath('../../FLORISSE_M'));
 addpath('bin');
 tic;
@@ -24,14 +23,8 @@ for i = 1:length(fileNames)
     timeAvgData{i} = loadedData.timeAvgData;
     inflowCurve{i} = loadedData.inflowCurve;
     measurementSet{i} = loadedData.measurementSet;
-end
-
-for i = 1:11
-	measurementSet{i}.estimParams = {'ad','bd','beta','kb'};
-end
-
-for i = 12:22
-	measurementSet{i}.estimParams = {'ad','bd','alpha','ka'};
+    
+    measurementSet{i}.estimParams = {'ad','alpha','bd','beta','ka','kb'};
 end
 
 % Initialize FLORIS objects
@@ -39,9 +32,7 @@ subModels = model_definition('deflectionModel','rans',...
                              'velocityDeficitModel', 'selfSimilar',...
                              'wakeCombinationModel', 'quadraticRotorVelocity',...
                              'addedTurbulenceModel', 'crespoHernandez');
-
-turbines = struct('turbineType', nrel5mw() , ...
-                      'locIf', {[1000, 1500]});
+turbines = struct('turbineType', nrel5mw(), 'locIf', {[1000, 1500]});
 
 for i = 1:11
     layout{i} = layout_class(turbines, 'fitting_1turb');
@@ -80,9 +71,8 @@ for i = 1:length(fileNames)
             regexptranslate('wildcard','*horiz*'))));
         showFit(timeAvgData{i}(horIndx),florisObjSet{i});
     end
+    florisObjSet{i}.clearOutput
 end
-
-
 
 % Estimate parameters
 disp('Using genetic algorithms to minimize the error between LES and FLORIS.');
@@ -96,14 +86,14 @@ if isempty(gcp('nocreate'))
     end
 end
 
-x0 = [-4.5/126.4,  2.32, -0.01, .154, .3837, .0037];
-lb = min([x0/4; x0*4]);
-ub = max([x0/4; x0*4]);
-ub(1) =  1.0; 
-lb(1) = -1.0;
-disp(lb); disp(ub)
+% measurementSet{i}.estimParams = {'ad','alpha','bd','beta','ka','kb'};
+%    [ad    alpha   bd          beta    ka       kb    ]
+lb = [-1    5e-1    -4e-2       3.8e-2  9.6e-2   9.2e-4]
+ub = [+1    9.3     -2.5e-3     6.2e-1  1.6      1.5e-2]
 
+format long
 xopt_con = estTool.gaEstimation(lb, ub)  % Use GA for constrained optimization
+format short
 toc
 
 % Generate a FLORIS object set with optimal x-settings
