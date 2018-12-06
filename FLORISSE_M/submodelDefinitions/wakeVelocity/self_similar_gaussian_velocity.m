@@ -121,6 +121,15 @@ classdef self_similar_gaussian_velocity < velocity_interface
                 varWake = obj.C*((diag([obj.ky obj.kz])*(deltax-obj.x0))+obj.sigNeutral_x0).^2;
                 FW_scalar = 1-sqrt(1-obj.ct.*cos(obj.thrustAngle)*...
                     sqrt(det((obj.C*(obj.sigNeutral_x0.^2))/varWake)));
+           
+                % Corrections to avoid numerical issues
+                if dy == 0
+                    dy = eps;
+                end
+                if dz == 0
+                    dz = eps;
+                end
+                
                 Q = obj.bvcdf_wake(dy, dz, rotRadius, varWake, FW_scalar);
                 
                 % Relative volumetric flowrate through swept area
