@@ -42,6 +42,8 @@ for i = 1:length(timeAvgData)
                                                  timeAvgData(i).cellCenters(:,3),true);        
         dataArray = {timeAvgData(i).UData; timeAvgData(i).UData; uFLORISOld; uFLORISOpt; ...
                      abs(timeAvgData(i).UData-uFLORISOld); abs(timeAvgData(i).UData-uFLORISOpt)};
+        zlimTmp = [0 ceil(max([timeAvgData(i).UData; uFLORISOld; uFLORISOpt]))];
+        zlimArray = {zlimTmp; zlimTmp; zlimTmp; zlimTmp; [0 3]; [0 3]};
         nameArray = {['SOWFA (' timeAvgData(i).name ')'];'SOWFA';'FLORIS_old';'FLORIS_opt';...
                      'abs(SOWFA-FLORIS_old)'; 'abs(SOWFA-FLORIS_opt)'};
         nCols = 2;
@@ -50,19 +52,26 @@ for i = 1:length(timeAvgData)
                                            timeAvgData(i).cellCenters(:,2),...
                                            timeAvgData(i).cellCenters(:,3),true);        
         dataArray = {timeAvgData(i).UData;uFLORIS;abs(timeAvgData(i).UData-uFLORIS)};
+        zlimTmp = [0 ceil(max([timeAvgData(i).UData; uFLORIS]))];
+        zlimArray = {zlimTmp; zlimTmp; [0 3]};
         nameArray = {['SOWFA (' timeAvgData(i).name ')'],'FLORIS','abs(SOWFA-FLORIS)'};
         nCols = 1;
     else
         dataArray = {timeAvgData(i).UData};
+        zlimArray = {[0 max(timeAvgData(i).UData)]};
         nameArray = {['SOWFA (' timeAvgData(i).name ')']};
         nCols = 1;
     end
     
     figure;
     for si = 1:length(dataArray)
-        subplot(length(dataArray)/nCols,nCols,si); hold all;
+        subplot(length(dataArray)/nCols,nCols,si); 
+        hold all;
         trisurf(tri, xData, yData, dataArray{si});
-        lighting none; shading flat; colorbar;
+        caxis(zlimArray{si})
+        clb = colorbar;
+        clb.Limits = zlimArray{si};
+        lighting none; shading flat; 
         light('Position',[-50 -15 29]); view(0,90);
         if max(abs(diff(timeAvgData(i).cellCenters(:,1)))) < 1e-5 & si < 2 % Vertical slice
             hold on;
