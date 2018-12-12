@@ -13,7 +13,8 @@ yVec = linspace(domainEdges(1,2),domainEdges(2,2),nSamples(1));
 zVec = linspace(domainEdges(1,3),domainEdges(2,3),nSamples(2));
 
 [Y,Z] = meshgrid(yVec,zVec);
-UGrid = griddata(cellCenters(:,2),cellCenters(:,3),UData, Y,Z, 'linear');
+% UGrid = griddata(cellCenters(:,2),cellCenters(:,3),UData, Y,Z, 'linear');
+UGrid = griddata(cellCenters(:,2),cellCenters(:,3),UData, Y,Z, 'nearest');
 meanVertProfile = mean(UGrid,2);
 
 % Add (0,0) to dataset
