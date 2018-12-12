@@ -67,10 +67,14 @@ classdef estimator < handle
             end
         end
         
-        function [J] = costWeightedRMSE(obj,x);
+        function [J,structOut] = costWeightedRMSE(obj,x);
             florisObjSet   = obj.florisObjSet;
             measurementSet = obj.measurementSet;
             estimParamsAll = obj.estimParamsAll;
+            
+            if nargout > 1
+                structOut = struct();
+            end
             
             if length(x) ~= length(estimParamsAll)
                 error('The variable [x] has to be of equal length as [estimationParams].');
@@ -110,8 +114,15 @@ classdef estimator < handle
                 % Calculate weighted flow RMSE, if applicable
                 if any(ismember(fields(measurementSet{i}),'U'))
                     fixYaw  = false;
-                    uProbes = compute_probes(florisObjTmp,measurementSet{i}.U.x,measurementSet{i}.U.y,measurementSet{i}.U.z,fixYaw);
-                    avgWSerror = uProbes - measurementSet{i}.U.values;
+                    xIF = measurementSet{i}.U.x';
+                    yIF = measurementSet{i}.U.y';
+                    zIF = measurementSet{i}.U.z';
+                    
+                    % Compute as predicted by FLORIS
+                    uProbes = compute_probes(florisObjTmp,xIF,yIF,zIF,fixYaw);
+                    
+                    % Determine RMSE
+                    avgWSerror = (uProbes(:) - measurementSet{i}.U.values(:))';
                     Jset(i)   = Jset(i) + sqrt(mean((avgWSerror ./ measurementSet{i}.U.stdev).^2));
                 end
                 
@@ -157,6 +168,10 @@ classdef estimator < handle
                     avgWSerror = UAvg_floris - measurementSet{i}.virtTurb.UAvg;
                     for ix = 1:size(avgWSerror,1)
                         Jset(i)   = Jset(i) + sqrt(mean((avgWSerror(ix,:) / measurementSet{i}.virtTurb.stdev(ix)).^2));
+                    end
+                    
+                    if nargout > 1
+                        structOut(i).UAvg_est = UAvg_floris;
                     end
                 end
             end

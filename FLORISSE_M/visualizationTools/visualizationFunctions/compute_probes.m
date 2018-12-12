@@ -36,28 +36,42 @@ function [uProbe] = compute_probes(florisObj,xIF,yIF,zIF,fixYaw,nInterpBuffer);
     yWF(:,1)             = probeLocationsWF(:,2);
     zWF(:,1)             = zIF;
     
-    
-     
-    % Determine if the probes can be formatted in a smart way
-    if (max(zWF)-min(zWF)) < 1.0 || max(xWF)-min(xWF) < 1.0 || max(yWF)-min(yWF) < 1.0 || length(xWF) > nInterpBuffer
+    % Determine if the probes can be formatted in a structured grid
+    if length(unique(xWF)) * length(unique(yWF)) * length(unique(zWF)) == length(xWF)
+        oneByOne = false;
+        [flowField.X, flowField.Y, flowField.Z] = meshgrid(...
+            unique(xWF), unique(yWF), unique(zWF));
+
+    elseif (max(zWF)-min(zWF)) < 1.0 || max(xWF)-min(xWF) < 1.0 || max(yWF)-min(yWF) < 1.0 || length(xWF) > nInterpBuffer
         % Either of two situations:
         %  1) We have structure in our [xWF yWF zWF] data
         %  2) We have no structure, and more than nInterpBuffer probes
-        interpField = true;
+        oneByOne = false;
+        
         flowFieldRes = 5.0; % Resolution of 5 m in any direction
         [flowField.X, flowField.Y, flowField.Z] = meshgrid(...
             min(xWF) : flowFieldRes : max(xWF), ...
             min(yWF) : flowFieldRes : max(yWF), ...
             min(zWF) : flowFieldRes : max(zWF));
+        
     else
         % We have no structure, but less than nInterpBuffer probes. Do one-by-one
-        interpField = false;
+        oneByOne = true;
     end
     
-    if interpField
-        disp('Accelerating compute_probes.m using a structured flowfield and linear interpolation. To disable, set nInterpBuffer = Inf.')
+    if oneByOne
+        % Calculate velocity field one-by-one (for every probe location)
+        Uin = layout.ambientInflow.Vfun(zWF);
+        uProbe = zeros(size(xWF));
+        for i = 1:length(xWF)
+            flowField = struct('X',xWF(i),'Y',yWF(i),'Z',zWF(i),'U',Uin(i));
+            flowField = compute_flow_field(flowField, layout, turbineResults, ...
+                yawAngles, avgWs, fixYaw, wakeCombinationModel);
+            uProbe(i) = flowField.U;
+        end
         
-        % Interpolation using structured evaluation
+    else
+        % Flow field through interpolation of a structured evaluation
         flowField.U = layout.ambientInflow.Vfun(flowField.Z);
         flowField = compute_flow_field(flowField, layout, turbineResults, ...
             yawAngles, avgWs, fixYaw, wakeCombinationModel);
@@ -66,13 +80,14 @@ function [uProbe] = compute_probes(florisObj,xIF,yIF,zIF,fixYaw,nInterpBuffer);
         flowField.Z = squeeze(flowField.Z);
         flowField.U = squeeze(flowField.U);
         
+        
         if sum(size(flowField.U)~=1) == 1 % 1D data
             if length(unique(flowField.X)) > 1
                 uProbe = interp1(flowField.X,flowField.U,xWF);
             elseif length(unique(flowField.Y)) > 1
                 uProbe = interp1(flowField.Y,flowField.U,yWF);
             elseif length(unique(flowField.Z)) > 1
-                uProbe = interp1(flowField.Z,flowField.U,zWF);  
+                uProbe = interp1(flowField.Z,flowField.U,zWF);
             else
                 error('Cannot determine how to interpolate 1D data.');
             end
@@ -93,16 +108,6 @@ function [uProbe] = compute_probes(florisObj,xIF,yIF,zIF,fixYaw,nInterpBuffer);
         else
             error('Cannot determine how to interpolate 3D data.');
         end
-        
-    else
-        % Calculate velocity field one-by-one (for every probe location)
-        Uin = layout.ambientInflow.Vfun(zWF);
-        uProbe = zeros(size(xIF));
-        for i = 1:length(xIF)
-            flowField = struct('X',xWF(i),'Y',yWF(i),'Z',zWF(i),'U',Uin(i));
-            flowField = compute_flow_field(flowField, layout, turbineResults, ...
-                yawAngles, avgWs, fixYaw, wakeCombinationModel);
-            uProbe(i) = flowField.U;
-        end
+
     end
 end
