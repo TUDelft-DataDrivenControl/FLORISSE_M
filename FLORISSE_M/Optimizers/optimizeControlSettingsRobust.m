@@ -22,8 +22,8 @@ end
 
 if yawOpt
     x0 = [x0; florisRunner.controlSet.yawAngleWFArray];
-    lb = [lb; deg2rad(-45)*ones(1,nTurbs)];
-    ub = [ub; deg2rad(+45)*ones(1,nTurbs)];
+    lb = [lb; deg2rad(-30)*ones(1,nTurbs)];
+    ub = [ub; deg2rad(+30)*ones(1,nTurbs)];
 end
 if pitchOpt
     if ~strcmp(florisRunner.controlSet.controlMethod, 'pitch')
