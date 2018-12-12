@@ -64,10 +64,27 @@ for i = 1:length(timeAvgData)
         trisurf(tri, xData, yData, dataArray{si});
         lighting none; shading flat; colorbar;
         light('Position',[-50 -15 29]); view(0,90);
-        if max(abs(diff(timeAvgData(i).cellCenters(:,1)))) < 1e-5 & si < 2 % Measurement locations
+        if max(abs(diff(timeAvgData(i).cellCenters(:,1)))) < 1e-5 & si < 2 % Vertical slice
             hold on;
-            scatter3(timeAvgData(i).extrapolatedDataY(:),timeAvgData(i).extrapolatedDataZ(:),...
-                     +500*ones(size(timeAvgData(i).extrapolatedDataZ(:))),'k.','markerEdgeAlpha',0.4);
+            if isfield(timeAvgData(i),'extrapolatedDataY')
+                scatter3(timeAvgData(i).extrapolatedDataY(:),timeAvgData(i).extrapolatedDataZ(:),...
+                         +500*ones(size(timeAvgData(i).extrapolatedDataZ(:))),'k.','markerEdgeAlpha',0.4);
+            end
+            if isfield(timeAvgData(i),'virtTurb')
+                if ~isempty(timeAvgData(i).virtTurb)
+                    for jj = [1 size(timeAvgData(i).virtTurb.Locs,1)]
+                        for angle = linspace(0,2*pi,30)
+                            yTmp = cos(angle)*timeAvgData(i).virtTurb.Drotor/2+timeAvgData(i).virtTurb.Locs(jj,2);
+                            zTmp = sin(angle)*timeAvgData(i).virtTurb.Drotor/2+timeAvgData(i).virtTurb.Locs(jj,3);
+                            hold on;
+                            scatter3(yTmp,zTmp,500*ones(size(zTmp)),'r.','markerEdgeAlpha',0.6);    
+                        end
+                    end
+                    hold on
+                    scatter3(timeAvgData(i).virtTurb.Locs(:,2),timeAvgData(i).virtTurb.Locs(:,3),...
+                             500*ones(size(timeAvgData(i).virtTurb.Locs(:,2))),'r.','markerEdgeAlpha',0.6);
+                end
+            end
         end
         xlabel(xlabelName); ylabel(ylabelName);
         title(nameArray{si},'interpreter','none');

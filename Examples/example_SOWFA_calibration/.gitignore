@@ -2,3 +2,4 @@
 *.mat
 *.pdf
 *.png
+processedData_*
