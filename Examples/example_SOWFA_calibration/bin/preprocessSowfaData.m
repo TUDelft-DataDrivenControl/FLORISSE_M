@@ -11,12 +11,16 @@ vertSlice_Z = sampleStruct.vertSlice_Z;
 %% Importing VTK files
 disp(['1. Loading and time-averaging raw VTK data for .' sourceFolder]);
 [rawData,timeAvgData] = importVTKfolder(sourceFolder,xCutOff,yCutOff,zCutOff);
-
+        
 %% Extract vertical inflow profile
 disp('2. Vertical inflow profile.');
 upstreamPlane = find(strcmp({timeAvgData.name},'U_slice_vertical_x500.vtk'));
-[inflowCurve] = estimateInflowProfile(timeAvgData(upstreamPlane).cellCenters,...
-    timeAvgData(upstreamPlane).UData,plotFigures);
+if isempty(upstreamPlane)
+    inflowCurve = []; % Empty
+else
+    [inflowCurve] = estimateInflowProfile(timeAvgData(upstreamPlane).cellCenters,...
+        timeAvgData(upstreamPlane).UData,plotFigures);
+end
 
 
 %% Extract measurements at downstream locations
@@ -24,7 +28,11 @@ if sampleStruct.sampleFlow
     disp('3a. Extracting the time-averaged flow data at prespecified points.');
     vertSlices = find(~cellfun('isempty',regexp({timeAvgData.name},...
         regexptranslate('wildcard','U_slice_vertical_x*D'))));
-
+    
+    if isempty(vertSlices)
+        error('No vertical slices found.')
+    end
+    
     for i = vertSlices
         F = scatteredInterpolant(timeAvgData(i).cellCenters(:,2),...
                                  timeAvgData(i).cellCenters(:,3),...
@@ -84,7 +92,7 @@ end
 
 %% Put into FLORIS-compatible format
 disp('5. Converting results into FLORIS-compatible format (if applicable).');
-
+measurementSet = struct();
 if sampleStruct.sampleFlow
     measurementSet.U = struct('x',[],'y',[],'z',[],'values',[],'stdev',[]);
     for i = 1:length(timeAvgData)
