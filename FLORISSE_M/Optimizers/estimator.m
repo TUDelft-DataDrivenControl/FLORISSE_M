@@ -41,12 +41,11 @@ classdef estimator < handle
             
             % Optimize using Parallel Computing
             nVars = length(obj.estimParamsAll);
-            %             options = gaoptimset('Display','iter', 'TolFun', 1e-3,'UseParallel', true); No plotting
             options = gaoptimset('Display','iter', 'TolFun', 1e-3,'UseParallel', true,'PlotFcns',{@plotfun1}); % with plot
             [xopt,Jopt,exitFlag,output,population,scores] = ga(costFun, nVars, ga_A, ga_b, ga_Aeq, ga_beq, lb, ub, [], options);
             
             function state = plotfun1(options,state,flag)
-                subplot(2,1,1);
+                subplot(3,1,1);
                 [~,idx]=min(state.Score);
                 optSettings=state.Population(idx,:);
                 bar(optSettings);
@@ -54,11 +53,26 @@ classdef estimator < handle
                 ylabel('Value');
                 xlabel('Estimation variables');
                 grid on; box on;
-                
-                subplot(2,1,2);
+
+                subplot(3,1,2);
+                [~,idx]=min(state.Score);
+                optSettings=state.Population(idx,:);
+                optSettingsNormalized = (optSettings-lb)./(ub-lb);
+                bar(optSettingsNormalized);
+                hold all
+                for i = 1:length(lb)
+                    plot([i-.4 i+.4],[0 0],'r--'); % Lower bound
+                    plot([i-.4 i+.4],[1 1],'r--'); % Upper bound
+                end
+                ylabel('Normalized values (w.r.t. bounds)');
+                ylim([-0.1 1.1]);
+                xlabel('Estimation variables');
+                grid on; box on;
+
+                subplot(3,1,3);
                 plot(1:length(state.Best),state.Best,'kd','MarkerFaceColor',[1 0 1]);
                 ylabel('Cost');
-                xlim([0 20]);
+%                 xlim([0 20]);
                 xlabel('Generation');
                 grid on; box on;
                 
