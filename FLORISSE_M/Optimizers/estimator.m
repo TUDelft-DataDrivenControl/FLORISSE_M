@@ -142,35 +142,33 @@ classdef estimator < handle
                 
                 % Calculate sector-averaged flow speed RMSE, if applicable
                 if any(ismember(fields(measurementSet{i}),'virtTurb'))
+%                     tic
                     fixYaw  = false;
                     
                     % Create flow field object
-                    flowFieldRes = measurementSet{i}.virtTurb.zPts(2)-measurementSet{i}.virtTurb.zPts(1);
-                    flowField = struct();
-                    [flowField.X, flowField.Y, flowField.Z] = meshgrid(...
-                        measurementSet{i}.virtTurb.x(:,1)', ...
-                        min(measurementSet{i}.virtTurb.y(:))-.75*measurementSet{i}.virtTurb.Drotor : flowFieldRes : max(measurementSet{i}.virtTurb.y(:))+.75*measurementSet{i}.virtTurb.Drotor, ...
-                        0 : flowFieldRes : max(measurementSet{i}.virtTurb.z(:))+.75*measurementSet{i}.virtTurb.Drotor);
-                                        
-                    % Set-up the FLORIS object, exporting the variables of interest
-                    layout               = florisObjTmp.layout;
-                    turbineResults       = florisObjTmp.turbineResults;
-                    yawAngles            = florisObjTmp.controlSet.yawAngleWFArray;
-                    avgWs                = [florisObjTmp.turbineConditions.avgWS];
-                    wakeCombinationModel = florisObjTmp.model.wakeCombinationModel;
-                    
-                    % Calculate flow field
-                    flowField.U = layout.ambientInflow.Vfun(flowField.Z);
-                    flowField = compute_flow_field(flowField, layout, turbineResults, ...
-                        yawAngles, avgWs, fixYaw, wakeCombinationModel);
-                    
-                    % Calculate UAvg for each virtual location  
-                    for ix = 1:size(flowField.X,2) % For each slice
-                        Y = squeeze(flowField.Y(:,ix,:));
-                        Z = squeeze(flowField.Z(:,ix,:));
-                        F = griddedInterpolant(Y,Z,squeeze(flowField.U(:,ix,:)));
+                    flowFieldRes = 5; % measurementSet{i}.virtTurb.zPts(2)-measurementSet{i}.virtTurb.zPts(1);
+                    for ix = 1:length(unique(measurementSet{i}.virtTurb.x))
+                        flowField = struct();
+                        [flowField.X, flowField.Y, flowField.Z] = meshgrid(...
+                            measurementSet{i}.virtTurb.x(ix,1)', ...
+                            min(measurementSet{i}.virtTurb.y(:))-.75*measurementSet{i}.virtTurb.Drotor : flowFieldRes : max(measurementSet{i}.virtTurb.y(:))+.75*measurementSet{i}.virtTurb.Drotor, ...
+                            0 : flowFieldRes : max(measurementSet{i}.virtTurb.z(:))+.75*measurementSet{i}.virtTurb.Drotor);
                         
-                        for iy = 1:size(measurementSet{i}.virtTurb.y,2)
+                        % Set-up the FLORIS object, exporting the variables of interest
+                        layout               = florisObjTmp.layout;
+                        turbineResults       = florisObjTmp.turbineResults;
+                        yawAngles            = florisObjTmp.controlSet.yawAngleWFArray;
+                        avgWs                = [florisObjTmp.turbineConditions.avgWS];
+                        wakeCombinationModel = florisObjTmp.model.wakeCombinationModel;
+                        
+                        % Calculate flow field
+                        flowField.U = layout.ambientInflow.Vfun(flowField.Z);
+                        flowField = compute_flow_field(flowField, layout, turbineResults, ...
+                            yawAngles, avgWs, fixYaw, wakeCombinationModel);
+                        
+                        % Calculate UAvg for each virtual location
+                        F = griddedInterpolant(squeeze(flowField.Y),squeeze(flowField.Z),squeeze(flowField.U));
+                        for iy = 1:length(unique(measurementSet{i}.virtTurb.y))
                             yVirtTurb = measurementSet{i}.virtTurb.y(ix,iy);
                             yPts_tmp = yVirtTurb + measurementSet{i}.virtTurb.yPts;
                             zPts_tmp = measurementSet{i}.virtTurb.z(ix,1) + measurementSet{i}.virtTurb.zPts;
@@ -187,7 +185,9 @@ classdef estimator < handle
                     if nargout > 1
                         structOut(i).UAvg_est = UAvg_floris;
                     end
+%                     toc
                 end
+                
             end
             
             % Final cost
