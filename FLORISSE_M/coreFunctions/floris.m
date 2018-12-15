@@ -1,4 +1,4 @@
-classdef floris < matlab.mixin.Copyable%handle
+classdef floris < matlab.mixin.Copyable %handle
     %FLORIS This is the main class of the FLORIS program
     %   This class iterated through all the turbines and determines their
     %   production and the behaviour of their wakes
@@ -189,6 +189,16 @@ classdef floris < matlab.mixin.Copyable%handle
                        obj.turbineResults(turbNumIfDw).affectedBy(end+1,:) = turbIfIndex;
                 end
             end
+        end
+    end
+    
+    methods(Access = protected)
+        % Copy all handles and create new, independent object
+        function cp = copyElement(obj)
+            layout = copy(obj.layout);
+            controlSet = copy(obj.controlSet);
+            model = copy(obj.model);
+            cp = floris(layout, controlSet, model);
         end
     end
 end

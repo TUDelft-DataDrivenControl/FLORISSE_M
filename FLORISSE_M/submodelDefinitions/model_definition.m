@@ -1,4 +1,4 @@
-classdef model_definition
+classdef model_definition < matlab.mixin.Copyable
     %MODEL_DEFINITION Summary of this class goes here
     %   Detailed explanation goes here
     
