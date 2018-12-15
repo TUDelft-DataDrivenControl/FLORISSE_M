@@ -105,35 +105,41 @@ if optVerbose
 end
 
 % Probablistic cost function (for a prob. dist. of wind directions)
-    function J = costFunctionRobust(x, florisRunner,WD_range, WD_probability)
+    function J = costFunctionRobust(x, florisRunnerIn,WD_range, WD_probability)
         J = 0;
-        WD0 = florisRunner.layout.ambientInflow.windDirection; % Initial WD
+        florisRunnerLocal = copy(florisRunnerIn);
+        WD0 = florisRunnerIn.layout.ambientInflow.windDirection; % Initial WD
         
-        % Cover the range
-        for i = 1:length(WD_range)
-            florisRunner.layout.ambientInflow.windDirection = WD0 + WD_range(i);
-            J = J + WD_probability(i) * costFunctionDeterministic(x, florisRunner);
-        end
-        
-        % Restore to default wind direction
-        florisRunner.layout.ambientInflow.windDirection = WD0;
-    end
-
-% Deterministic cost function (for a single WD)
-    function J = costFunctionDeterministic(x, florisRunner)
         % 'x' contains the to-be-optimized control variables. This
         % can be yaw angles, blade pitch angles, or both. Hence,
         % depending on these choices, we have to first extract the
         % yaw angles and/or blade pitch angles back from x, before
         % we trial them in a FLORIS simulation. That is what we do next:
         if yawOpt
-            florisRunner.controlSet.yawAngleWFArray = x(1,:);
-            if pitchOpt; florisRunner.controlSet.pitchAngleArray = x(2,:); end
-            if axialOpt; florisRunner.controlSet.axialInductionArray = x(2,:); end
+            florisRunnerLocal.controlSet.yawAngleWFArray = x(1,:); % Evaluation point
+            if pitchOpt; florisRunnerLocal.controlSet.pitchAngleArray = x(2,:); end
+            if axialOpt; florisRunnerLocal.controlSet.axialInductionArray = x(2,:); end
         else
-            if pitchOpt; florisRunner.controlSet.pitchAngleArray = x(1,:); end
-            if axialOpt; florisRunner.controlSet.axialInductionArray = x(1,:); end
+            if pitchOpt; florisRunnerLocal.controlSet.pitchAngleArray = x(1,:); end
+            if axialOpt; florisRunnerLocal.controlSet.axialInductionArray = x(1,:); end
         end
+
+        % Cover the range
+        for i = 1:length(WD_range)
+            % Update wind direction
+            florisRunnerLocal.layout.ambientInflow.windDirection = WD0 + WD_range(i);
+            % Maintain fixed yaw angle in the inertial frame
+            florisRunnerLocal.controlSet.yawAngleIFArray = florisRunnerLocal.controlSet.yawAngleIFArray;
+            % Determine cost for this WD
+            J = J + WD_probability(i) * costSingleRun(florisRunnerLocal);
+        end
+        
+        % Restore to default wind direction
+        florisRunnerLocal.layout.ambientInflow.windDirection = WD0;
+    end
+
+% Deterministic cost function (for a single WD)
+    function J = costSingleRun(florisRunner)
         % Then, we simulate FLORIS and determine the cost J(x)
         florisRunner.clearOutput();
         florisRunner.run;
