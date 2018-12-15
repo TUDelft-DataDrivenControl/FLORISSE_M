@@ -89,7 +89,17 @@ else
     options = optimset('Display','off','MaxFunEvals',1e4,'PlotFcns',{} );
 end
 
-xopt    = fmincon(cost,x0,[],[],[],[],lb,ub,[],options);
+xopt = fmincon(cost,x0,[],[],[],[],lb,ub,[],options);
+
+% Overwrite florisRunner object parameters
+if yawOpt
+    florisRunner.controlSet.yawAngleWFArray = xopt(1,:); % Evaluation point
+    if pitchOpt; florisRunner.controlSet.pitchAngleArray = xopt(2,:); end
+    if axialOpt; florisRunner.controlSet.axialInductionArray = xopt(2,:); end
+else
+    if pitchOpt; florisRunner.controlSet.pitchAngleArray = xopt(1,:); end
+    if axialOpt; florisRunner.controlSet.axialInductionArray = xopt(1,:); end
+end
 
 % Calculate improvements
 if nargout > 1 || optVerbose
@@ -107,7 +117,7 @@ end
 % Probablistic cost function (for a prob. dist. of wind directions)
     function J = costFunctionRobust(x, florisRunnerIn,WD_range, WD_probability)
         J = 0;
-        florisRunnerLocal = copy(florisRunnerIn);
+        florisRunnerLocal = copy(florisRunnerIn); % Create independent copy
         WD0 = florisRunnerIn.layout.ambientInflow.windDirection; % Initial WD
         
         % 'x' contains the to-be-optimized control variables. This
@@ -133,9 +143,6 @@ end
             % Determine cost for this WD
             J = J + WD_probability(i) * costSingleRun(florisRunnerLocal);
         end
-        
-        % Restore to default wind direction
-        florisRunnerLocal.layout.ambientInflow.windDirection = WD0;
     end
 
 % Deterministic cost function (for a single WD)
