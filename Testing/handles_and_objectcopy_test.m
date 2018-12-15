@@ -95,6 +95,8 @@ classdef handles_and_objectcopy_test < matlab.unittest.TestCase
             florisRunnerClone.model.modelData.ad = 0.13;
             
             % Check whether values of original object are unchanged
+            import matlab.unittest.constraints.IsEqualTo;
+            import matlab.unittest.constraints.AbsoluteTolerance;
             testCase.assertThat(florisRunner.layout.ambientInflow.windDirection, ...
                 IsEqualTo(0.01, 'Within', AbsoluteTolerance(1e-6)));
             testCase.assertThat(florisRunner.controlSet.yawAngleWFArray(1), ...
