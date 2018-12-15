@@ -80,6 +80,37 @@ classdef handles_and_objectcopy_test < matlab.unittest.TestCase
                 IsEqualTo(randomModelParameter, 'Within', AbsoluteTolerance(1e-6)));      
         end
         
+        function checkYawAngleDependence(testCase)
+            florisRunner = testCase.florisRunner;
+            nTurbs = florisRunner.layout.nTurbs;
+            
+            % For initial object
+            florisRunner.layout.ambientInflow.windDirection = 0.10;
+            florisRunner.controlSet.yawAngleIFArray = zeros(1,nTurbs);
+            
+            % Check whether yawAngleWFArray is updated accordingly
+            import matlab.unittest.constraints.IsEqualTo;
+            import matlab.unittest.constraints.AbsoluteTolerance;
+            testCase.assertThat(florisRunner.controlSet.yawAngleWFArray, ...
+                IsEqualTo(florisRunner.controlSet.yawAngleIFArray - ...
+                florisRunner.layout.ambientInflow.windDirection, ...
+                'Within', AbsoluteTolerance(1e-6)));
+            
+            % For a cloned object
+            florisRunnerClone = copy(florisRunner);
+            florisRunnerClone.layout.ambientInflow.windDirection = -0.33;
+            florisRunnerClone.controlSet.yawAngleIFArray = zeros(1,nTurbs);
+            
+            % Check whether yawAngleWFArray is updated accordingly
+            import matlab.unittest.constraints.IsEqualTo;
+            import matlab.unittest.constraints.AbsoluteTolerance;
+            testCase.assertThat(florisRunnerClone.controlSet.yawAngleWFArray, ...
+                IsEqualTo(florisRunnerClone.controlSet.yawAngleIFArray - ...
+                florisRunnerClone.layout.ambientInflow.windDirection, ...
+                'Within', AbsoluteTolerance(1e-6)));   
+            
+            
+        end
         function checkCopyIndependence(testCase)
             florisRunner = testCase.florisRunner;
             

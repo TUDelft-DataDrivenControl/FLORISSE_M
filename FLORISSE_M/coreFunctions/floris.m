@@ -196,8 +196,32 @@ classdef floris < matlab.mixin.Copyable %handle
         % Copy all handles and create new, independent object
         function cp = copyElement(obj)
             layout = copy(obj.layout);
-            controlSet = copy(obj.controlSet);
+            
+            % Create controlSet object
+            controlSet = control_set(layout,obj.controlSet.controlMethod); % link to new layout handle
+            fldNames = fieldnames(obj.controlSet);
+            
+            % Exclude 'layout', 'controlMethod', 'turbineControls'
+            fldNames = fldNames(~strcmp(fldNames,'layout')); 
+            fldNames = fldNames(~strcmp(fldNames,'controlMethod'));
+            fldNames = fldNames(~strcmp(fldNames,'turbineControls'));
+            
+            % Duplicate relevant fields
+            for i = 1:length(fldNames) 
+                fn = fldNames{i};
+                try
+                    if ~isnan(obj.controlSet.(fn)) % only copy fields with values
+                        controlSet.(fn) = obj.controlSet.(fn); % Copy properties
+                    end
+                catch
+                    disp('Failed when attempting to clone field '' fn ''. Ignoring this field.')
+                end
+            end
+            
+            % Copy model data
             model = copy(obj.model);
+            
+            % Create final copy of FLORIS
             cp = floris(layout, controlSet, model);
         end
     end
