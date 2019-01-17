@@ -4,7 +4,7 @@
 % settings offline or in real time for the FLORIS model using a known
 % ambient condition (wind speed, direction, TI). In this example case,
 % first the yaw angles are optimized under greedy torque control, and
-% secondly the yaw angles are optimized in combination with the turbine 
+% secondly the yaw angles are optimized in combination with the turbine
 % axial induction factors.
 %
 
@@ -16,32 +16,29 @@ refheight = layout.uniqueTurbineTypes(1).hubHeight;
 
 % Define an inflow struct and use it in the layout, clwindcon9Turb
 layout.ambientInflow = ambient_inflow_log('PowerLawRefSpeed', 8, ...
-                                          'PowerLawRefHeight', refheight, ...
-                                          'windDirection', 0, ...
-                                          'TI0', .05);
+    'PowerLawRefHeight', refheight, ...
+    'windDirection', 0, ...
+    'TI0', .05);
 
 % Make a controlObject for this layout
 controlSet = control_set(layout, 'axialInduction');
 
 % Define subModels
 subModels = model_definition('deflectionModel',      'rans',...
-                             'velocityDeficitModel', 'selfSimilar',...
-                             'wakeCombinationModel', 'quadraticRotorVelocity',...
-                             'addedTurbulenceModel', 'crespoHernandez');
+    'velocityDeficitModel', 'selfSimilar',...
+    'wakeCombinationModel', 'quadraticRotorVelocity',...
+    'addedTurbulenceModel', 'crespoHernandez');
 
-% Run the baseline case                         
+% Run the baseline case
 florisRunner = floris(layout, controlSet, subModels);
-florisRunner.run 
+florisRunner.run
 % display([florisRunner.turbineResults.power])
 
-% Optimize the control variables
-optimizeControlSettings(florisRunner, 'Yaw Optimizer', 1, ...
-                                      'Pitch Optimizer', 0, ...
-                                      'Axial induction Optimizer', 0)
-optimizeControlSettings(florisRunner, 'Yaw Optimizer', 1, ...
-                                      'Pitch Optimizer', 0, ...
-                                      'Axial induction Optimizer', 1)
+% Optimize the control variables; using nonlinear optimization techniques
+optimizeControlSettingsSimpleFMINCON(florisRunner, 'Yaw Optimizer', 1, ...
+    'Pitch Optimizer', 0, ...
+    'Axial induction Optimizer', 1)
 
-% Visualize the outputs                          
+% Visualize the outputs
 visTool = visualizer(florisRunner);
 visTool.plot2dWF()
