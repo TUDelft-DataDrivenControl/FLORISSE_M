@@ -1,4 +1,6 @@
-function [xopt, P_bl, P_opt] = optimizeControlSettingsRobust_main(florisRunner, ~, yawOpt, ~, pitchOpt, ~, axialOpt, WD_std, WD_N, optVerbose,optMethod)
+function [xopt, P_bl, P_opt] = mainfunc_controloptimization(...
+    florisRunner,~, yawOpt, ~, pitchOpt, ~, axialOpt, WD_std, WD_N,...
+    optMethod,turbIdxsToOptimize,optVerbose)
 %OPTIMIZECONTROLSETTINGS Turbine control optimization algorithm
 %
 %   This function is an example case of how to optimize the yaw and/or
@@ -16,27 +18,45 @@ function [xopt, P_bl, P_opt] = optimizeControlSettingsRobust_main(florisRunner, 
 nTurbs = florisRunner.layout.nTurbs;
 x0 = []; lb = []; ub = [];
 
+% Default set-up
+if nargin < 11
+    turbIdxsToOptimize = 1:nTurbs;
+end
+if nargin < 12
+    optVerbose = true;
+end
+
+% Check turbIdxsToOptimize specification
+if any(turbIdxsToOptimize < 1) || ... % Smaller than 1
+        any(turbIdxsToOptimize > nTurbs) || ... % Higher than nTurbs
+        any(round(turbIdxsToOptimize)~=turbIdxsToOptimize) || ... % Not integers
+        length(unique(turbIdxsToOptimize)) ~= length(turbIdxsToOptimize) % Double entries
+    error('turbIdxsToOptimize not specified properly.')
+end
+nTurbsControlled = length(turbIdxsToOptimize);
+
+
 if yawOpt
-    x0 = [x0; florisRunner.controlSet.yawAngleWFArray];
-    lb = [lb; deg2rad(-30)*ones(1,nTurbs)];
-    ub = [ub; deg2rad(+30)*ones(1,nTurbs)];
+    x0 = [x0; florisRunner.controlSet.yawAngleWFArray(turbIdxsToOptimize)];
+    lb = [lb; deg2rad(-30)*ones(1,nTurbsControlled)];
+    ub = [ub; deg2rad(+30)*ones(1,nTurbsControlled)];
 end
 if pitchOpt
     if ~strcmp(florisRunner.controlSet.controlMethod, 'pitch')
         error('Tried to optimize pitchangles but controlMethod is set to %s', florisRunner.controlSet.controlMethod)
     end
-    x0 = [x0; florisRunner.controlSet.pitchAngleArray];
-    lb = [lb; deg2rad(0.0)*ones(1,nTurbs)];
-    ub = [ub; deg2rad(5.0)*ones(1,nTurbs)];
+    x0 = [x0; florisRunner.controlSet.pitchAngleArray(turbIdxsToOptimize)];
+    lb = [lb; deg2rad(0.0)*ones(1,nTurbsControlled)];
+    ub = [ub; deg2rad(5.0)*ones(1,nTurbsControlled)];
     
 end
 if axialOpt
     if ~strcmp(florisRunner.controlSet.controlMethod, 'axialInduction')
         error('Tried to optimize axial inductions but controlMethod is set to %s', florisRunner.controlSet.controlMethod)
     end
-    x0 = [x0; florisRunner.controlSet.axialInductionArray];
-    lb = [lb; 0.0*ones(1,nTurbs)];
-    ub = [ub; 1/3*ones(1,nTurbs)];
+    x0 = [x0; florisRunner.controlSet.axialInductionArray(turbIdxsToOptimize)];
+    lb = [lb; 0.0*ones(1,nTurbsControlled)];
+    ub = [ub; 1/3*ones(1,nTurbsControlled)];
 end
 
 % Discretize probability distribution
@@ -91,7 +111,7 @@ if strcmp(optMethod,'fmincon')
 elseif strcmp(optMethod,'gridsearch')
     % GRID SEARCH OPTIMIZATION
     for iil = 1:length(lb)
-        if yawOpt && iil <= nTurbs
+        if yawOpt && iil <= nTurbsControlled
             tmp_L{iil} = lb(iil):pi/180:ub(iil);
         else
             tmp_L{iil} = linspace(lb(iil),ub(iil),31);
@@ -114,12 +134,12 @@ end
 
 % Overwrite florisRunner object parameters
 if yawOpt
-    florisRunner.controlSet.yawAngleWFArray = xopt(1,:); % Evaluation point
-    if pitchOpt; florisRunner.controlSet.pitchAngleArray = xopt(2,:); end
-    if axialOpt; florisRunner.controlSet.axialInductionArray = xopt(2,:); end
+    florisRunner.controlSet.yawAngleWFArray(turbIdxsToOptimize) = xopt(1,:); % Evaluation point
+    if pitchOpt; florisRunner.controlSet.pitchAngleArray(turbIdxsToOptimize) = xopt(2,:); end
+    if axialOpt; florisRunner.controlSet.axialInductionArray(turbIdxsToOptimize) = xopt(2,:); end
 else
-    if pitchOpt; florisRunner.controlSet.pitchAngleArray = xopt(1,:); end
-    if axialOpt; florisRunner.controlSet.axialInductionArray = xopt(1,:); end
+    if pitchOpt; florisRunner.controlSet.pitchAngleArray(turbIdxsToOptimize) = xopt(1,:); end
+    if axialOpt; florisRunner.controlSet.axialInductionArray(turbIdxsToOptimize) = xopt(1,:); end
 end
 
 % Calculate improvements
@@ -147,12 +167,12 @@ end
         % yaw angles and/or blade pitch angles back from x, before
         % we trial them in a FLORIS simulation. That is what we do next:
         if yawOpt
-            florisRunnerLocal.controlSet.yawAngleWFArray = x(1,:); % Evaluation point
-            if pitchOpt; florisRunnerLocal.controlSet.pitchAngleArray = x(2,:); end
-            if axialOpt; florisRunnerLocal.controlSet.axialInductionArray = x(2,:); end
+            florisRunnerLocal.controlSet.yawAngleWFArray(turbIdxsToOptimize) = x(1,:); % Evaluation point
+            if pitchOpt; florisRunnerLocal.controlSet.pitchAngleArray(turbIdxsToOptimize) = x(2,:); end
+            if axialOpt; florisRunnerLocal.controlSet.axialInductionArray(turbIdxsToOptimize) = x(2,:); end
         else
-            if pitchOpt; florisRunnerLocal.controlSet.pitchAngleArray = x(1,:); end
-            if axialOpt; florisRunnerLocal.controlSet.axialInductionArray = x(1,:); end
+            if pitchOpt; florisRunnerLocal.controlSet.pitchAngleArray(turbIdxsToOptimize) = x(1,:); end
+            if axialOpt; florisRunnerLocal.controlSet.axialInductionArray(turbIdxsToOptimize) = x(1,:); end
         end
 
         % Cover the range

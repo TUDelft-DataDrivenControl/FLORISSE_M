@@ -36,8 +36,9 @@ florisRunner.run
 
 % Optimize the control variables; using nonlinear optimization techniques
 optimizeControlSettingsSimpleFMINCON(florisRunner, 'Yaw Optimizer', 1, ...
-    'Pitch Optimizer', 0, ...
-    'Axial induction Optimizer', 1)
+    'Pitch Optimizer', 0, 'Axial induction Optimizer', 1, [1:6]) % Only turbines 1-6
+% optimizeControlSettingsSimpleFMINCON(florisRunner, 'Yaw Optimizer', 1, ...
+%     'Pitch Optimizer', 0, 'Axial induction Optimizer', 1) % Optimize all turbines; 1-9
 
 % Visualize the outputs
 visTool = visualizer(florisRunner);
