@@ -13,17 +13,33 @@ else
 end
 
 
-%% Plotting time-averaged flow slices
+%% Plotting time-averaged flow slices    
 for i = 1:length(timeAvgData)
+    if ~any(strcmp(fieldnames(timeAvgData(i)),'type')) % Backwards compatibility
+            timeAvgData(i).type = '';
+    end
     if max(abs(diff(timeAvgData(i).cellCenters(:,3)))) < 1e-5
+        % Horizontal slice
         xData = timeAvgData(i).cellCenters(:,1);
         yData = timeAvgData(i).cellCenters(:,2);
         xlabelName = 'x (m)'; ylabelName = 'y (m)';
     elseif max(abs(diff(timeAvgData(i).cellCenters(:,2)))) < 1e-5
+        % Streamwise vertical slice
         xData = timeAvgData(i).cellCenters(:,1);
         yData = timeAvgData(i).cellCenters(:,3);
         xlabelName = 'x (m)'; ylabelName = 'z (m)';
     elseif max(abs(diff(timeAvgData(i).cellCenters(:,1)))) < 1e-5
+        % Cross-stream vertical slice
+        xData = timeAvgData(i).cellCenters(:,2);
+        yData = timeAvgData(i).cellCenters(:,3);
+        xlabelName = 'y (m)'; ylabelName = 'z (m)';
+    elseif strcmp(timeAvgData(i).type,'vertical slice')
+%         xData = sqrt(...
+%             (timeAvgData(i).cellCenters(:,1)-mean(timeAvgData(i).cellCenters(:,1))).^2  + ...
+%             (timeAvgData(i).cellCenters(:,2)-mean(timeAvgData(i).cellCenters(:,2))).^2) .* ...
+%             sign(timeAvgData(i).cellCenters(:,2)-mean(timeAvgData(i).cellCenters(:,2))) + ...
+%             mean(timeAvgData(i).cellCenters(:,2));
+%         xlabelName = 'x-y slice (m)'; 
         xData = timeAvgData(i).cellCenters(:,2);
         yData = timeAvgData(i).cellCenters(:,3);
         xlabelName = 'y (m)'; ylabelName = 'z (m)';
@@ -73,7 +89,7 @@ for i = 1:length(timeAvgData)
         clb.Limits = zlimArray{si};
         lighting none; shading flat; 
         light('Position',[-50 -15 29]); view(0,90);
-        if max(abs(diff(timeAvgData(i).cellCenters(:,1)))) < 1e-5 & si < 2 % Vertical slice
+        if max(abs(diff(timeAvgData(i).cellCenters(:,1)))) < 1e-5 || strcmp(timeAvgData(i).type,'vertical slice') % Vertical slice
             hold on;
             if isfield(timeAvgData(i),'extrapolatedDataY')
                 scatter3(timeAvgData(i).extrapolatedDataY(:),timeAvgData(i).extrapolatedDataZ(:),...
