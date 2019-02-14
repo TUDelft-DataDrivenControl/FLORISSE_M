@@ -119,6 +119,7 @@ elseif strcmp(optMethod,'gridsearch')
     end
     Lcoms = combvec(tmp_L{:})'; % All combinations of inputs
     J_eval = zeros(size(Lcoms,1),1); % Evaluation vector
+    disp(['Power optimization using grid search. N.o. evaluations: ' num2str(size(Lcoms,1)) '.']);
     for iil = 1:size(Lcoms,1)
         J_eval(iil) = cost(Lcoms(iil,:)); 
     end
@@ -126,7 +127,7 @@ elseif strcmp(optMethod,'gridsearch')
     xopt = Lcoms(iopt,:); % Optimal inputs
     
     if optVerbose
-        disp(['Power optimization using grid search. J(xopt) = ' num2str(Jopt) '. xopt = [' num2str(xopt) '].']);
+        disp(['Power optimization out: J(xopt) = ' num2str(Jopt) '. xopt = [' num2str(xopt) '].']);
     end
 else
     error('Unvalid optimization method specified.')
