@@ -64,7 +64,7 @@ classdef visualization_test < matlab.unittest.TestCase
             % Validate
             import matlab.unittest.constraints.IsEqualTo;
             import matlab.unittest.constraints.AbsoluteTolerance;
-            testCase.assertThat(u3D, IsEqualTo(uProbe, ...
+            testCase.assertThat(u3D, IsEqualTo(uProbe', ...
                 'Within', AbsoluteTolerance(1.0))); % Large tolerance due to interp effects
         end
     end

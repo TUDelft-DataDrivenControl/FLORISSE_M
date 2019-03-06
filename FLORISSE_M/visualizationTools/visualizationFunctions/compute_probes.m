@@ -22,49 +22,52 @@ function [uProbe] = compute_probes(florisObj,xIF,yIF,zIF,fixYaw,nInterpBuffer);
         % interpolation (slightly off but much faster for many probes).
         nInterpBuffer = 3e4;
     end
-    
-    % Set-up the FLORIS object, exporting the variables of interest
-    layout               = florisObj.layout;
-    turbineResults       = florisObj.turbineResults;
-    yawAngles            = florisObj.controlSet.yawAngleWFArray;
-    avgWs                = [florisObj.turbineConditions.avgWS];
-    wakeCombinationModel = florisObj.model.wakeCombinationModel;
-    
+        
     % Determine probe locations in wind-aligned frame
-    [probeLocationsWF]   = frame_IF2WF(layout.ambientInflow.windDirection,[xIF(:), yIF(:), zIF(:)]);
+    [probeLocationsWF]   = frame_IF2WF(florisObj.layout.ambientInflow.windDirection,[xIF(:), yIF(:), zIF(:)]);
     xWF(:,1)             = probeLocationsWF(:,1);
     yWF(:,1)             = probeLocationsWF(:,2);
     zWF(:,1)             = zIF;
     
+    % Debugging option: force one-by-one calculations
+    forceOneByOne = false;
+    verbose = false;
     
-     
-    % Determine if the probes can be formatted in a smart way
-    if (max(zWF)-min(zWF)) < 1.0 || max(xWF)-min(xWF) < 1.0 || max(yWF)-min(yWF) < 1.0 || length(xWF) > nInterpBuffer
-        % Either of two situations:
-        %  1) We have structure in our [xWF yWF zWF] data
-        %  2) We have no structure, and more than nInterpBuffer probes
-        interpField = true;
+    % Determine if the probes can be formatted in a structured grid
+    if (length(unique(xWF)) * length(unique(yWF)) * length(unique(zWF)) == length(xWF)) && ...
+            length(unique(yWF)) > 1 && length(unique(zWF)) > 1 && ~forceOneByOne
+        if verbose
+            disp('Found structured grid of vertical slices. Calculating probes in slices.')
+        end
+        uProbe = [];
+        [xUnique,~,bi] = unique(xWF,'stable');
+        % Calculate slice by slice
+        for xi = 1:length(xUnique)
+            % Create 2D vertical slice grid at x-location
+            [flowField.X, flowField.Y, flowField.Z] = meshgrid(...
+            xUnique(xi), unique(yWF), unique(zWF));
+                
+            % Calculate flowfield
+            flowField = calculateFlowFieldLocal(flowField,florisObj,fixYaw);
+            
+            % 2D Interpolation to match indices
+            uProbe = [uProbe; interp2(flowField.Y',flowField.Z',flowField.U',yWF(xi==bi),zWF(xi==bi))];
+        end
+
+    % Either of two situations:
+    %  1) We have structure in our [xWF yWF zWF] data
+    %  2) We have no structure, and more than nInterpBuffer probes        
+    elseif ((max(zWF)-min(zWF)) < 1.0 || max(xWF)-min(xWF) < 1.0 || ...
+            max(yWF)-min(yWF) < 1.0 || length(xWF) > nInterpBuffer) && ~forceOneByOne
+        
         flowFieldRes = 5.0; % Resolution of 5 m in any direction
         [flowField.X, flowField.Y, flowField.Z] = meshgrid(...
             min(xWF) : flowFieldRes : max(xWF), ...
             min(yWF) : flowFieldRes : max(yWF), ...
             min(zWF) : flowFieldRes : max(zWF));
-    else
-        % We have no structure, but less than nInterpBuffer probes. Do one-by-one
-        interpField = false;
-    end
-    
-    if interpField
-        disp('Accelerating compute_probes.m using a structured flowfield and linear interpolation. To disable, set nInterpBuffer = Inf.')
         
-        % Interpolation using structured evaluation
-        flowField.U = layout.ambientInflow.Vfun(flowField.Z);
-        flowField = compute_flow_field(flowField, layout, turbineResults, ...
-            yawAngles, avgWs, fixYaw, wakeCombinationModel);
-        flowField.X = squeeze(flowField.X);
-        flowField.Y = squeeze(flowField.Y);
-        flowField.Z = squeeze(flowField.Z);
-        flowField.U = squeeze(flowField.U);
+        % Calculate flowfield
+        flowField = calculateFlowFieldLocal(flowField,florisObj,fixYaw); 
         
         if sum(size(flowField.U)~=1) == 1 % 1D data
             if length(unique(flowField.X)) > 1
@@ -72,7 +75,7 @@ function [uProbe] = compute_probes(florisObj,xIF,yIF,zIF,fixYaw,nInterpBuffer);
             elseif length(unique(flowField.Y)) > 1
                 uProbe = interp1(flowField.Y,flowField.U,yWF);
             elseif length(unique(flowField.Z)) > 1
-                uProbe = interp1(flowField.Z,flowField.U,zWF);  
+                uProbe = interp1(flowField.Z,flowField.U,zWF);
             else
                 error('Cannot determine how to interpolate 1D data.');
             end
@@ -94,15 +97,39 @@ function [uProbe] = compute_probes(florisObj,xIF,yIF,zIF,fixYaw,nInterpBuffer);
             error('Cannot determine how to interpolate 3D data.');
         end
         
-    else
-        % Calculate velocity field one-by-one (for every probe location)
-        Uin = layout.ambientInflow.Vfun(zWF);
-        uProbe = zeros(size(xIF));
-        for i = 1:length(xIF)
+    
+    else % We have no structure, but less than nInterpBuffer probes. Do one-by-one:  
+        if verbose
+            disp('Calculating flow field one by one.')
+        end
+        Uin = florisObj.layout.ambientInflow.Vfun(zWF);
+        uProbe = zeros(size(xWF));
+        for i = 1:length(xWF)
             flowField = struct('X',xWF(i),'Y',yWF(i),'Z',zWF(i),'U',Uin(i));
-            flowField = compute_flow_field(flowField, layout, turbineResults, ...
-                yawAngles, avgWs, fixYaw, wakeCombinationModel);
+            flowField = calculateFlowFieldLocal(flowField,florisObj,fixYaw);
             uProbe(i) = flowField.U;
         end
+    end
+   
+   
+    % Calculate flowField function
+    function [flowFieldOut] = calculateFlowFieldLocal(flowFieldIn,florisObjIn,fixYaw)
+        % Set-up the FLORIS object, exporting the variables of interest
+        layout               = florisObjIn.layout;
+        turbineResults       = florisObjIn.turbineResults;
+        yawAngles            = florisObjIn.controlSet.yawAngleWFArray;
+        avgWs                = [florisObjIn.turbineConditions.avgWS];
+        wakeCombinationModel = florisObjIn.model.wakeCombinationModel;
+        
+        flowFieldOut = flowFieldIn; % Copy flowfield
+        
+        % Calculate output
+        flowFieldOut.U = layout.ambientInflow.Vfun(flowFieldOut.Z);
+        flowFieldOut = compute_flow_field(flowFieldOut, layout, turbineResults, ...
+        yawAngles, avgWs, fixYaw, wakeCombinationModel);
+        flowFieldOut.X = squeeze(flowFieldOut.X);
+        flowFieldOut.Y = squeeze(flowFieldOut.Y);
+        flowFieldOut.Z = squeeze(flowFieldOut.Z);
+        flowFieldOut.U = squeeze(flowFieldOut.U);
     end
 end

@@ -1,0 +1,28 @@
+#!/bin/bash
+#SBATCH --job-name=<templ_job_name>
+
+# PARTITIONS: dbg: 2 nodes, 30 min max ; prod: 1-195 nodes, 24 hours 
+#SBATCH --partition=knl_usr_prod
+#SBATCH --time=23:59:00
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+
+
+#SBATCH --account=Pra16_4200
+#SBATCH --hint=memory_bound
+#SBATCH --constraint=cache
+#SBATCH --threads-per-core=1
+#SBATCH --cpus-per-task=1
+#SBATCH --mem=8000
+#SBATCH --out=log.%x_%j.out 
+#SBATCH --err=log.%x_%j.err 
+
+
+cd $SLURM_SUBMIT_DIR # Assuming the job was submitted from the main folder
+module load python/2.7.12
+module load intel/pe-xe-2017--binary
+module load mkl/2017--binary
+module load numpy/1.11.2--python--2.7.12
+module list
+python mergeVTKs_single.py
+echo "Ending mergeVTKs job at: " $(date)

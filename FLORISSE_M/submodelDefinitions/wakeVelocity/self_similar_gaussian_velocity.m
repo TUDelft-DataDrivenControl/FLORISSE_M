@@ -96,9 +96,15 @@ classdef self_similar_gaussian_velocity < velocity_interface
             elipRatio = 1-(1-x/obj.x0)./(eps+sqrt(ellipse));
 
             % exp(-((r-rpc)/(2s)).^2 Eq 6.13
-            NW_exp = exp(-.5*squeeze(mmat(permute(cat(4,y,z),[3 4 1 2]),...
-                mmat(inv((((eps+0*(x<=0)) + x* (x>0))/obj.x0).^2*obj.C*(obj.sigNeutral_x0.^2)),...
-                permute(cat(4,y,z),[4 3 1 2])))).*(elipRatio.^2));
+            innerTermTmp = squeeze(mmat(permute(cat(4,y,z),[3 4 1 2]),...
+                    mmat(inv((((eps+0*(x<=0)) + x* (x>0))/obj.x0).^2*...
+                    obj.C*(obj.sigNeutral_x0.^2)),permute(cat(4,y,z),[4 3 1 2]))));
+                
+            if size(elipRatio,1) == 1 % Vector
+                elipRatio = repmat(elipRatio,length(elipRatio),1);
+                innerTermTmp = repmat(innerTermTmp,1,length(elipRatio));
+            end
+            NW_exp = exp(-.5*innerTermTmp.*(elipRatio.^2));
 
             % Eq 7.2
             varWake = obj.C*((diag([obj.ky obj.kz])*(x-obj.x0))+obj.sigNeutral_x0).^2;
@@ -110,7 +116,12 @@ classdef self_similar_gaussian_velocity < velocity_interface
 
             % boundary is a boolean function telling whether a point (y,z)
             % lies within the wake radius of turbine(i) at distance x
-            booleanMap = (NW_mask+~NW_mask.*NW_exp.*(x<=obj.x0) + FW_exp.*(x>obj.x0))>0.022750131948179; % Evaluated to avoid dependencies on Statistics Toolbox
+            
+            if size(NW_mask,1) == 1 % Vector
+                NW_mask = repmat(NW_mask,length(NW_mask),1);
+                FW_exp  = repmat(FW_exp, 1,length(FW_exp));
+            end
+            booleanMap = (NW_mask+  ~NW_mask.*NW_exp.*(x<=obj.x0) + FW_exp.*(x>obj.x0))>0.022750131948179; % Evaluated to avoid dependencies on Statistics Toolbox
         end
         
         function [overlap, RVdef] = deficit_integral(obj, deltax, dy, dz, rotRadius)

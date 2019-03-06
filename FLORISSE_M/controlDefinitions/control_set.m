@@ -1,4 +1,4 @@
-classdef control_set < handle
+classdef control_set < matlab.mixin.Copyable %handle
     %CONTROL_SET The control_set class generates an object that is used to control the turbines in a layout.
     %   A layout object holds an array of turbines, this class
     %   holds a struct with the control settings for each turbines. It has

@@ -1,4 +1,4 @@
-function [xopt,P_bl,P_opt] = optimizeControlSettings(florisRunner, ~, yawOpt, ~, pitchOpt, ~, axialOpt,optVerbose)
+function [xopt,P_bl,P_opt] = optimizeControlSettingsSimple(florisRunner, ~, yawOpt, ~, pitchOpt, ~, axialOpt,optVerbose)
 %OPTIMIZECONTROLSETTINGS Turbine control optimization algorithm
 %
 %   This function is an example case of how to optimize the yaw and/or

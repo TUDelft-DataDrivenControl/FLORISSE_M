@@ -1,9 +1,0 @@
-#PBS -N FLORIS_preprocess
-#PBS -l nodes=1:ppn=8 				# Request one node with 4 free processor cores 
-#PBS -m ae 							# Mail me when the job ends for any reason 
-#PBS -M B.M.Doekemeijer@tudelft.nl 	# Email address
-
-# Run my M file and don't even try to display graphics
-module load 'matlab'
-cd $HOME/FLORISSE_M/Examples/example_SOWFA_calibration
-matlab -nodisplay -noFigureWindows -logfile 'preprocess_out.log' -r preprocessData

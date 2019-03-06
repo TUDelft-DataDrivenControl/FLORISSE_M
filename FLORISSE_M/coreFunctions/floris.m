@@ -1,4 +1,4 @@
-classdef floris < matlab.mixin.Copyable%handle
+classdef floris < matlab.mixin.Copyable %handle
     %FLORIS This is the main class of the FLORIS program
     %   This class iterated through all the turbines and determines their
     %   production and the behaviour of their wakes
@@ -189,6 +189,40 @@ classdef floris < matlab.mixin.Copyable%handle
                        obj.turbineResults(turbNumIfDw).affectedBy(end+1,:) = turbIfIndex;
                 end
             end
+        end
+    end
+    
+    methods(Access = protected)
+        % Copy all handles and create new, independent object
+        function cp = copyElement(obj)
+            layout = copy(obj.layout);
+            
+            % Create controlSet object
+            controlSet = control_set(layout,obj.controlSet.controlMethod); % link to new layout handle
+            fldNames = fieldnames(obj.controlSet);
+            
+            % Exclude 'layout', 'controlMethod', 'turbineControls'
+            fldNames = fldNames(~strcmp(fldNames,'layout')); 
+            fldNames = fldNames(~strcmp(fldNames,'controlMethod'));
+            fldNames = fldNames(~strcmp(fldNames,'turbineControls'));
+            
+            % Duplicate relevant fields
+            for i = 1:length(fldNames) 
+                fn = fldNames{i};
+                try
+                    if ~isnan(obj.controlSet.(fn)) % only copy fields with values
+                        controlSet.(fn) = obj.controlSet.(fn); % Copy properties
+                    end
+                catch
+                    disp('Failed when attempting to clone field '' fn ''. Ignoring this field.')
+                end
+            end
+            
+            % Copy model data
+            model = copy(obj.model);
+            
+            % Create final copy of FLORIS
+            cp = floris(layout, controlSet, model);
         end
     end
 end

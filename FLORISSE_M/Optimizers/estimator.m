@@ -41,12 +41,11 @@ classdef estimator < handle
             
             % Optimize using Parallel Computing
             nVars = length(obj.estimParamsAll);
-            %             options = gaoptimset('Display','iter', 'TolFun', 1e-3,'UseParallel', true); No plotting
             options = gaoptimset('Display','iter', 'TolFun', 1e-3,'UseParallel', true,'PlotFcns',{@plotfun1}); % with plot
             [xopt,Jopt,exitFlag,output,population,scores] = ga(costFun, nVars, ga_A, ga_b, ga_Aeq, ga_beq, lb, ub, [], options);
             
             function state = plotfun1(options,state,flag)
-                subplot(2,1,1);
+                subplot(3,1,1);
                 [~,idx]=min(state.Score);
                 optSettings=state.Population(idx,:);
                 bar(optSettings);
@@ -54,11 +53,26 @@ classdef estimator < handle
                 ylabel('Value');
                 xlabel('Estimation variables');
                 grid on; box on;
-                
-                subplot(2,1,2);
+
+                subplot(3,1,2);
+                [~,idx]=min(state.Score);
+                optSettings=state.Population(idx,:);
+                optSettingsNormalized = (optSettings-lb)./(ub-lb);
+                bar(optSettingsNormalized);
+                hold all
+                for i = 1:length(lb)
+                    plot([i-.4 i+.4],[0 0],'r--'); % Lower bound
+                    plot([i-.4 i+.4],[1 1],'r--'); % Upper bound
+                end
+                ylabel('Normalized values (w.r.t. bounds)');
+                ylim([-0.1 1.1]);
+                xlabel('Estimation variables');
+                grid on; box on;
+
+                subplot(3,1,3);
                 plot(1:length(state.Best),state.Best,'kd','MarkerFaceColor',[1 0 1]);
                 ylabel('Cost');
-                xlim([0 20]);
+%                 xlim([0 20]);
                 xlabel('Generation');
                 grid on; box on;
                 
@@ -67,10 +81,14 @@ classdef estimator < handle
             end
         end
         
-        function [J] = costWeightedRMSE(obj,x);
+        function [J,structOut] = costWeightedRMSE(obj,x);
             florisObjSet   = obj.florisObjSet;
             measurementSet = obj.measurementSet;
             estimParamsAll = obj.estimParamsAll;
+            
+            if nargout > 1
+                structOut = struct();
+            end
             
             if length(x) ~= length(estimParamsAll)
                 error('The variable [x] has to be of equal length as [estimationParams].');
@@ -110,42 +128,47 @@ classdef estimator < handle
                 % Calculate weighted flow RMSE, if applicable
                 if any(ismember(fields(measurementSet{i}),'U'))
                     fixYaw  = false;
-                    uProbes = compute_probes(florisObjTmp,measurementSet{i}.U.x,measurementSet{i}.U.y,measurementSet{i}.U.z,fixYaw);
-                    avgWSerror = uProbes - measurementSet{i}.U.values;
+                    xIF = measurementSet{i}.U.x';
+                    yIF = measurementSet{i}.U.y';
+                    zIF = measurementSet{i}.U.z';
+                    
+                    % Compute as predicted by FLORIS
+                    uProbes = compute_probes(florisObjTmp,xIF,yIF,zIF,fixYaw);
+                    
+                    % Determine RMSE
+                    avgWSerror = (uProbes(:) - measurementSet{i}.U.values(:))';
                     Jset(i)   = Jset(i) + sqrt(mean((avgWSerror ./ measurementSet{i}.U.stdev).^2));
                 end
                 
                 % Calculate sector-averaged flow speed RMSE, if applicable
                 if any(ismember(fields(measurementSet{i}),'virtTurb'))
+%                     tic
                     fixYaw  = false;
                     
                     % Create flow field object
-                    flowFieldRes = measurementSet{i}.virtTurb.zPts(2)-measurementSet{i}.virtTurb.zPts(1);
-                    flowField = struct();
-                    [flowField.X, flowField.Y, flowField.Z] = meshgrid(...
-                        measurementSet{i}.virtTurb.x(:,1)', ...
-                        min(measurementSet{i}.virtTurb.y(:))-.75*measurementSet{i}.virtTurb.Drotor : flowFieldRes : max(measurementSet{i}.virtTurb.y(:))+.75*measurementSet{i}.virtTurb.Drotor, ...
-                        0 : flowFieldRes : max(measurementSet{i}.virtTurb.z(:))+.75*measurementSet{i}.virtTurb.Drotor);
-                                        
-                    % Set-up the FLORIS object, exporting the variables of interest
-                    layout               = florisObjTmp.layout;
-                    turbineResults       = florisObjTmp.turbineResults;
-                    yawAngles            = florisObjTmp.controlSet.yawAngleWFArray;
-                    avgWs                = [florisObjTmp.turbineConditions.avgWS];
-                    wakeCombinationModel = florisObjTmp.model.wakeCombinationModel;
-                    
-                    % Calculate flow field
-                    flowField.U = layout.ambientInflow.Vfun(flowField.Z);
-                    flowField = compute_flow_field(flowField, layout, turbineResults, ...
-                        yawAngles, avgWs, fixYaw, wakeCombinationModel);
-                    
-                    % Calculate UAvg for each virtual location  
-                    for ix = 1:size(flowField.X,2) % For each slice
-                        Y = squeeze(flowField.Y(:,ix,:));
-                        Z = squeeze(flowField.Z(:,ix,:));
-                        F = griddedInterpolant(Y,Z,squeeze(flowField.U(:,ix,:)));
+                    flowFieldRes = 5; % measurementSet{i}.virtTurb.zPts(2)-measurementSet{i}.virtTurb.zPts(1);
+                    for ix = 1:length(unique(measurementSet{i}.virtTurb.x))
+                        flowField = struct();
+                        [flowField.X, flowField.Y, flowField.Z] = meshgrid(...
+                            measurementSet{i}.virtTurb.x(ix,1)', ...
+                            min(measurementSet{i}.virtTurb.y(:))-.75*measurementSet{i}.virtTurb.Drotor : flowFieldRes : max(measurementSet{i}.virtTurb.y(:))+.75*measurementSet{i}.virtTurb.Drotor, ...
+                            0 : flowFieldRes : max(measurementSet{i}.virtTurb.z(:))+.75*measurementSet{i}.virtTurb.Drotor);
                         
-                        for iy = 1:size(measurementSet{i}.virtTurb.y,2)
+                        % Set-up the FLORIS object, exporting the variables of interest
+                        layout               = florisObjTmp.layout;
+                        turbineResults       = florisObjTmp.turbineResults;
+                        yawAngles            = florisObjTmp.controlSet.yawAngleWFArray;
+                        avgWs                = [florisObjTmp.turbineConditions.avgWS];
+                        wakeCombinationModel = florisObjTmp.model.wakeCombinationModel;
+                        
+                        % Calculate flow field
+                        flowField.U = layout.ambientInflow.Vfun(flowField.Z);
+                        flowField = compute_flow_field(flowField, layout, turbineResults, ...
+                            yawAngles, avgWs, fixYaw, wakeCombinationModel);
+                        
+                        % Calculate UAvg for each virtual location
+                        F = griddedInterpolant(squeeze(flowField.Y),squeeze(flowField.Z),squeeze(flowField.U));
+                        for iy = 1:length(unique(measurementSet{i}.virtTurb.y))
                             yVirtTurb = measurementSet{i}.virtTurb.y(ix,iy);
                             yPts_tmp = yVirtTurb + measurementSet{i}.virtTurb.yPts;
                             zPts_tmp = measurementSet{i}.virtTurb.z(ix,1) + measurementSet{i}.virtTurb.zPts;
@@ -158,7 +181,13 @@ classdef estimator < handle
                     for ix = 1:size(avgWSerror,1)
                         Jset(i)   = Jset(i) + sqrt(mean((avgWSerror(ix,:) / measurementSet{i}.virtTurb.stdev(ix)).^2));
                     end
+                    
+                    if nargout > 1
+                        structOut(i).UAvg_est = UAvg_floris;
+                    end
+%                     toc
                 end
+                
             end
             
             % Final cost
