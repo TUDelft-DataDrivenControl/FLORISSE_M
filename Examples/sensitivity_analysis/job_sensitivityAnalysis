@@ -1,0 +1,13 @@
+#PBS -N flrs_snsanalysis
+#PBS -l nodes=1:ppn=40 				# Request one node with 4 free processor cores 
+#PBS -m ae 							# Mail me when the job ends for any reason 
+#PBS -M B.M.Doekemeijer@tudelft.nl 	# Email address
+
+# Activate the Matlab version I want e.g., 'module load matlab/2012b'
+module load 'matlab'
+
+# Run my M file and don't even try to display graphics
+echo "PBS_O_WORKDIR:"
+echo $PBS_O_WORKDIR
+cd $PBS_O_WORKDIR
+matlab -nodisplay -noFigureWindows -logfile 'runCasesHPC.hpc.log' -r runCasesHPC

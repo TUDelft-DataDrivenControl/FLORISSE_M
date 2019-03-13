@@ -3,11 +3,11 @@ addpath(genpath('../../FLORISSE_M'))
 
 %% Setup
 nWdTrue = 37; % Discretization of 360 degrees wind rose. Recommended to be uneven number.
-WS_range = 12.0 %[8.0 12.0 15.0 17.0]; % Below, at, and above-rated
-TI_range = 0.02 %[0.02 0.07 0.12 0.20];
+WS_range = 8.0 %[8.0 12.0 15.0 17.0]; % Below, at, and above-rated
+TI_range = [0.02 0.07 0.12 0.20];
 
-noiseYaw = 7 * (pi/180); % Add gauss. noise over FLORIS evaulations -- Needs attention. Recommended: 0
-noisePwr = 50 * 1e5; % Add gauss. noise over FLORIS evaluations -- Needs attention. Recommended: 0
+noiseYaw = 0 * (pi/180); % Add gauss. noise over FLORIS evaulations -- Needs attention. Recommended: 0
+noisePwr = 0 * 1e5; % Add gauss. noise over FLORIS evaluations -- Needs attention. Recommended: 0
 
 % Plotting functions
 plotLayout = false;
@@ -17,8 +17,8 @@ plotCrucial = false;
 % Layout definitions
 locIf = {};
 % locIf = {[0, 0]}; % 1-turbine case
-% locIf{end+1} = {[0, 0]; [5, 0]}; % 2-turbine case
-locIf{end+1} = {[0, 0]; [5, 0]; [10 0]; [0 3]; [5 3]; [10 3]}; % Structured 6 turb case
+locIf{end+1} = {[0, 0]; [5, 0]}; % 2-turbine case
+% locIf{end+1} = {[0, 0]; [5, 0]; [10 0]; [0 3]; [5 3]; [10 3]}; % Structured 6 turb case
 % locIf{end+1} = {[4, 8]; [9, 9]; [4, 13]; [0,6];[12 11]; [13 6]; [8 4]; [4 0]}; % Unstructured 8-turbine case
 
 % % Definition of Amalia wind farm
@@ -88,7 +88,7 @@ for Layouti = 1:nLayouts
             florisRunnerLocal.layout.ambientInflow.TI0 = TI_range(TIi);
             disp(['    Calculating observability for TIi = ' num2str(TIi) '/' num2str(nTI) '.']); % Progress
             
-            parfor WDi = 1:nWdTrue
+            for WDi = 1:nWdTrue
                 wdTrue = wdTrue_range(WDi);
                 % Calculate true power from FLORIS
                 powerTrue = evalForWD(florisRunnerLocal,wdTrue,0,0);
