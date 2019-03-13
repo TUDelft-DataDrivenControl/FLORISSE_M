@@ -69,7 +69,7 @@ classdef dtu10mw_v2_cpct < handle
                     ct = structLUT.ctFun(condition.avgWS,turbineControl.relPowerSetpoint,turbineControl.yawAngleWF);
                     
                     if ct >= 1
-                        disp(['WARNING: According to LUT, Ct = ' num2str(ct) '. Thresholding at Ct = 1.']);
+                        %disp(['WARNING: According to LUT, Ct = ' num2str(ct) '. Thresholding at Ct = 1.']);
                         ct = 1.0;
                     end
                     adjustCpCtYaw = false; % do function call 'adjust_cp_ct_for_yaw' after this func.

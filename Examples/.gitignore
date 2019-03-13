@@ -1,2 +1,6 @@
 *.asv
 *.csv
+*.pdf
+*.mat
+**/*.mat
+**/*.pdf
