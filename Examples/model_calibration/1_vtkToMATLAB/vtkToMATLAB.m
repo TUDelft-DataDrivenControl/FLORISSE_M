@@ -1,5 +1,5 @@
 clear all; close all; clc;
-addpath('bin')
+addpath('../bin')
 
 plotFigures = 'all'; % options: 'none', 'hor' (horizontal slice), 'all'
 ss.xCutOff = [-Inf Inf]; % [-Inf Inf]
@@ -27,14 +27,14 @@ sourceFolders = {};
 outputFiles = {};
 
 % Create sourceFolder and outputFile database
-for yaw1 = [260]
-    for yaw2 = [260]
+for yaw1 = [240]
+    for yaw2 = [230:10:270]
         sourceFolders{end+1} = ['X:\averagedVTKs\yaw' num2str(yaw1) 'yaw' num2str(yaw2) '\*.vtk']; % Make sure to append with '*.vtk' or similar
         outputFiles{end+1}   = ['yaw' num2str(yaw1) 'yaw' num2str(yaw2) '.mat']; % Make sure to append with '.mat' or similar
     end
 end
 
 
-for i = 1:length(sourceFolders)
+parfor i = 1:length(sourceFolders)
     preprocessData_core(sourceFolders{i},outputFiles{i}, ss, plotFigures);
 end
