@@ -1,0 +1,4 @@
+Description				Exemplary wind turbine Type A
+RotorDiameter			80	[m]
+Pr						2000	[kW]
+DrivetrainEfficiency	1		[-]

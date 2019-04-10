@@ -1,0 +1,3 @@
+k_cos		1
+pp			1.88
+CostFac		0.002

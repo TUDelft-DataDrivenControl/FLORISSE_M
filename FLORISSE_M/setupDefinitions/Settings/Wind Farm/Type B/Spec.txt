@@ -1,0 +1,4 @@
+Description				Exemplary wind turbine Type B
+RotorDiameter			55	[m]
+Pr						1000	[kW]
+DrivetrainEfficiency	1		[-]

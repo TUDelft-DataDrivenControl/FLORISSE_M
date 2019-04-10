@@ -43,17 +43,18 @@ classdef visualizer < handle
         function flowField = create_empty_flowfield(obj, locAr, boundaries)
             % The flowfield objects are at the center of the visualization.
             % They contain all the coordinates and velocity information
-            refTurbType = obj.layout.turbines(1).turbineType;
-            xmin = min(locAr(:,1)) + boundaries(1)*refTurbType.rotorRadius;
-            xmax = max(locAr(:,1)) + boundaries(2)*refTurbType.rotorRadius;
-            ymin = min(locAr(:,2)) + boundaries(3)*refTurbType.rotorRadius;
-            ymax = max(locAr(:,2)) + boundaries(4)*refTurbType.rotorRadius;
+            refRotorRadius = obj.layout.turbines(1).turbineType.rotorRadius;
+            
+            xmin = min(locAr(:,1)) + boundaries(1)*refRotorRadius;
+            xmax = max(locAr(:,1)) + boundaries(2)*refRotorRadius;
+            ymin = min(locAr(:,2)) + boundaries(3)*refRotorRadius;
+            ymax = max(locAr(:,2)) + boundaries(4)*refRotorRadius;
             % Store the corners starting at the bottom left and continuing
             % counterclockwise
             corners = [xmin ymin; xmax ymin; xmax ymax; xmin ymax];
-            flowField = struct('resx',    0.20*refTurbType.rotorRadius, ...
-                               'resy',    0.20*refTurbType.rotorRadius, ...
-                               'resz',    0.05*refTurbType.rotorRadius, ...
+            flowField = struct('resx',    0.20*refRotorRadius, ...
+                               'resy',    0.20*refRotorRadius, ...
+                               'resz',    0.05*refRotorRadius, ...
                                'corners', corners, ...
                                'X',       {[]}, ...
                                'Y',       {[]}, ...
@@ -197,20 +198,20 @@ classdef visualizer < handle
         
         function flowField = define_flow_field_mesh(obj, flowField, dimension)
             % Make a 2D or 3D meshgrid for a flowfield
-            refTurbType = obj.layout.turbines(1).turbineType;
+            refHubHeight = obj.layout.turbines(1).locIf(3);
             switch dimension
                 case '2D'
                     if isempty(flowField.X)
                         [flowField.X, flowField.Y, flowField.Z] = meshgrid(...
                             flowField.corners(1, 1) : flowField.resx : flowField.corners(3, 1), ...
                             flowField.corners(1, 2) : flowField.resy : flowField.corners(3, 2), ...
-                            refTurbType.hubHeight);
+                            refHubHeight);
                     end
                 case '3D'
                     if ismatrix(flowField.X)
                         % Make sure the z-array includes the hub
-                        zArHalf1 = refTurbType.hubHeight : -flowField.resz : 0;
-                        zArHalf2 = refTurbType.hubHeight : flowField.resz : 2*refTurbType.hubHeight;
+                        zArHalf1 = refHubHeight : -flowField.resz : 0;
+                        zArHalf2 = refHubHeight : flowField.resz : 2*refHubHeight;
                         [flowField.X, flowField.Y, flowField.Z] = meshgrid(...
                             flowField.corners(1, 1) : flowField.resx : flowField.corners(3, 1), ...
                             flowField.corners(1, 2) : flowField.resy : flowField.corners(3, 2), ...

@@ -1,0 +1,5 @@
+Description		Blade-rotation-induced wake deflection
+ad				-0.0356			% -4.5 % -4.5/126.4 % lateral wake displacement bias parameter (a*Drotor + bx)
+bd				-0.01			% lateral wake displacement bias parameter (a*Drotor + bx)
+at				0.0				% vertical wake displacement bias parameter (a*Drotor + bx)
+bt				0.0				% vertical wake displacement bias parameter (a*Drotor + bx)

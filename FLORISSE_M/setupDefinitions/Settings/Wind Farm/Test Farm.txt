@@ -1,0 +1,5 @@
+ID		Type		UTM_Easting		UTM_Northing	HubHeight
+WT-01	Type A		0				0				50
+WT-02	Type B		0				300				60
+WT-03	Type A		0				600				55
+WT-04	Type B		0				900				70
