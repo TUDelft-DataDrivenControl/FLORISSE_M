@@ -1,0 +1,4 @@
+Description		Parameters specific for the Jimenez model (NREL 5MW parameters of P. Gebraad et al.)
+KdY				0.17		% Wake deflection recovery factor
+useWakeAngle	1			% define initial wake angle (not determined by yaw angle)
+kd				0.0262		% 0.15 % initialWakeAngle in X-Y plane

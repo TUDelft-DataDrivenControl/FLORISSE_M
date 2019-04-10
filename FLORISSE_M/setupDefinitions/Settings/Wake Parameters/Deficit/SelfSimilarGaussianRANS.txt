@@ -1,0 +1,5 @@
+Description			Parameters specific for the Porte-Agel model
+alpha		2.32		% near wake parameter
+beta		0.154		% near wake parameter
+ka		0.3837		% wake expansion parameter (ka*TI + kb)
+kb		0.0037		% wake expansion parameter (ka*TI + kb)

@@ -29,6 +29,12 @@ classdef self_similar_gaussian_velocity < velocity_interface
             
             D = 2*turbine.turbineType.rotorRadius;    % Rotor diameter
 
+            % to avoid complex numbers from sqrt(1-obj.ct)
+            if obj.ct>1
+                obj.ct=1;
+                warning('limit ct to 1')
+            end
+            
             % NEAR WAKE CALCULATIONS
             % Eq. 6.16, x0 is the start of the far wake
             obj.x0 = D.*(cos(obj.thrustAngle).*(1+sqrt(1-obj.ct)))./...

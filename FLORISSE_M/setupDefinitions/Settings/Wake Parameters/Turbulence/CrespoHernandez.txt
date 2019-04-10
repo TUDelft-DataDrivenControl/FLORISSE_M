@@ -1,0 +1,5 @@
+TIthresholdMult		30			% threshold distance of turbines to include in \"added turbulence\"
+TIa					0.73		% magnitude of turbulence added
+TIb					0.8325		% contribution of turbine operation
+TIc					0.0325		% contribution of ambient turbulence intensity
+TId					-0.32		% contribution of downstream distance from turbine

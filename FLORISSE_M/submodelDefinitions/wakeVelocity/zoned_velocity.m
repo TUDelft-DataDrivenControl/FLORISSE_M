@@ -20,13 +20,14 @@ classdef zoned_velocity < velocity_interface
             obj.a = turbineResult.axialInduction;
             % Calculate ke, the basic expansion coefficient
             obj.Ke = modelData.Ke + modelData.KeCorrCT*(turbineResult.ct-modelData.baselineCT);
-            obj.me = modelData.me;
+            obj.me = [modelData.me_n,modelData.me_f,modelData.me_m];
 
             % Calculate mU, the zone multiplier for different wake zones
+            MU = [modelData.mu_n,modelData.mu_f,modelData.mu_m];
             if modelData.useaUbU
-                obj.mU = modelData.MU/cos(modelData.aU+modelData.bU*turbineControl.yawAngleWF);
+                obj.mU = MU/cos(modelData.aU+modelData.bU*turbineControl.yawAngleWF);
             else
-                obj.mU = modelData.MU;
+                obj.mU = MU;
             end
         end
         
