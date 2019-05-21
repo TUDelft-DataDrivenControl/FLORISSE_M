@@ -15,7 +15,14 @@ classdef dtu10mw_v2_cpct < handle
             
             % Initialize LUTs
             switch controlMethod
-                
+                case {'yaw'}
+                    loadedData = load('dtu10mw_database.mat');
+                    zeroYawIdx = find(abs(loadedData.yaw)<1e-6); % Extract zero yaw Cp-Ct values
+                    zeroDeratingIdx = find(abs(loadedData.servo-100) < 1e-6); % Extract zero derating Cp-Ct values
+                    structLUT.wsRange = loadedData.wind;
+                    structLUT.lutCp = squeeze(loadedData.mean_Cp(:,zeroDeratingIdx,zeroYawIdx))';
+                    structLUT.lutCt = squeeze(loadedData.mean_Ct(:,zeroDeratingIdx,zeroYawIdx))';   
+                    
                 case {'yawAndRelPowerSetpoint'}
                     loadedData = load('dtu10mw_database.mat');
                     structLUT.wsRange       = loadedData.wind;
@@ -49,6 +56,8 @@ classdef dtu10mw_v2_cpct < handle
         % Initial values when initializing the turbines
         function [out] = initialValues(obj)
             switch obj.controlMethod
+                case {'yaw'}
+                    out = struct('yawAngleWF',0); % Initialize default values                
                 case {'yawAndRelPowerSetpoint'}
                     out = struct('yawAngleWF',0,'relPowerSetpoint',1); % Initialize default values
                 otherwise
@@ -62,18 +71,38 @@ classdef dtu10mw_v2_cpct < handle
             controlMethod = obj.controlMethod;
             structLUT     = obj.structLUT;
             
-            switch controlMethod                     
-                case {'yawAndRelPowerSetpoint'}
-                    cp = structLUT.cpFun(condition.avgWS,turbineControl.relPowerSetpoint,turbineControl.yawAngleWF) ...
-                         / cos(turbineControl.yawAngleWF)^1.2 ;
-                    ct = structLUT.ctFun(condition.avgWS,turbineControl.relPowerSetpoint,turbineControl.yawAngleWF);
+            switch controlMethod     
+                case {'yaw'}
+                    if condition.avgWS < 4.0 || condition.avgWS > 24.0 % Cut-in/cut out wind speed
+                        cp = 0.0;
+                        ct = 2*eps; % eps to avoid numerical issues
+                        adjustCpCtYaw = false; % do function call 'adjust_cp_ct_for_yaw' after this func.
+                    else
+                        cp = interp1(structLUT.wsRange,structLUT.lutCp,condition.avgWS);
+                        ct = interp1(structLUT.wsRange,structLUT.lutCt,condition.avgWS);
+                        adjustCpCtYaw = true; % do function call 'adjust_cp_ct_for_yaw' after this func.
+                    end
                     
-                    if ct >= 1
+                case {'yawAndRelPowerSetpoint'}
+                    if condition.avgWS < 4.0 || condition.avgWS > 24.0 % Cut-in/cut out wind speed
+                        cp = 0.0;
+                        ct = 2*eps; % eps to avoid numerical issues
+                    elseif condition.avgWS * cos(turbineControl.yawAngleWF)^2 >= 11.4 % rated wind speed
+                        cp = 10e6/(0.5*condition.rho*0.25*pi*178.3^2*(condition.avgWS^3.0)*1.08);
+                        ct = structLUT.ctFun(condition.avgWS,turbineControl.relPowerSetpoint,turbineControl.yawAngleWF);
+                    else
+                        cp = structLUT.cpFun(condition.avgWS,turbineControl.relPowerSetpoint,turbineControl.yawAngleWF) ...
+                             / cos(turbineControl.yawAngleWF)^1.2 ;
+                        ct = structLUT.ctFun(condition.avgWS,turbineControl.relPowerSetpoint,turbineControl.yawAngleWF);
+                    end
+                    
+                    
+                    if ct >= 1.0
                         %disp(['WARNING: According to LUT, Ct = ' num2str(ct) '. Thresholding at Ct = 1.']);
                         ct = 1.0;
                     end
                     adjustCpCtYaw = false; % do function call 'adjust_cp_ct_for_yaw' after this func.
-                    
+
                 otherwise
                     error('Control methodology with name: "%s" not defined', obj.controlMethod);
             end
