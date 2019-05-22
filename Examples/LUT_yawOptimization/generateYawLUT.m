@@ -50,29 +50,41 @@ disp(['Batch size: ' num2str(N) ' remaining optimization cases.']); disp(' ');
 if isunix % In our case: Linux HPC facility
     parpool(40)
 end
-% parfor i = 1:N
-for i = 1:N
+parfor i = 1:N
+% for i = 1:N
     disp(sprintf([datestr(rem(now,1)) ' __ Generating LUT entries for case: [%05.1f, %04.1f, %04.3f].'],xTests(i,1),xTests(i,2),xTests(i,3)));    
     florisRunnerTmp = generateFLORISobject(xTests(i,1),xTests(i,2),xTests(i,3));
     try
         
-        if xTests(i,1) < 45 * pi/180 
-            turbsToOptimize = [1 2 3 4];
+        % Choose which turbines to optimize (smart optimization)
+        if xTests(i,1) < 10 % Symmetry in the rows: T1 = T2, T3 = T4, T5 = T6 = 0
+            turbsToOptimize = [1 3];
+        elseif xTests(i,1) < 20 % Only interaction with T1 on T6
+            turbsToOptimize = [1];
+        elseif xTests(i,1) < 45 % Only interaction with T1 and T3 on T4 and T6
+            turbsToOptimize = [1 3];
         else
-            turbsToOptimize = [1 3 5];
+            turbsToOptimize = [1]; % Symmetry in columns: T1 = T3 = T5, T2 = T4 = T6 = 0
         end
         
         % Deterministic optimization (over a single wind direction)
-%         [xopt,Pbl,Popt] = optimizeControlSettingsSimpleGS(florisRunnerTmp, ...
-        [xopt,Pbl,Popt] = optimizeControlSettingsSimpleGS(florisRunnerTmp, ...
-            'Yaw Optimizer', 1, ...
-            'Pitch Optimizer', 0, ...
-            'Axial induction Optimizer', 0,...
-            turbsToOptimize, ...
-            false); % silent execution
+        [xopt,Pbl,Popt] = optimizeControlSettingsSimpleGS(florisRunnerTmp,'Yaw', 1,'Pitch', 0,'AxInd', 0,turbsToOptimize, false); % silent execution
         
         yawAnglesOpt = zeros(1,florisRunnerTmp.layout.nTurbs);
         yawAnglesOpt(turbsToOptimize) = xopt;
+        
+        % Implement symmetry
+        if xTests(i,1) < 10 % Symmetry in the rows: T1 = T2, T3 = T4, T5 = T6 = 0
+            yawAnglesOpt(2) = yawAnglesOpt(1);
+            yawAnglesOpt(4) = yawAnglesOpt(3);
+        elseif xTests(i,1) < 20 % Only interaction with T1 on T6
+            % do nothing, no symmetry exploited
+        elseif xTests(i,1) < 45 % Only interaction with T1 and T3 on T4 and T6
+            % do nothing, no symmetry exploited
+        else
+            yawAnglesOpt(3) = yawAnglesOpt(1);
+            yawAnglesOpt(5) = yawAnglesOpt(1);
+        end
         
         if Pbl >= Popt - eps | isnan(Popt) | isnan(Pbl) % no improvement
             xopt = xopt * 0.0; % Set to greedy
@@ -107,7 +119,7 @@ function florisObj = generateFLORISobject(WD,WS,TI0)
     refheight = layout.uniqueTurbineTypes(1).hubHeight; % Use the height from the first turbine type as reference height for theinflow profile
     layout.ambientInflow = ambient_inflow_log('PowerLawRefSpeed', 8,  'PowerLawRefHeight', refheight, ...
         'windDirection', 0,  'TI0', .05);
-    controlSet = control_set(layout, 'yawAndRelPowerSetpoint'); % Make a controlObject for this layout
+    controlSet = control_set(layout, 'yaw'); % Make a controlObject for this layout
     subModels = model_definition('deflectionModel','rans',...
         'velocityDeficitModel', 'selfSimilar',...
         'wakeCombinationModel', 'quadraticRotorVelocity',...
