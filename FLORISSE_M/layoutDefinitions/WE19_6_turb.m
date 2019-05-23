@@ -8,7 +8,7 @@ function layout_obj = WE19_6_turb()
              [2391.5 1767.45]};
 
     % Put all the turbines in a struct array
-    turbines = struct('turbineType',dtu10mw_v2(),'locIf',locIf);
+    turbines = struct('turbineType',dtu10mw(),'locIf',locIf);
     layout_obj = layout_class(turbines, 'we19_6_turb');
 end
 
