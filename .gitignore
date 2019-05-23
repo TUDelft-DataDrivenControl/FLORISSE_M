@@ -2,3 +2,8 @@
 /Docs/build
 /Testing/codegen
 /Testing/instantiateClasses_mex.mexw64
+Proprietary_data
+Proprietary_data/*
+Proprietary_data*
+Proprietary_data/**
+Proprietary_data**
