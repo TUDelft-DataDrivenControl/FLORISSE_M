@@ -1,16 +1,15 @@
-function [florisRunner] = generateFlorisRunner(locIf)
-D = 178.3; % Rptor diameter
-locIf = cellfun(@(loc) D*loc, locIf, 'UniformOutput', false);
-turbines = struct('turbineType', dtu10mw_v2(),'locIf',locIf );
-layout = layout_class(turbines, 'sensitivity_layout_10mw');
-refheight = layout .uniqueTurbineTypes(1).hubHeight; % Use the height from the first turbine type as reference height for the inflow profile
+function [florisRunner] = generateFlorisRunner(layout)
 
-% Define an inflow struct and use it in the layout
-layout .ambientInflow = ambient_inflow_uniform('windSpeed', 8.0, ...
-    'windDirection', 0, 'TI0', 0.10);
+% Generate temporary ambient conditions
+layout.ambientInflow = ambient_inflow_uniform('windSpeed', 8.0, ...
+    'windDirection', 0, 'TI0', 0.06);
 
 % Make a controlObject for this layout
-controlSet  = control_set(layout , 'yawAndRelPowerSetpoint');
+if any(strcmp(layout.uniqueTurbineTypes.allowableControlMethods,'yawAndRelPowerSetpoint'))
+    controlSet  = control_set(layout , 'yawAndRelPowerSetpoint');
+else
+    controlSet  = control_set(layout , 'greedy');
+end
 
 % Define subModels
 subModels  = model_definition('deflectionModel','rans',...
