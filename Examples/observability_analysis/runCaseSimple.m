@@ -26,3 +26,13 @@ obsvInfo = calculateObsvRose(costInfo,jFunString,mFunString,deadzone);
 
 %% Plot the observability rose
 plotSensitivityFigures(obsvInfo);
+
+%% Plot 2D cost function
+WDplotidx = 2; % Plot entry number {value between 1 and length(trueRange.WD)}
+figure()
+[X,Y] = meshgrid(relSearchRange.WS,relSearchRange.WD*180/pi);
+surf(X,Y,(squeeze(obsvInfo.Mfilt{WDplotidx}(1,:,:))'),'EdgeColor','interp');
+xlabel('$\Delta U_\infty$','interpreter','latex')
+ylabel('$\Delta \phi$','interpreter','latex')
+zlabel('$\textrm{log}(\mathcal{M})$','interpreter','latex')
+title(['2D visualization of $\mathcal{M}$ for WD=' num2str(round(trueRange.WD(WDplotidx)*180/pi)) ' deg, with $\mathcal{O} = ' num2str(obsvInfo.O(WDplotidx)) '$'],'Interpreter','latex')
