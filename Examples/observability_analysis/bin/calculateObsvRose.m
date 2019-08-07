@@ -103,62 +103,6 @@ for Layouti = 1:nLayouts
                 
                 % Calculate observability O
                 [obsvO,idx] = min(Mfiltered(:)); % Pick O as worst case scenario (lowest value of M)
-                              
-%                 
-%                 if plotCostFun && Layouti == 1 && WDi == WDidx_of_interest && TIi == 1 %&& WSi == 1
-% %                 if plotCostFun && Layouti == 1 && TIi == 1 %&& WSi == 1
-%                     if plot1Dfun
-%                         figure('Position',[33.8000 109.8000 892 612.8000])
-%                         subplot(2,3,1);
-%                         WSiindx = find(relSearchRange.WS==0);
-%                         plot(relSearchRange.WD*180/pi,squeeze(costJ(TIii,WSiindx,:)),'-x');
-%                         title(['$J=' jFunctionString '$'],'interpreter','latex')
-%                         xlabel('\Delta \phi (deg)')
-%                         ylabel(['$J(\Delta U =0)$'],'interpreter','latex')
-%                         grid on
-%                         subplot(2,3,2);
-%                         WDiindx = find(relSearchRange.WD==0);
-%                         plot(relSearchRange.WS,squeeze(costJ(TIii,:,WDiindx)),'-x');
-%                         xlabel('\Delta U_ (m/s)')
-%                         ylabel('$J(\Delta \phi= 0)$','interpreter','latex')
-%                         xlim([-1.5 1.5])
-%                         legend(['obs(J) = ' num2str(obsvO(WDi))])
-%                         grid on
-%                         subplot(2,3,4);
-%                         WSiindx = find(relSearchRange.WS==0);
-%     %                     plot(relSearchRange.WD*180/pi,squeeze(J(TIii,WSiindx,:)),'-x');
-%                         plot(relSearchRange.WD*180/pi,squeeze(Mfiltered(TIii,WSiindx,:)),'-x');
-% %                         title(['WS=' num2str(wsTrue) ', TI=' num2str(tiTrue) ', WD= ' num2str(wdTrue*180/pi)])
-%                         title(['$M=' mFunctionString '$'],'interpreter','latex')
-%                         xlabel('\Delta \phi (deg)')
-%                         ylabel('$M(\Delta {U}=0)$','interpreter','latex')
-%     %                     ylim([0 4])
-%                         grid on
-% %                         legend(['obs(J) = ' num2str(obsvO(WDi))])                    
-%                         subplot(2,3,5);
-%                         WDiindx = find(relSearchRange.WD==0);
-%     %                     plot(relSearchRange.WS,squeeze(J(TIii,:,WDiindx)),'-x');
-%                         plot(relSearchRange.WS,squeeze(Mfiltered(TIii,:,WDiindx)),'-x');
-%                         xlabel('\Delta U_ (m/s)')
-%                         ylabel('$M(\Delta {\phi}=0)$','interpreter','latex')
-%     %                     ylim([0 10])
-%                         xlim([-1.5 1.5])
-% %                         legend(['obs(J) = ' num2str(obsvO(WDi))])
-%                         grid on
-%                     end
-%                     if plot2Dfun
-%                         figure()
-%                         [X,Y] = meshgrid(relSearchRange.WS,relSearchRange.WD*180/pi);
-%                         surf(X,Y,log(squeeze(Mfiltered(TIii,:,:))'+1));
-%                         xlabel('$\Delta U_\infty$','interpreter','latex')
-%                         ylabel('$\Delta \phi$','interpreter','latex')
-%                         zlabel('$\textrm{log}(\mathcal{M})$','interpreter','latex')
-%                         zlim([0 4.5e7])
-%                         axis tight
-%                         view(150.34,27.44)
-%                         title(['$U_\infty =' num2str(wsTrue) '$ ms$^{-1}$, $I_\infty =' num2str(tiTrue) '$, $\phi = ' num2str(wdTrue*180/pi) '$ deg'],'interpreter','latex')
-%                     end
-%                 end
                 O(Layouti,WSi,TIi,WDi) = obsvO;
             end
         end

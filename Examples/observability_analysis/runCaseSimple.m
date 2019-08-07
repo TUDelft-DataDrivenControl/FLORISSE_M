@@ -1,4 +1,6 @@
+addpath('bin')
 addpath('layouts')
+addpath(genpath('../../FLORISSE_M'))
 
 %% Setup
 layouts{1} = sns_2turb_layout();
@@ -17,8 +19,8 @@ relSearchRange = struct(...
 [costInfo] = calculateCostRose(layouts,trueRange,relSearchRange); 
 
 %% Calculate the observability rose
-jFunString = '0.0*msePwr + 1.0*mseUwse + 10.0*(dwd^2)'; % Wind speed and wind vane measurements
-mFunString = 'J/dxSqrd'; % Function to determine M. The observability O is the minimum value of J
+jFunString = '0.0*msePwr + 1.0*mseUwse + 10.0*(dwd^2)'; % Specify cost function J: here, assume wind speed and wind vane measurements
+mFunString = 'J/dxSqrd'; % Specify intermediate function for M. The observability O is the minimum value of M.
 deadzone = struct('apply',true,'WD',3.99*pi/180,'WS',0.249,'TI',0.029); % Apply a deadzone around the true solution for M
 obsvInfo = calculateObsvRose(costInfo,jFunString,mFunString,deadzone);
 
