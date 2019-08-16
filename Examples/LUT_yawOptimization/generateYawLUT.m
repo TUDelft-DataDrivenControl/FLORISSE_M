@@ -3,7 +3,7 @@
 % Summary: This script demonstrates how one could use FLORIS to generate a
 % set of optimal yaw settings of each turbine, for a range of ambient
 % conditions. In this specific example, the yaw angles are optimized for a
-% 2-turbine case over a range of wind directions and wind speeds. The
+% 6-turbine case over a range of wind directions and wind speeds. The
 % results are saved to a .csv "look-up table" (LUT) style file.
 %
 
@@ -14,8 +14,13 @@ addpath(genpath('../../FLORISSE_M'));
 databaseOutput = 'LUT_6turb_yaw.csv'; % Specify database output filename (do not forget '.mat' at the end)
 forceAppend    = false;    % Force write (skips safety check. Useful for HPC computations)
 WD_range = [0.:1.:90.]; % Span of wind directions (degrees)
-WS_range = [8.0];  % Span of wind speeds (m/s)
-TI_range = [0.02 0.07 0.12 0.17]; % Span of TIs (-)
+WS_range = [5.0:1.0:11.0];  % Span of wind speeds (m/s)
+TI_range = [0.02 0.07 0.12 0.17 0.25 0.35 0.50 0.90]; % Span of TIs (-)
+
+probablisticOptimization = false; % Optimize with uncertainty in WD
+WD_std  = 5.*pi/180; % Standard dev. in radians (if probablisticOptimization == 1)
+WD_N    = 5;         % N.o. sample points for prob. dist. (if probablisticOptimization == 1)
+
 
 % - - - - - - - - - - - -  CORE OPERATIONS  - - - - - - - - - - - - -  %
 % Generate all combinations of WSs, WDs and TIs
@@ -67,9 +72,26 @@ parfor i = 1:N
             turbsToOptimize = [1]; % Symmetry in columns: T1 = T3 = T5, T2 = T4 = T6 = 0
         end
         
-        % Deterministic optimization (over a single wind direction)
-        [xopt,Pbl,Popt] = optimizeControlSettingsSimpleGS(florisRunnerTmp,'Yaw', 1,'Pitch', 0,'AxInd', 0,turbsToOptimize, false); % silent execution
-        
+        % Determine optimal settings
+        if probablisticOptimization
+            % Robust optimization (over a prob. dist. of wind directions)
+            [xopt,Pbl,Popt] = optimizeControlSettingsRobustGS(florisRunnerTmp, ...
+                'Yaw Optimizer', 1, ...
+                'Pitch Optimizer', 0, ...
+                'Axial induction Optimizer', 0,...
+                WD_std, WD_N, ...
+                turbsToOptimize,... %
+                false); % silent execution
+        else
+            % Deterministic optimization (over a single wind direction)
+            [xopt,Pbl,Popt] = optimizeControlSettingsSimpleGS(florisRunnerTmp, ...
+                'Yaw Optimizer', 1, ...
+                'Pitch Optimizer', 0, ...
+                'Axial induction Optimizer', 0,...
+                turbsToOptimize, ... %
+                false); % silent execution
+        end
+
         yawAnglesOpt = zeros(1,florisRunnerTmp.layout.nTurbs);
         yawAnglesOpt(turbsToOptimize) = xopt;
         
@@ -117,8 +139,8 @@ end
 function florisObj = generateFLORISobject(WD,WS,TI0)
     layout = WE19_6_turb(); % Instantiate a layout without ambientInflow conditions
     refheight = layout.uniqueTurbineTypes(1).hubHeight; % Use the height from the first turbine type as reference height for theinflow profile
-    layout.ambientInflow = ambient_inflow_log('PowerLawRefSpeed', 8,  'PowerLawRefHeight', refheight, ...
-        'windDirection', 0,  'TI0', .05);
+    layout.ambientInflow = ambient_inflow_log('PowerLawRefSpeed', WS,  'PowerLawRefHeight', refheight, ...
+        'windDirection', WD*pi/180,  'TI0', TI0);
     controlSet = control_set(layout, 'yaw'); % Make a controlObject for this layout
     subModels = model_definition('deflectionModel','rans',...
         'velocityDeficitModel', 'selfSimilar',...
