@@ -46,7 +46,7 @@ for WDstdi = [WDstdPlotIndices]
             box on
             hold on
             for WSi = 1:databaseLUT.nWS
-                relGain = squeeze(databaseLUT.Popt(TIi,WSi,:)./databaseLUT.Pbl(TIi,WSi,:));
+                relGain = squeeze(databaseLUT.Popt(TIi,WSi,:,WDstdi)./databaseLUT.Pbl(TIi,WSi,:,WDstdi));
             end
             plot(databaseLUT.WD_range,relGain,'displayName',['WS=' num2str(databaseLUT.WS_range(WSi)) ' m/s'])
             xlim([databaseLUT.WD_range(1),databaseLUT.WD_range(end)])
@@ -54,7 +54,7 @@ for WDstdi = [WDstdPlotIndices]
         
         if powerDataAvail && databaseLUT.nWS > 1
             % Averaged line
-            meanGain = nanmean(databaseLUT.Popt(TIi,:,:)./databaseLUT.Pbl(TIi,:,:),1);
+            meanGain = nanmean(squeeze(databaseLUT.Popt(TIi,:,:,WDstdi)./databaseLUT.Pbl(TIi,:,:,WDstdi)),1);
             hold on
             plot(databaseLUT.WD_range,meanGain,'k--','lineWidth',1.5,'displayName',['Mean'])
         end

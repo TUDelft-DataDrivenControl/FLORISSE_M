@@ -4,20 +4,20 @@ clc
 addpath('bin')
 
 % LUT file
-LUTfile = 'LUT_6turb_yaw.csv';
+LUTfile = 'LUT_6turb_yaw_simple.csv';
 databaseIn = importYawLUT(LUTfile);
 
 % Filter settings
-WSrange_fixed = [5 11]; % Fixed yaw angles between this range
-multiplicationTerms = ones(1,6);
+WSrange_fixed = [5.5 9.5]; % Fixed yaw angles between this range
+multiplicationTerms = ones(1,9);
 
 % Plot settings
 TiPlotIndices = [1]; % which TI indices to plot; a vector
-WDstdPlotIndices = [3]; % % which std indices to plot; a vector
+WDstdPlotIndices = [1 2 3]; % % which std indices to plot; a vector
 
-sigma_opt = [0.7 1.5 0.75] %[0.7 1.5 0.5]; % Gaussian smoother standard deviations,[TI, WD, WD_std]
+sigma_opt = [0.7 1.3 0.75]; % Gaussian smoother standard deviations,[TI, WD, WD_std]
 WS_outliers = []; % These entries are discarded/overwritten when filtering
-plotInitialLUT = true;
+plotInitialLUT = false;
 plotFilteredLUT = true;
 
 % Output settings
@@ -84,7 +84,7 @@ for turbi = 1:nTurbs
 end
 maxdiffTI = max(maxdiffTIs)
 maxdiffWS = max(maxdiffWSs)
-maxdiffWDS = max(maxdiffWDs)
+maxdiffWD = max(maxdiffWDs)
 maxdiffWDstd = max(maxdiffWDstds)
 
 

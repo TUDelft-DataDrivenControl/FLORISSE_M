@@ -13,12 +13,12 @@ addpath(genpath('../../FLORISSE_M'));
 % - - - - - - - - - - - - -  USER SET UP  - - - - - - - - - - - - - -  %
 databaseOutput = 'LUT_6turb_yaw.csv'; % Specify database output filename (do not forget '.mat' at the end)
 forceAppend    = false;    % Force write (skips safety check. Useful for HPC computations)
-TI_range = 0.07 %[0.02 0.07 0.12];% 0.17 0.25 0.35 0.50 0.90]; % Span of TIs (-)
-WS_range = 8 %[5.0 8.0 11.0];  % Span of wind speeds (m/s)
-WD_range = 66 %[0.:2.:90.];%[-30.:2.:40.]; % Span of wind directions (degrees)
-WD_std_range = 2.5 %[0.0 2.5 5.0];% 10.]; % Standard deviation WD in degrees
+TI_range = [0.02 0.07 0.12 0.17 0.25 0.35 0.50 0.90]; % Span of TIs (-)
+WS_range = [5.0 6.5 8.0 9.5 11.0];  % Span of wind speeds (m/s)
+WD_range = [0.0:1.0:90.0]; % Span of wind directions (degrees)
+WD_std_range = [0.0 2.5 5.0]; % Standard deviation WD in degrees
 
-WD_std_N    = 5;         % N.o. sample points for prob. dist.
+WD_std_N    = 11; % N.o. sample points for prob. dist.
 
 
 % - - - - - - - - - - - -  CORE OPERATIONS  - - - - - - - - - - - - -  %
@@ -36,7 +36,8 @@ if exist(databaseOutput,'file')
     
     % Remove all duplicate runs from test queue
     [dataArray,noLinesInit] = readPastLUTData(databaseOutput);
-    prevRuns = ismember(xTests,dataArray(:,[1:size(xTests,2)]),'rows');
+    prevRuns = ismembertol(xTests,dataArray(:,[1:size(xTests,2)]),'ByRows',1e-3);
+%     prevRuns = ismember(xTests,dataArray(:,[1:size(xTests,2)]),'rows');
     xTests = xTests(~prevRuns,:); % Exclude all pre-existing tests
     disp(['Skipping ' num2str(sum(prevRuns)) ' cases (already existent in database).']);
     clear  dataArray
@@ -64,15 +65,7 @@ parfor i = 1:N
     try
         
         % Choose which turbines to optimize (smart optimization)
-        if WDtmp < 10 % Symmetry in the rows: T1 = T2, T3 = T4, T5 = T6 = 0
-            turbsToOptimize = [1 3];
-        elseif WDtmp >= 10 & WDtmp < 20 % Only interaction with T1 on T6
-            turbsToOptimize = [1];
-        elseif WDtmp >= 20 & WDtmp < 45 % Only interaction with T1 and T3 on T4 and T6
-            turbsToOptimize = [1 3];
-        elseif WDtmp >= 45
-            turbsToOptimize = [1]; % Symmetry in columns: T1 = T3 = T5, T2 = T4 = T6 = 0
-        end
+        [turbsToOptimize,~] = layoutSymmetry(WDtmp);
         
         % Determine optimal settings
         if WDstdtmp > 10*eps % Probablistic optimization
@@ -82,34 +75,30 @@ parfor i = 1:N
             WD_std_rng_eval = 0.0001;
             WD_std_N_eval = 1; % Evaluate one case
         end
+        
         % Robust optimization (over a prob. dist. of wind directions)
-        [xopt,Pbl,Popt] = optimizeControlSettingsRobustGS(florisRunnerTmp, ...
-            'Yaw', 1, 'Pitch', 0, 'Ax. induction', 0,...
-            WD_std_rng_eval, WD_std_N_eval, turbsToOptimize, false); % silent execution
+        if isempty(turbsToOptimize)
+            disp(['Nothing to optimize for WD = ' num2str(WDtmp) ' deg.'])
+            yawAnglesOpt = zeros(1,florisRunnerTmp.layout.nTurbs);
+            florisRunnerTmp.run();
+            Pbl = sum([florisRunnerTmp.turbineResults.power]);
+            Popt = Pbl;
+        else
+            [xopt,Pbl,Popt] = optimizeControlSettingsRobustGS(florisRunnerTmp, ...
+                'Yaw', 1, 'Pitch', 0, 'Ax. induction', 0,...
+                WD_std_rng_eval, WD_std_N_eval, turbsToOptimize, false); % silent execution
+            
+            yawAnglesOpt = zeros(1,florisRunnerTmp.layout.nTurbs);
+            yawAnglesOpt(turbsToOptimize) = xopt;
+            [~,yawAnglesOpt] = layoutSymmetry(WDtmp,yawAnglesOpt); % Copy yaw angles
 
-        yawAnglesOpt = zeros(1,florisRunnerTmp.layout.nTurbs);
-        yawAnglesOpt(turbsToOptimize) = xopt;
-        
-        % Implement symmetry
-        if WDtmp < 10 % Symmetry in the rows: T1 = T2, T3 = T4, T5 = T6 = 0
-            yawAnglesOpt(2) = yawAnglesOpt(1);
-            yawAnglesOpt(4) = yawAnglesOpt(3);
-        elseif WDtmp >= 10 & WDtmp < 20 % Only interaction with T1 on T6
-            % do nothing, no symmetry exploited
-        elseif WDtmp >= 20 & WDtmp < 45 % Only interaction with T1 and T3 on T4 and T6
-            % do nothing, no symmetry exploited
-        elseif WDtmp >= 45
-            yawAnglesOpt(3) = yawAnglesOpt(1);
-            yawAnglesOpt(5) = yawAnglesOpt(1);
-        end
-        
-        if Pbl >= Popt - eps | isnan(Popt) | isnan(Pbl) % no improvement
-            xopt = xopt * 0.0; % Set to greedy
-            disp('No noticeable improvement. Setting xopt to greedy.')
+            if Pbl >= Popt - eps | isnan(Popt) | isnan(Pbl) % no improvement
+                xopt = xopt * 0.0; % Set to greedy
+                disp('No noticeable improvement. Setting xopt to greedy.')
+            end            
         end
                 
         % Write output to the csv
-%         dlmwrite(databaseOutput,[xTests(i,:) Pbl Popt round(-xopt*180/pi,1)],'delimiter','\t','newline','pc','-append');
         dlmwrite(databaseOutput,[xTests(i,:) Pbl Popt round(yawAnglesOpt*180/pi,1)],'delimiter','\t','newline','pc','-append');
     catch
         disp('Caught an error. Not writing anything for this entry.')
@@ -165,4 +154,27 @@ function florisObj = generateFLORISobject(TI0,WS,WD)
     
     % Set default yaw angles to greedy
     florisObj.controlSet.yawAngleWFArray = zeros(1,layout.nTurbs);
+end
+
+function [turbsToOptimize,yawAnglesOut] = layoutSymmetry(WD,yawAnglesIn)
+if nargin < 2
+    yawAnglesIn = nan*ones(1,100);
+end
+
+yawAnglesOut = yawAnglesIn;
+
+% Choose which turbines to optimize (smart optimization)
+if WD < 10 % Symmetry in the rows: T1 = T2, T3 = T4, T5 = T6 = 0
+    turbsToOptimize = [1 3];
+    yawAnglesOut(2) = yawAnglesOut(1);
+    yawAnglesOut(4) = yawAnglesOut(3);
+elseif WD >= 10 & WD < 20 % Only interaction with T1 on T6
+    turbsToOptimize = [1];
+elseif WD >= 20 & WD < 45 % Only interaction with T1 and T3 on T4 and T6
+    turbsToOptimize = [1 3];
+elseif WD >= 45
+    turbsToOptimize = [1]; % Symmetry in columns: T1 = T3 = T5, T2 = T4 = T6 = 0
+    yawAnglesOut([3 5]) = yawAnglesOut(1);
+end
+        
 end

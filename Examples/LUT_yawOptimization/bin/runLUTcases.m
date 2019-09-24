@@ -7,15 +7,17 @@ end
 
 % ------------------------------
 
+nTI = databaseLUT.nTI;
 nWS = databaseLUT.nWS;
 nWD = databaseLUT.nWD;
-nTI = databaseLUT.nTI;
+nWDstd = databaseLUT.nWDstd;
+TI_range = databaseLUT.TI_range;
 WS_range = databaseLUT.WS_range;
 WD_range = databaseLUT.WD_range;
-TI_range = databaseLUT.TI_range;
+WD_std_range = databaseLUT.WD_std_range;
 
 % Create empty output tensors
-[Pbl,Popt] = deal(zeros(nTI,nWS,nWD));
+[Pbl,Popt] = deal(zeros(nTI,nWS,nWD,nWDstd));
 
 % Create probablistic wind direction profile
 % Discretize probability distribution
@@ -42,24 +44,26 @@ WD_probability = WD_probability/sum(WD_probability); % Normalized
 
 % Do runs
 tic
-disp(['Evaluating the average gain (%) for ' num2str(nTI) 'x' num2str(nWS) 'x' num2str(nWD) ' cases (' num2str(nTI*nWS*nWD) ').']);
+disp(['Evaluating the average gain (%) for ' num2str(nTI) 'x' num2str(nWS) 'x' num2str(nWD) 'x' num2str(nWDstd) '  cases (' num2str(nTI*nWS*nWD*nWDstd) ').']);
 for TIi = 1:nTI
-    parfor WSi = 1:nWS
-        for WDi = 1:nWD
-            florisRunnerTmp = copy(florisRunner);
-            florisRunnerTmp.layout.ambientInflow.TI0 = TI_range(TIi);
-            florisRunnerTmp.layout.ambientInflow.Vref = WS_range(WSi);
-            florisRunnerTmp.layout.ambientInflow.windDirection = WD_range(WDi)*pi/180;
-            
-            % Run baseline
-            florisRunnerTmp.controlSet.yawAngleWFArray = zeros(1,florisRunnerTmp.layout.nTurbs);
-            Pbl(TIi,WSi,WDi) = runLUTcases_runFLORIS(florisRunnerTmp,rho_range,WD_probability);
-            
-            % Run optimized
-            for turbi = 1:florisRunnerTmp.layout.nTurbs
-                florisRunnerTmp.controlSet.yawAngleWFArray(turbi) = databaseLUT.yawT{turbi}(TIi,WSi,WDi)*pi/180;
+    for WSi = 1:nWS
+        parfor WDi = 1:nWD
+            for WDstdi = 1:nWDstd
+                florisRunnerTmp = copy(florisRunner);
+                florisRunnerTmp.layout.ambientInflow.TI0 = TI_range(TIi);
+                florisRunnerTmp.layout.ambientInflow.Vref = WS_range(WSi);
+                florisRunnerTmp.layout.ambientInflow.windDirection = WD_range(WDi)*pi/180;
+                
+                % Run baseline
+                florisRunnerTmp.controlSet.yawAngleWFArray = zeros(1,florisRunnerTmp.layout.nTurbs);
+                Pbl(TIi,WSi,WDi) = runLUTcases_runFLORIS(florisRunnerTmp,rho_range,WD_probability);
+                
+                % Run optimized
+                for turbi = 1:florisRunnerTmp.layout.nTurbs
+                    florisRunnerTmp.controlSet.yawAngleWFArray(turbi) = databaseLUT.yawT{turbi}(TIi,WSi,WDi,WDstdi)*pi/180;
+                end
+                Popt(TIi,WSi,WDi) = runLUTcases_runFLORIS(florisRunnerTmp,rho_range,WD_probability);
             end
-            Popt(TIi,WSi,WDi) = runLUTcases_runFLORIS(florisRunnerTmp,rho_range,WD_probability);
         end
     end
 end

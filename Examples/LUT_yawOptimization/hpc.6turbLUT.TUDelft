@@ -1,0 +1,9 @@
+#PBS -N flrsLUT
+#PBS -l nodes=1:ppn=40 				# Request one node with 4 free processor cores 
+#PBS -m ae 							# Mail me when the job ends for any reason 
+#PBS -M B.M.Doekemeijer@tudelft.nl 	# Email address
+
+# Run my M file and don't even try to display graphics
+module load 'matlab'
+cd $PBS_O_WORKDIR
+matlab -nodisplay -noFigureWindows -logfile 'generateYawLUT.m.log' -r "generateYawLUT"
