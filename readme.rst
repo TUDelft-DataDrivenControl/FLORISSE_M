@@ -8,3 +8,7 @@ The current status of the docs is.
 .. image:: https://readthedocs.org/projects/florisse-m/badge/?version=latest
 	:target: http://florisse-m.readthedocs.io/en/latest/?badge=latest
 	:alt: Documentation Status
+	
+	
+For citations, please use the following DOI:
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4458669.svg)](https://doi.org/10.5281/zenodo.4458669)
