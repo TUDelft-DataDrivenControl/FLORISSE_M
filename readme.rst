@@ -11,4 +11,5 @@ The current status of the docs is.
 	
 	
 For citations, please use the following DOI:
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4458669.svg)](https://doi.org/10.5281/zenodo.4458669)
+.. image:: https://zenodo.org/badge/74764493.svg
+   :target: https://zenodo.org/badge/latestdoi/74764493
